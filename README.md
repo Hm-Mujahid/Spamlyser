@@ -64,13 +64,13 @@
      </thead>
     <tbody>
          <tr>
-            <td><img alt="Stars" src="https://img.shields.io/github/stars/theeccentriccoder/Spamlyser?style=flat&logo=github"/></td>
-            <td><img alt="Forks" src="https://img.shields.io/github/forks/theeccentriccoder/Spamlyser?style=flat&logo=github"/></td>
-            <td><img alt="Issues" src="https://img.shields.io/github/issues/theeccentriccoder/Spamlyser?style=flat&logo=github"/></td>
-            <td><img alt="Open PRs" src="https://img.shields.io/github/issues-pr/theeccentriccoder/Spamlyser?style=flat&logo=github"/></td>
-            <td><img alt="Closed PRs" src="https://img.shields.io/github/issues-pr-closed/theeccentriccoder/Spamlyser?style=flat&color=critical&logo=github"/></td>
-            <td><img alt="Languages Count" src="https://img.shields.io/github/languages/count/theeccentriccoder/Spamlyser?style=flat&color=green&logo=github"></td>
-            <td><img alt="Contributors Count" src="https://img.shields.io/github/contributors/theeccentriccoder/Spamlyser?style=flat&color=blue&logo=github"/></td>
+            <td><img alt="Stars" src="https://img.shields.io/github/stars/theeccentriccoder01/Spamlyser?style=flat&logo=github"/></td>
+            <td><img alt="Forks" src="https://img.shields.io/github/forks/theeccentriccoder01/Spamlyser?style=flat&logo=github"/></td>
+            <td><img alt="Issues" src="https://img.shields.io/github/issues/theeccentriccoder01/Spamlyser?style=flat&logo=github"/></td>
+            <td><img alt="Open PRs" src="https://img.shields.io/github/issues-pr/theeccentriccoder01/Spamlyser?style=flat&logo=github"/></td>
+            <td><img alt="Closed PRs" src="https://img.shields.io/github/issues-pr-closed/theeccentriccoder01/Spamlyser?style=flat&color=critical&logo=github"/></td>
+            <td><img alt="Languages Count" src="https://img.shields.io/github/languages/count/theeccentriccoder01/Spamlyser?style=flat&color=green&logo=github"></td>
+            <td><img alt="Contributors Count" src="https://img.shields.io/github/contributors/theeccentriccoder01/Spamlyser?style=flat&color=blue&logo=github"/></td>
         </tr>
     </tbody>
 </table>
@@ -88,12 +88,12 @@ Experience Spamlyser live here:
 [![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
 ![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=flat)
 ![Built with Love](https://img.shields.io/badge/Built%20with-%E2%9D%A4-red?style=for-the-badge)
-![Visitors](https://api.visitorbadge.io/api/Visitors?path=theeccentriccoder%2FSpamlyser%20&countColor=%23263759&style=flat)
-![GitHub Contributors](https://img.shields.io/github/contributors/theeccentriccoder/Spamlyser)
-![GitHub Last Commit](https://img.shields.io/github/last-commit/theeccentriccoder/Spamlyser)
-![GitHub Repo Size](https://img.shields.io/github/repo-size/theeccentriccoder/Spamlyser)
-![GitHub Total Lines](https://sloc.xyz/github/theeccentriccoder/Spamlyser)
-![Github](https://img.shields.io/github/license/theeccentriccoder/Spamlyser)
+![Visitors](https://api.visitorbadge.io/api/Visitors?path=theeccentriccoder01%2FSpamlyser%20&countColor=%23263759&style=flat)
+![GitHub Contributors](https://img.shields.io/github/contributors/theeccentriccoder01/Spamlyser)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/theeccentriccoder01/Spamlyser)
+![GitHub Repo Size](https://img.shields.io/github/repo-size/theeccentriccoder01/Spamlyser)
+![GitHub Total Lines](https://sloc.xyz/github/theeccentriccoder01/Spamlyser)
+![Github](https://img.shields.io/github/license/theeccentriccoder01/Spamlyser)
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%">
 
@@ -280,7 +280,7 @@ Spamlyser/
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/theeccentriccoder/Spamlyser.git
+   git clone https://github.com/theeccentriccoder01/Spamlyser.git
    cd Spamlyser
    ```
 
@@ -371,8 +371,8 @@ Your insights are invaluable to us. Reach out to us team for any inquiries, feed
 
 <h2 id="contact">📞 Contact</h2>
 
-- **Developed by [Eccentric Explorer](https://theeccentriccoder.github.io/Me)**
-- **GitHub Issues**: [Report bugs or request features](https://github.com/theeccentriccoder/Spamlyser/issues)
+- **Developed by [Eccentric Explorer](https://theeccentriccoder01.github.io/Me)**
+- **GitHub Issues**: [Report bugs or request features](https://github.com/theeccentriccoder01/Spamlyser/issues)
 - **Email**: Contact the maintainers for collaboration opportunities
 
 *Feel free to reach out with any questions or feedback!*
@@ -391,7 +391,7 @@ We love contributions from the community! Whether it's a bug report, a new featu
 
 ***Found a Bug?***
 
--   Check the [issue tracker](https://github.com/theeccentriccoder/Spamlyser/issues) to see if the bug has already been reported.
+-   Check the [issue tracker](https://github.com/theeccentriccoder01/Spamlyser/issues) to see if the bug has already been reported.
 -   If not, open a new issue and provide as much detail as possible.
 
 ***Have a Feature Idea?***
@@ -420,28 +420,28 @@ We welcome contributions from developers of all skill levels! Here are some ways
 
 <h2 id="code-of-conduct">📜 Code of Conduct</h2>
 
-Please refer to the [`Code of Conduct`](https://github.com/theeccentriccoder/Spamlyser/blob/master/CODE_OF_CONDUCT.md) for details on contributing guidelines and community standards.
+Please refer to the [`Code of Conduct`](https://github.com/theeccentriccoder01/Spamlyser/blob/master/CODE_OF_CONDUCT.md) for details on contributing guidelines and community standards.
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%">
 
 <h2 id="contribution-guidelines">🤝👤 Contribution Guidelines</h2>
 
-We love our contributors! If you'd like to help, please check out our [`CONTRIBUTE.md`](https://github.com/theeccentriccoder/Spamlyser/blob/master/CONTRIBUTING.md) file for guidelines.
+We love our contributors! If you'd like to help, please check out our [`CONTRIBUTE.md`](https://github.com/theeccentriccoder01/Spamlyser/blob/master/CONTRIBUTING.md) file for guidelines.
 
 >Thank you once again to all our contributors who has contributed to **Spamlyser!** Your efforts are truly appreciated. 💖👏
 
 <!-- Contributors badge (auto-updating) -->
 
-[![Contributors](https://img.shields.io/github/contributors/theeccentriccoder/Spamlyser?style=for-the-badge)](https://github.com/theeccentriccoder/Spamlyser/contributors)
+[![Contributors](https://img.shields.io/github/contributors/theeccentriccoder01/Spamlyser?style=for-the-badge)](https://github.com/theeccentriccoder01/Spamlyser/contributors)
 
 <!-- Contributors avatars (auto-updating) -->
 <p align="left">
-  <a href="https://github.com/theeccentriccoder/Spamlyser/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=theeccentriccoder/Spamlyser" alt="Contributors" />
+  <a href="https://github.com/theeccentriccoder01/Spamlyser/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=theeccentriccoder01/Spamlyser" alt="Contributors" />
   </a>
 </p>
 
-See the full list of contributors and their contributions on the [`GitHub Contributors Graph`](https://github.com/theeccentriccoder/Spamlyser/graphs/contributors).
+See the full list of contributors and their contributions on the [`GitHub Contributors Graph`](https://github.com/theeccentriccoder01/Spamlyser/graphs/contributors).
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%">
 
@@ -471,15 +471,15 @@ Feel free to open issues or discussions if you have any feedback, feature sugges
 
 <h2 id="license">📄 License</h2>
 
-This project is licensed under the MIT License - see the [`License`](https://github.com/theeccentriccoder/Spamlyser/blob/master/LICENSE) file for details.
+This project is licensed under the MIT License - see the [`License`](https://github.com/theeccentriccoder01/Spamlyser/blob/master/LICENSE) file for details.
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%">
 
 <h2 id="stargazers">⭐ Stargazers</h2>
 
 <div align="center">
-  <a href="https://github.com/theeccentriccoder/Spamlyser/stargazers">
-    <img src="https://reporoster.com/stars/theeccentriccoder/Spamlyser?type=svg&limit=100&names=false" alt="Stargazers" />
+  <a href="https://github.com/theeccentriccoder01/Spamlyser/stargazers">
+    <img src="https://reporoster.com/stars/theeccentriccoder01/Spamlyser?type=svg&limit=100&names=false" alt="Stargazers" />
   </a>
 </div>
 
@@ -488,8 +488,8 @@ This project is licensed under the MIT License - see the [`License`](https://git
 <h2 id="forkers">🍴 Forkers</h2>
 
 <div align="center">
-  <a href="https://github.com/theeccentriccoder/Spamlyser/members">
-    <img src="https://reporoster.com/forks/theeccentriccoder/Spamlyser?type=svg&limit=100&names=false" alt="Forkers" />
+  <a href="https://github.com/theeccentriccoder01/Spamlyser/members">
+    <img src="https://reporoster.com/forks/theeccentriccoder01/Spamlyser?type=svg&limit=100&names=false" alt="Forkers" />
   </a>
 </div>
 
@@ -499,7 +499,7 @@ This project is licensed under the MIT License - see the [`License`](https://git
 <table>
 <tr>
 <td align="center">
-<a href="https://github.com/theeccentriccoder"><img src="https://avatars.githubusercontent.com/u/121952662?v=4" height="140px" width="140px" alt="Sagnik Chakraborty"></a><br><sub><b>Sagnik Chakraborty</b><br><a href="https://www.linkedin.com/in/eccentricexplorer"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/73993775/278833250-adb040ea-e3ef-446e-bcd4-3e8d7d4c0176.png" width="45px" height="45px"></a>
+<a href="https://github.com/theeccentriccoder01"><img src="https://avatars.githubusercontent.com/u/121952662?v=4" height="140px" width="140px" alt="Sagnik Chakraborty"></a><br><sub><b>Sagnik Chakraborty</b><br><a href="https://www.linkedin.com/in/eccentricexplorer"><img src="https://github-production-user-asset-6210df.s3.amazonaws.com/73993775/278833250-adb040ea-e3ef-446e-bcd4-3e8d7d4c0176.png" width="45px" height="45px"></a>
 </sub>
 </td>
 </tr>
@@ -526,7 +526,7 @@ This project is licensed under the MIT License - see the [`License`](https://git
 <h3 align="center"> 👨‍💻 Built with ❤️ by Spamlyser Team</h3>
 <h4 align="center"> ❤️ Sagnik Chakraborty and Contributors ❤️ </h4>
 <p align="center">
-  <a href="https://github.com/theeccentriccoder/Spamlyser/issues">Open an Issue</a> | <a href="https://github.com/theeccentriccoder/Spamlyser">🌟 Star on GitHub</a> | <a href="https://spamlyser.streamlit.app/">🚀 Live Demo</a></p>
+  <a href="https://github.com/theeccentriccoder01/Spamlyser/issues">Open an Issue</a> | <a href="https://github.com/theeccentriccoder01/Spamlyser">🌟 Star on GitHub</a> | <a href="https://spamlyser.streamlit.app/">🚀 Live Demo</a></p>
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=65&section=footer"/>
 
