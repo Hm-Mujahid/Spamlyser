@@ -1,3 +1,15 @@
+---
+title: Spamlyser Pro
+emoji: 🛡️
+colorFrom: green
+colorTo: gray
+sdk: streamlit
+sdk_version: 1.30.0
+app_file: app.py
+pinned: false
+---
+
+
 <div align="center"><img src="imgs/SpamlyserLogo.png" style="width: 220px; height: 220px;" /></div>
 
 <h1 align="center">SPAMLYSER</h1>
