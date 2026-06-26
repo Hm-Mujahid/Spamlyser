@@ -5,6 +5,14 @@ import plotly.graph_objects as go
 import numpy as np
 from datetime import datetime, timedelta
 
+# --- Streamlit Page Configuration ---
+st.set_page_config(
+    page_title="Spamlyser Pro - Ensemble Edition",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 # Load unified global styles
 try:
     from page_functions import load_global_styles
@@ -92,14 +100,6 @@ from typing import Dict, List, Tuple, Any, Optional
 from io import StringIO
 import torch
 from collections import defaultdict # Added for easier analytics data aggregation
-
-# --- Streamlit Page Configuration ---
-st.set_page_config(
-    page_title="Spamlyser Pro - Ensemble Edition",
-    page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
 # Import navigation component
 try:
