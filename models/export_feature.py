@@ -15,27 +15,42 @@ def _pdf_safe(text):
 
 
 def dataframe_to_pdf(df, title="Spamlyser Results"):
-    pdf = FPDF()
+    # Landscape orientation gives the wide results table (which can have many
+    # columns) enough horizontal room to stay readable.
+    pdf = FPDF(orientation="L")
     pdf.add_page()
     pdf.set_font("helvetica", "B", 14)
     pdf.cell(0, 10, _pdf_safe(title), ln=True, align="C")
     pdf.ln(5)
-    pdf.set_font("helvetica", size=9)
-    col_width = pdf.w / (len(df.columns) + 1)
-    row_height = pdf.font_size * 1.5
+
+    font_size = 8
+    pdf.set_font("helvetica", size=font_size)
+    n_cols = max(len(df.columns), 1)
+    usable_width = pdf.w - pdf.l_margin - pdf.r_margin
+    col_width = usable_width / n_cols
+    row_height = pdf.font_size * 1.6
+
+    def _fit(value):
+        """Trim text (with an ellipsis) until it fits inside one cell, so
+        adjacent columns never overlap no matter how many columns there are."""
+        text = _pdf_safe(value)
+        if pdf.get_string_width(text) <= col_width - 2:
+            return text
+        while text and pdf.get_string_width(text + "...") > col_width - 2:
+            text = text[:-1]
+        return (text + "...") if text else ""
 
     # Header
+    pdf.set_font("helvetica", "B", font_size)
     for col in df.columns:
-        pdf.cell(col_width, row_height, _pdf_safe(col), border=1)
+        pdf.cell(col_width, row_height, _fit(col), border=1, align="C")
     pdf.ln(row_height)
 
     # Rows
+    pdf.set_font("helvetica", size=font_size)
     for i in range(len(df)):
         for col in df.columns:
-            val = _pdf_safe(df.iloc[i][col])
-            if len(val) > 25:
-                val = val[:22] + "..."
-            pdf.cell(col_width, row_height, val, border=1)
+            pdf.cell(col_width, row_height, _fit(df.iloc[i][col]), border=1)
         pdf.ln(row_height)
 
     # fpdf2's output() returns a bytearray; legacy PyFPDF's output(dest="S")
