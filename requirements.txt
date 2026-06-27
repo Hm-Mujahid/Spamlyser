@@ -16,7 +16,7 @@ sentencepiece>=0.1.99,!=0.1.100
 protobuf>=3.20.0,<4.0.0
 
 # Development & Utilities
-tqdm>=4.65.0,<5.0.0
+tqdm>=4.68.3,<5.0.0
 requests>=2.31.0,<3.0.0
 python-dotenv>=1.0.0,<2.0.0
 
