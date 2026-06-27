@@ -31,13 +31,14 @@ class ModelExplainer:
             split_expression='\W+'  # Split by non-word characters
         )
     
-    def explain_prediction(self, text: str, num_features: int = 10) -> Dict[str, Any]:
+    def explain_prediction(self, text: str, num_features: int = 10, num_samples: int = 5000) -> Dict[str, Any]:
         """
         Explain a prediction for a given text.
         
         Args:
             text: Text to explain
             num_features: Number of features to include in the explanation
+            num_samples: Number of samples/perturbations for LIME explanation
             
         Returns:
             Dict containing the explanation
@@ -47,7 +48,8 @@ class ModelExplainer:
             explanation = self.explainer.explain_instance(
                 text, 
                 self.predict_fn, 
-                num_features=num_features
+                num_features=num_features,
+                num_samples=num_samples
             )
             
             # Get the explanation data

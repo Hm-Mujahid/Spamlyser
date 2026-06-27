@@ -7880,6 +7880,83 @@ if analyse_btn and user_sms.strip():
                 # Display threat information separately if it exists
                 if label == "SPAM" and threat_type:
                     st.markdown(threat_html, unsafe_allow_html=True)
+
+                # Generate and display LIME explanation for single model predictions
+                with st.expander("🔍 Show Model Explainability (LIME Analysis)", expanded=True):
+                    from models.model_explainer import ModelExplainer
+                    
+                    def predict_fn(texts):
+                        results = classifier(list(texts))
+                        probs = []
+                        for res in results:
+                            lbl = res['label'].upper()
+                            scr = res['score']
+                            if lbl == 'SPAM':
+                                probs.append([1.0 - scr, scr])
+                            else:
+                                probs.append([scr, 1.0 - scr])
+                        return np.array(probs)
+                    
+                    explainer = ModelExplainer(predict_fn, class_names=["HAM", "SPAM"])
+                    # Use lower num_samples for speed to prevent prediction bottlenecks
+                    explanation_data = explainer.explain_prediction(cleaned_sms, num_features=10, num_samples=150)
+                    
+                    if 'error' in explanation_data:
+                        st.error(f"LIME Analysis Error: {explanation_data['error']}")
+                    else:
+                        # Extract important words for prediction
+                        spam_features = []
+                        for feat in explanation_data.get('features', []):
+                            if feat['class'] == 'SPAM':
+                                spam_features = feat['important_words']
+                                break
+                        
+                        if spam_features:
+                            # Sort features so highest absolute weights are plotted correctly
+                            sorted_features = sorted(spam_features, key=lambda x: x['weight'])
+                            
+                            words = [f['word'] for f in sorted_features]
+                            weights = [f['weight'] for f in sorted_features]
+                            
+                            # Red for Spam, Green for Ham
+                            colors = ['#ff4d4d' if w > 0 else '#2ecc71' for w in weights]
+                            
+                            fig = go.Figure()
+                            fig.add_trace(go.Bar(
+                                y=words,
+                                x=weights,
+                                orientation='h',
+                                marker_color=colors,
+                                text=[f"{w:+.4f}" for w in weights],
+                                textposition='auto',
+                                hoverinfo='y+x',
+                            ))
+                            
+                            fig.update_layout(
+                                title=dict(
+                                    text="Word Importance (LIME Attribute Weights)",
+                                    font=dict(size=16, color='white')
+                                ),
+                                xaxis=dict(
+                                    title="Influence towards SPAM",
+                                    titlefont=dict(color='white'),
+                                    tickfont=dict(color='white'),
+                                    gridcolor='rgba(255,255,255,0.1)'
+                                ),
+                                yaxis=dict(
+                                    title="Tokens",
+                                    titlefont=dict(color='white'),
+                                    tickfont=dict(color='white')
+                                ),
+                                height=max(320, len(words) * 35),
+                                margin=dict(l=100, r=20, t=50, b=40),
+                                paper_bgcolor='rgba(0,0,0,0)',
+                                plot_bgcolor='rgba(0,0,0,0)',
+                            )
+                            st.plotly_chart(fig, use_container_width=True)
+                            st.markdown("**Legend:** 🔴 Red bars indicate words pushing towards **SPAM** | 🟢 Green bars indicate words pushing towards **HAM**")
+                        else:
+                            st.info("No significant word features could be extracted for LIME explanation.")
                 
     else: # Ensemble Analysis
         with st.spinner("🤖 Loading all models for ensemble analysis..."):
