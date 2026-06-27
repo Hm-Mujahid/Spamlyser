@@ -96,7 +96,10 @@ class BatchProcessor:
             'money': any(x in message for x in ['$', '€', '£', 'win', 'cash', 'prize', 'money']),
             'personal_info': any(x in message for x in ['password', 'account', 'login', 'ssn', 'credit card']),
             'all_caps': any(word.isupper() and len(word) > 2 for word in message.split()),
-            'suspicious_chars': len([c for c in message if not c.isalnum() and not c.isspace()]) / len(message) > 0.1
+            'suspicious_chars': (
+                len([c for c in message if not c.isalnum() and not c.isspace()]) / len(message) > 0.1
+                if message else False
+            )
         }
         
         return patterns
