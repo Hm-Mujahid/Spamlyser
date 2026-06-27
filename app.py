@@ -100,6 +100,7 @@ import numpy as np
 from typing import Dict, List, Tuple, Any, Optional
 from io import StringIO
 import torch
+torch.classes.__path__ = []
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 from collections import defaultdict # Added for easier analytics data aggregation
 
