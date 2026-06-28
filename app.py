@@ -1390,66 +1390,161 @@ def show_analyzer_page():
                         help="Choose the format for the analysis report",
                     )
 
-                # Process button
-                if st.button(
-                    "🚀 Start Batch Processing",
-                    type="primary",
-                    use_container_width=True,
+                # Session state for non-blocking batch processing
+                if "batch_queue" not in st.session_state:
+                    st.session_state.batch_queue = []
+                    st.session_state.batch_results = []
+                    st.session_state.batch_processing = False
+                    st.session_state.batch_cancel = False
+                    st.session_state.batch_processed = 0
+                    st.session_state.batch_spam = 0
+                    st.session_state.batch_ham = 0
+                    st.session_state.batch_confidence = 0.0
+                    st.session_state.batch_start = None
+                    st.session_state.batch_report_format = "csv"
+
+                # Progress and control area (always rendered)
+                ctrl_col1, ctrl_col2 = st.columns([3, 1])
+
+                with ctrl_col1:
+                    status_placeholder = st.empty()
+                with ctrl_col2:
+                    cancel_placeholder = st.empty()
+
+                # Cancel button — visible and clickable whenever processing is active
+                if st.session_state.batch_processing:
+                    with cancel_placeholder:
+                        if st.button(
+                            "❌ Cancel Processing",
+                            type="secondary",
+                            use_container_width=True,
+                        ):
+                            st.session_state.batch_cancel = True
+
+                # Process ONE message per script run (non-blocking)
+                if (
+                    st.session_state.batch_processing
+                    and not st.session_state.batch_cancel
+                    and st.session_state.batch_queue
                 ):
-                    import time
-
-                    # Initialize processing
-                    len(df)
-                    results = []
-
-                    status_text.text("⚡ Initializing batch processing...")
-                    time.sleep(1)  # Simulate initialization
-
-                    # Initialize batch processor
                     from models.batch_processor import BatchProcessor
 
                     processor = BatchProcessor()
 
-                    # Process all messages
-                    def update_progress(progress):
-                        nonlocal \
-                            processed_count, \
-                            spam_count, \
-                            ham_count, \
-                            total_confidence
-                        current_stats = processor.batch_stats
+                    msg = st.session_state.batch_queue.pop(0)
+                    result = processor.process_message(msg)
+                    st.session_state.batch_results.append(result)
 
-                        # Update counts
-                        processed_count = current_stats["processed_messages"]
-                        spam_count = current_stats["spam_detected"]
-                        ham_count = current_stats["ham_detected"]
-                        total_confidence = (
-                            current_stats["avg_confidence"] * processed_count
+                    n = len(st.session_state.batch_results)
+                    st.session_state.batch_processed = n
+                    total = st.session_state.batch_processed + len(
+                        st.session_state.batch_queue
+                    )
+
+                    if (
+                        result["ensemble_predictions"]["majority_voting"]["label"]
+                        == "SPAM"
+                    ):
+                        st.session_state.batch_spam += 1
+                    else:
+                        st.session_state.batch_ham += 1
+
+                    prev = n - 1
+                    st.session_state.batch_confidence = (
+                        st.session_state.batch_confidence * prev
+                        + result["ensemble_predictions"]["majority_voting"][
+                            "confidence"
+                        ]
+                    ) / n
+
+                    # Progress bar updates
+                    progress = st.session_state.batch_processed / total
+                    progress_bar.progress(progress)
+                    status_placeholder.markdown(
+                        f"✨ Processing message {st.session_state.batch_processed} of {total}..."
+                    )
+
+                    elapsed = (
+                        datetime.now() - st.session_state.batch_start
+                    ).total_seconds()
+                    if elapsed > 0:
+                        speed = st.session_state.batch_processed / elapsed
+                        speed_metric.metric("Speed", f"{speed:.1f} msg/s")
+                        if progress > 0:
+                            remaining = elapsed / progress - elapsed
+                            time_metric.metric("Remaining", f"{remaining:.1f}s")
+
+                    processed_metric.metric(
+                        "Processed",
+                        f"{st.session_state.batch_processed}/{total}",
+                    )
+                    if st.session_state.batch_processed > 0:
+                        spam_metric.metric(
+                            "Spam",
+                            f"{st.session_state.batch_spam} ({st.session_state.batch_spam / st.session_state.batch_processed * 100:.1f}%)",
+                        )
+                        ham_metric.metric(
+                            "Ham",
+                            f"{st.session_state.batch_ham} ({st.session_state.batch_ham / st.session_state.batch_processed * 100:.1f}%)",
+                        )
+                        confidence_metric.metric(
+                            "Avg Confidence",
+                            f"{st.session_state.batch_confidence:.2%}",
                         )
 
-                        # Update all metrics
-                        update_metrics(progress)
+                    # Continue with next message or finish
+                    if st.session_state.batch_queue:
+                        st.rerun()
+                    else:
+                        st.session_state.batch_processing = False
+                        status_placeholder.markdown(
+                            f"✅ Processed all {st.session_state.batch_processed} messages."
+                        )
+                # Handle cancelled or completed state — show results
+                if (
+                    not st.session_state.batch_processing
+                    and st.session_state.batch_results
+                ):
+                    results = st.session_state.batch_results
+                    stats = {
+                        "total_messages": len(results),
+                        "processed_messages": len(results),
+                        "spam_detected": st.session_state.batch_spam,
+                        "ham_detected": st.session_state.batch_ham,
+                        "avg_confidence": st.session_state.batch_confidence,
+                        "processing_time": (
+                            datetime.now() - st.session_state.batch_start
+                        ).total_seconds()
+                        if st.session_state.batch_start
+                        else 0.0,
+                        "messages_per_second": 0.0,
+                    }
+                    if stats["processing_time"] > 0:
+                        stats["messages_per_second"] = (
+                            stats["total_messages"] / stats["processing_time"]
+                        )
 
-                    messages = [
-                        strip_html_unsafe(str(m))[:1000] for m in df["message"].tolist()
-                    ]
-                    results, stats = processor.process_batch(
-                        messages=messages,
-                        batch_size=batch_size,
-                        progress_callback=update_progress,
-                    )
+                    from models.batch_processor import BatchProcessor
 
-                    # Generate detailed report using the batch processor
+                    processor = BatchProcessor()
                     results_df = processor.generate_report(
-                        results, format=report_format.lower()
+                        results,
+                        format=st.session_state.batch_report_format,
                     )
 
-                    # Add timestamp to filename
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-                    # Generate downloadable report with summary statistics
-                    if report_format == "CSV":
-                        # Add summary statistics as comments at the top of CSV
+                    if st.session_state.batch_cancel:
+                        cancelled_msg = (
+                            f"{st.session_state.batch_processed} messages "
+                            f"(cancelled, {len(results)} retained)"
+                        )
+                        st.warning(f"⏹️ Processing cancelled. {cancelled_msg}.")
+                    else:
+                        st.success("✅ Batch processing completed successfully!")
+
+                    # Generate downloadable report
+                    if st.session_state.batch_report_format == "csv":
                         summary = f"""# Spamlyser Pro - Batch Analysis Report
 # Generated: {timestamp}
 # Total Messages: {stats["total_messages"]}
@@ -1463,17 +1558,16 @@ def show_analyzer_page():
                         report = summary + results_df.to_csv(index=False)
                         filename = f"spamlyser_analysis_report_{timestamp}.csv"
                         mime = "text/csv"
-                    else:  # Excel
+                    else:
                         from io import BytesIO
 
                         output = BytesIO()
                         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-                            # Write main results
                             results_df.to_excel(
-                                writer, sheet_name="Analysis Results", index=False
+                                writer,
+                                sheet_name="Analysis Results",
+                                index=False,
                             )
-
-                            # Create summary sheet
                             summary_df = pd.DataFrame(
                                 [
                                     ["Total Messages", stats["total_messages"]],
@@ -1504,12 +1598,9 @@ def show_analyzer_page():
                                 ],
                                 columns=["Metric", "Value"],
                             )
-
                             summary_df.to_excel(
                                 writer, sheet_name="Summary", index=False
                             )
-
-                            # Get workbook and add formats
                             workbook = writer.book
                             header_format = workbook.add_format(
                                 {
@@ -1518,14 +1609,10 @@ def show_analyzer_page():
                                     "font_color": "white",
                                 }
                             )
-
-                            # Format Analysis Results sheet
                             worksheet = writer.sheets["Analysis Results"]
                             for col_num, value in enumerate(results_df.columns.values):
                                 worksheet.write(0, col_num, value, header_format)
                                 worksheet.set_column(col_num, col_num, 15)
-
-                            # Format Summary sheet
                             worksheet = writer.sheets["Summary"]
                             worksheet.set_column("A:A", 20)
                             worksheet.set_column("B:B", 40)
@@ -1536,8 +1623,6 @@ def show_analyzer_page():
                         filename = f"spamlyser_analysis_report_{timestamp}.xlsx"
                         mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
-                    # Show completion message and download button
-                    st.success("✅ Batch processing completed successfully!")
                     st.download_button(
                         "📥 Download Analysis Report",
                         data=report,
@@ -1546,11 +1631,33 @@ def show_analyzer_page():
                         use_container_width=True,
                     )
 
-                    # Clear progress indicators
-                    progress_bar.empty()
-                    status_text.empty()
+                # Start button (only when NOT processing)
+                if not st.session_state.batch_processing:
+                    if st.button(
+                        "🚀 Start Batch Processing",
+                        type="primary",
+                        use_container_width=True,
+                    ):
+                        st.session_state.batch_queue = [
+                            strip_html_unsafe(str(m))[:1000]
+                            for m in df["message"].tolist()
+                        ]
+                        st.session_state.batch_results = []
+                        st.session_state.batch_processing = True
+                        st.session_state.batch_cancel = False
+                        st.session_state.batch_processed = 0
+                        st.session_state.batch_spam = 0
+                        st.session_state.batch_ham = 0
+                        st.session_state.batch_confidence = 0.0
+                        st.session_state.batch_start = datetime.now()
+                        st.session_state.batch_report_format = report_format.lower()
+                        st.rerun()
 
-                    # Show detailed analysis results
+                # Show detailed analysis results — results and stats are in scope from the block above
+                if (
+                    not st.session_state.batch_processing
+                    and st.session_state.batch_results
+                ):
                     st.markdown("### 📊 Analysis Results")
 
                     # Convert results to DataFrame for analysis

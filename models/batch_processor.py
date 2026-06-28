@@ -3,7 +3,7 @@ Module for handling batch processing of SMS messages using ensemble models.
 """
 
 import pandas as pd
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple, Optional, Generator
 from concurrent.futures import ThreadPoolExecutor
 from .ensemble_classifier_method import EnsembleSpamClassifier, ModelPerformanceTracker
 from datetime import datetime
@@ -196,6 +196,105 @@ class BatchProcessor:
         )
 
         return results, self.batch_stats
+
+    def process_batch_generator(
+        self,
+        messages: List[str],
+        cancel_check: Optional[callable] = None,
+    ) -> Generator[Dict[str, Any], None, None]:
+        """
+        Generator that processes messages sequentially and yields real-time
+        progress updates.  Supports cancellation via a callable that returns
+        ``True`` when processing should stop.
+
+        Args:
+            messages: List of SMS messages to analyze
+            cancel_check: Optional callable checked before each message;
+                          return ``True`` to cancel
+
+        Yields:
+            Dict with keys:
+                - progress (float): 0.0 to 1.0
+                - processed (int)
+                - total (int)
+                - current_message (str)
+                - spam_count (int)
+                - ham_count (int)
+                - avg_confidence (float)
+                - cancelled (bool) — ``True`` on the final yield if cancelled
+
+        Side effects:
+            Sets ``self.last_results`` and ``self.batch_stats`` so callers
+            can retrieve partial/final results after iteration.
+        """
+        self.batch_stats["total_messages"] = len(messages)
+        self.batch_stats["processed_messages"] = 0
+        self.batch_stats["spam_detected"] = 0
+        self.batch_stats["ham_detected"] = 0
+        self.batch_stats["avg_confidence"] = 0.0
+        self.batch_stats["start_time"] = datetime.now()
+
+        self.last_results: List[Dict[str, Any]] = []
+
+        if not messages:
+            self.batch_stats["end_time"] = self.batch_stats["start_time"]
+            self.batch_stats["processing_time"] = 0.0
+            self.batch_stats["messages_per_second"] = 0.0
+            return
+
+        for message in messages:
+            if cancel_check and cancel_check():
+                self.batch_stats["cancelled"] = True
+                yield {
+                    "progress": self.batch_stats["processed_messages"]
+                    / self.batch_stats["total_messages"],
+                    "processed": self.batch_stats["processed_messages"],
+                    "total": self.batch_stats["total_messages"],
+                    "current_message": message,
+                    "spam_count": self.batch_stats["spam_detected"],
+                    "ham_count": self.batch_stats["ham_detected"],
+                    "avg_confidence": self.batch_stats["avg_confidence"],
+                    "cancelled": True,
+                }
+                break
+
+            result = self.process_message(message)
+            self.last_results.append(result)
+
+            self.batch_stats["processed_messages"] += 1
+            if result["ensemble_predictions"]["majority_voting"]["label"] == "SPAM":
+                self.batch_stats["spam_detected"] += 1
+            else:
+                self.batch_stats["ham_detected"] += 1
+
+            prev = self.batch_stats["processed_messages"] - 1
+            self.batch_stats["avg_confidence"] = (
+                self.batch_stats["avg_confidence"] * prev
+                + result["ensemble_predictions"]["majority_voting"]["confidence"]
+            ) / self.batch_stats["processed_messages"]
+
+            yield {
+                "progress": self.batch_stats["processed_messages"]
+                / self.batch_stats["total_messages"],
+                "processed": self.batch_stats["processed_messages"],
+                "total": self.batch_stats["total_messages"],
+                "current_message": message,
+                "spam_count": self.batch_stats["spam_detected"],
+                "ham_count": self.batch_stats["ham_detected"],
+                "avg_confidence": self.batch_stats["avg_confidence"],
+                "cancelled": False,
+            }
+
+        self.batch_stats["end_time"] = datetime.now()
+        processing_time = (
+            self.batch_stats["end_time"] - self.batch_stats["start_time"]
+        ).total_seconds()
+        self.batch_stats["processing_time"] = processing_time
+        self.batch_stats["messages_per_second"] = (
+            self.batch_stats["total_messages"] / processing_time
+            if processing_time > 0
+            else 0.0
+        )
 
     def generate_report(
         self, results: List[Dict[str, Any]], format: str = "csv"
