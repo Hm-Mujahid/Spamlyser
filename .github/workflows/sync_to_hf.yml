@@ -3,7 +3,6 @@ name: Sync to Hugging Face Hub
 on:
   push:
     branches: [master]
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -13,9 +12,26 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          lfs: true
-      - name: Push to hub
+      - name: Deploy to Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git push https://mreccentric:$HF_TOKEN@huggingface.co/spaces/mreccentric/Spamlyser master:main --force
+          # Configure Git for the runner
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          
+          # Remove cache files so they don't get pushed
+          find . -type d -name "__pycache__" -exec rm -rf {} + || true
+          
+          # Explicitly track binary images with LFS before committing
+          git lfs install
+          git lfs track "*.png" "*.jpeg" "*.jpg"
+          git add .gitattributes
+          git add imgs/
+          
+          # Create a detached, history-less branch
+          git checkout --orphan hf-deploy
+          git commit -m "Deploy to Hugging Face Space"
+          
+          # Force push only this single squashed commit to Hugging Face
+          git push https://mreccentric:$HF_TOKEN@huggingface.co/spaces/mreccentric/Spamlyser HEAD:main --force
