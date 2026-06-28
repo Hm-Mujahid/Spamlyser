@@ -4,6 +4,7 @@ Tests for BatchProcessor.process_batch ZeroDivisionError guards (issue #13).
 These tests use a lightweight fake ensemble classifier so they run headless on
 CI without loading any transformer models.
 """
+
 import sys
 import os
 import types
@@ -46,7 +47,11 @@ class _FakeEnsemble:
 
     def get_all_predictions(self, predictions):
         return {
-            "majority_voting": {"label": "HAM", "confidence": 0.1, "spam_probability": 0.1}
+            "majority_voting": {
+                "label": "HAM",
+                "confidence": 0.1,
+                "spam_probability": 0.1,
+            }
         }
 
 

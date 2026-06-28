@@ -9,6 +9,7 @@ import re
 
 RULES_FILE = "custom_rules.json"
 
+
 def load_custom_rules():
     if not os.path.exists(RULES_FILE):
         # Default empty structure if file doesn't exist
@@ -19,6 +20,7 @@ def load_custom_rules():
     except Exception:
         return {"allowlist": [], "blocklist": []}
 
+
 def save_custom_rules(rules):
     try:
         with open(RULES_FILE, "w", encoding="utf-8") as f:
@@ -26,6 +28,7 @@ def save_custom_rules(rules):
         return True
     except Exception:
         return False
+
 
 def check_custom_rules(text: str) -> str:
     """
@@ -36,12 +39,12 @@ def check_custom_rules(text: str) -> str:
         None if no match.
     """
     rules = load_custom_rules()
-    
+
     # 1. Check Allowlist (Domains/Keywords)
     for domain in rules.get("allowlist", []):
         if domain.strip() and domain.lower() in text.lower():
             return "HAM"
-            
+
     # 2. Check Blocklist (Regexes/Keywords)
     for pattern_str in rules.get("blocklist", []):
         if pattern_str.strip():
@@ -52,5 +55,5 @@ def check_custom_rules(text: str) -> str:
                     return "SPAM"
             except Exception:
                 continue
-                
+
     return None

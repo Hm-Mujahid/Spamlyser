@@ -1,5 +1,4 @@
 import re
-from typing import List
 
 ABBREVIATIONS = {
     "u": "you",
@@ -17,26 +16,22 @@ ABBREVIATIONS = {
     "idk": "I don't know",
     "omg": "oh my god",
     "ttyl": "talk to you later",
-    "asap": "as soon as possible"
+    "asap": "as soon as possible",
 }
-LEETSPEAK = {
-    "0": "o",
-    "1": "i",
-    "3": "e",
-    "4": "a",
-    "5": "s",
-    "7": "t"
-}
+LEETSPEAK = {"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t"}
+
 
 def expand_abbreviations(text: str) -> str:
     words = text.split()
     expanded = [ABBREVIATIONS.get(w.lower(), w) for w in words]
     return " ".join(expanded)
 
+
 def correct_leetspeak(text: str) -> str:
     for k, v in LEETSPEAK.items():
         text = re.sub(rf"{k}", v, text)
     return text
+
 
 def count_suspicious_elements(text: str) -> dict:
     suspicious = {
@@ -47,14 +42,13 @@ def count_suspicious_elements(text: str) -> dict:
     }
     return suspicious
 
+
 def preprocess_message(text: str) -> dict:
     cleaned = expand_abbreviations(text)
     cleaned = correct_leetspeak(cleaned)
     suspicious = count_suspicious_elements(cleaned)
-    return {
-        "cleaned": cleaned,
-        "suspicious": suspicious
-    }
+    return {"cleaned": cleaned, "suspicious": suspicious}
+
 
 # Example usage
 if __name__ == "__main__":

@@ -3,19 +3,20 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # --- Streamlit Page Configuration ---
 st.set_page_config(
     page_title="Spamlyser Pro - Ensemble Edition",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 # Load unified global styles
 try:
     from page_functions import load_global_styles
+
     load_global_styles()
 except Exception:
     pass
@@ -23,123 +24,193 @@ except Exception:
 # Initialize models and check availability
 try:
     from models.model_init import MODEL_STATUS
+
     if not MODEL_STATUS:
-        st.warning("⚠️ Some AI models may not be fully available. Basic functionality will still work, but advanced features may be limited.")
+        st.warning(
+            "⚠️ Some AI models may not be fully available. Basic functionality will still work, but advanced features may be limited."
+        )
 except ImportError:
     st.warning("⚠️ Model initialization module not found. Some features may be limited.")
 
 # Import required model components with error handling
 try:
-    from models.export_feature import export_results_button 
-    from models.threat_analyzer import classify_threat_type, get_threat_specific_advice, THREAT_CATEGORIES
+    from models.export_feature import export_results_button
+    from models.threat_analyzer import (
+        classify_threat_type,
+        get_threat_specific_advice,
+        THREAT_CATEGORIES,
+    )
     from models.word_analyzer import WordAnalyzer
     from models.label_normalizer import normalize_label
 except ImportError as e:
     st.error(f"Error importing model components: {str(e)}")
-    st.info("Please ensure all required model files are present in the models directory.")
+    st.info(
+        "Please ensure all required model files are present in the models directory."
+    )
 # from ensemble_classifier_method import EnsembleSpamClassifier, ModelPerformanceTracker, PredictionResult
 # Dummy classes if you don't have the actual files for testing
 try:
-    from models.ensemble_classifier_method import EnsembleSpamClassifier, ModelPerformanceTracker, PredictionResult
+    from models.ensemble_classifier_method import (
+        EnsembleSpamClassifier,
+        ModelPerformanceTracker,
+        PredictionResult,
+    )
 except ImportError:
-    st.warning("`ensemble_classifier_method.py` not found. Using dummy classes. Please provide the actual file for full functionality.")
+    st.warning(
+        "`ensemble_classifier_method.py` not found. Using dummy classes. Please provide the actual file for full functionality."
+    )
+
     class PredictionResult:
         def __init__(self, label, score, spam_probability=None):
             self.label = label
             self.score = score
             self.spam_probability = spam_probability
+
     class ModelPerformanceTracker:
         def __init__(self):
             self.stats = {}
-        def update_performance(self, model_name, correct): pass
-        def get_all_stats(self): return {}
-        def save_to_file(self, filename): pass
+
+        def update_performance(self, model_name, correct):
+            pass
+
+        def get_all_stats(self):
+            return {}
+
+        def save_to_file(self, filename):
+            pass
+
     class EnsembleSpamClassifier:
         def __init__(self, performance_tracker):
             self.performance_tracker = performance_tracker
-            self.default_weights = {"DistilBERT": 0.25, "BERT": 0.25, "RoBERTa": 0.25, "ALBERT": 0.25}
+            self.default_weights = {
+                "DistilBERT": 0.25,
+                "BERT": 0.25,
+                "RoBERTa": 0.25,
+                "ALBERT": 0.25,
+            }
             self.model_weights = self.default_weights.copy()
-        def update_model_weights(self, weights): self.model_weights.update(weights)
-        def get_model_weights(self): return self.model_weights
+
+        def update_model_weights(self, weights):
+            self.model_weights.update(weights)
+
+        def get_model_weights(self):
+            return self.model_weights
+
         def get_ensemble_prediction(self, predictions, method):
             # Dummy implementation for ensemble prediction
             if not predictions:
-                return {'label': 'UNKNOWN', 'confidence': 0.0, 'spam_probability': 0.0, 'method': method, 'details': 'No model predictions'}
-            
+                return {
+                    "label": "UNKNOWN",
+                    "confidence": 0.0,
+                    "spam_probability": 0.0,
+                    "method": method,
+                    "details": "No model predictions",
+                }
+
             # Simple majority voting for dummy
-            spam_votes = sum(1 for p in predictions.values() if p['label'] == 'SPAM')
-            ham_votes = sum(1 for p in predictions.values() if p['label'] == 'HAM')
-            
+            spam_votes = sum(1 for p in predictions.values() if p["label"] == "SPAM")
+            ham_votes = sum(1 for p in predictions.values() if p["label"] == "HAM")
+
             if spam_votes > ham_votes:
-                label = 'SPAM'
-                score = sum(p['score'] for p in predictions.values() if p['label'] == 'SPAM') / spam_votes if spam_votes else 0
-                spam_prob = score # Simplified
+                label = "SPAM"
+                score = (
+                    sum(
+                        p["score"] for p in predictions.values() if p["label"] == "SPAM"
+                    )
+                    / spam_votes
+                    if spam_votes
+                    else 0
+                )
+                spam_prob = score  # Simplified
             elif ham_votes > spam_votes:
-                label = 'HAM'
-                score = sum(p['score'] for p in predictions.values() if p['label'] == 'HAM') / ham_votes if ham_votes else 0
-                spam_prob = 1 - score # Simplified
-            else: # Tie or no clear majority, default to HAM for safety or SPAM for caution
-                label = 'HAM' 
+                label = "HAM"
+                score = (
+                    sum(p["score"] for p in predictions.values() if p["label"] == "HAM")
+                    / ham_votes
+                    if ham_votes
+                    else 0
+                )
+                spam_prob = 1 - score  # Simplified
+            else:  # Tie or no clear majority, default to HAM for safety or SPAM for caution
+                label = "HAM"
                 score = 0.5
                 spam_prob = 0.5
-            return {'label': label, 'confidence': score, 'spam_probability': spam_prob, 'method': method, 'details': f'Dummy {method} applied'}
-        
+            return {
+                "label": label,
+                "confidence": score,
+                "spam_probability": spam_prob,
+                "method": method,
+                "details": f"Dummy {method} applied",
+            }
+
         def get_all_predictions(self, predictions):
             # Dummy method to return results for all ensemble methods
             dummy_results = {}
-            for method_key in ["majority_voting", "weighted_average", "confidence_weighted", "adaptive_threshold", "meta_ensemble"]:
-                dummy_results[method_key] = self.get_ensemble_prediction(predictions, method_key)
+            for method_key in [
+                "majority_voting",
+                "weighted_average",
+                "confidence_weighted",
+                "adaptive_threshold",
+                "meta_ensemble",
+            ]:
+                dummy_results[method_key] = self.get_ensemble_prediction(
+                    predictions, method_key
+                )
             return dummy_results
-        
+
+
 # Core Python imports
 import time
 import re
-from datetime import datetime
-from pathlib import Path
-import numpy as np
-from typing import Dict, List, Tuple, Any, Optional
+from typing import List
 from io import StringIO
 import torch
+
 torch.classes.__path__ = []
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
-from collections import defaultdict # Added for easier analytics data aggregation
+from collections import defaultdict  # Added for easier analytics data aggregation
 
 # Import navigation component
 try:
     from models.navigation import top_navigation_bar
 except ImportError:
+
     def top_navigation_bar():
         pass  # Silent fallback
 
+
 # --- Session State Initialization ---
 # Initialize all session state variables
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = 'home'
-    
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "home"
+
+
 # Navigation function
 def navigate_to(page_name):
     """Function to navigate to different pages"""
     st.session_state.current_page = page_name
     st.rerun()
 
+
 # Page registry for navigation
 PAGES = {
-    'home': '🏠 Home',
-    'analyzer': '🔍 SMS Analyzer',
-    'about': 'ℹ️ About',
-    'features': '⚡ Features',
-    'analytics': '📊 Analytics',
-    'models': '🤖 Models',
-    'feedback': '💬 Feedback',
-    'help': '❓ Help',
-    'contact': '📞 Contact',
-    'docs': '📚 Docs',
-    'api': '🔌 API',
-    'settings': '⚙️ Settings'
+    "home": "🏠 Home",
+    "analyzer": "🔍 SMS Analyzer",
+    "about": "ℹ️ About",
+    "features": "⚡ Features",
+    "analytics": "📊 Analytics",
+    "models": "🤖 Models",
+    "feedback": "💬 Feedback",
+    "help": "❓ Help",
+    "contact": "📞 Contact",
+    "docs": "📚 Docs",
+    "api": "🔌 API",
+    "settings": "⚙️ Settings",
 }
 
 # --- Custom CSS for Styling ---
-st.markdown("""
+st.markdown(
+    """
 <style>
     /* Theme-aware base styles */
     :root {
@@ -679,10 +750,13 @@ st.markdown("""
         box-shadow: 0 0 10px rgba(78, 205, 196, 0.5) !important;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Add JavaScript for button click styling
-st.markdown("""
+st.markdown(
+    """
 <script>
 function handleNavClick(buttonId) {
     // Remove clicked class from all nav buttons
@@ -697,15 +771,17 @@ function handleNavClick(buttonId) {
     }
 }
 </script>
-""", unsafe_allow_html=True)
-
+""",
+    unsafe_allow_html=True,
+)
 
 
 # --- Page Functions ---
 def show_home_page():
     """Beautiful and comprehensive home page"""
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -742,37 +818,51 @@ def show_home_page():
             Protect yourself from malicious SMS messages using cutting-edge machine learning models and ensemble AI technology.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Quick Action Buttons
     st.markdown("### 🚀 Quick Actions")
     col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
-    
+
     with col_btn1:
-        if st.button("🔍 Start Analysis", type="primary", use_container_width=True, help="Analyze SMS messages for threats"):
-            navigate_to('analyzer')
-    
+        if st.button(
+            "🔍 Start Analysis",
+            type="primary",
+            use_container_width=True,
+            help="Analyze SMS messages for threats",
+        ):
+            navigate_to("analyzer")
+
     with col_btn2:
-        if st.button("📊 Analytics", use_container_width=True, help="View performance metrics"):
-            navigate_to('analytics')
-    
+        if st.button(
+            "📊 Analytics", use_container_width=True, help="View performance metrics"
+        ):
+            navigate_to("analytics")
+
     with col_btn3:
-        if st.button("⚡ Features", use_container_width=True, help="Explore all features"):
-            navigate_to('features')
-    
+        if st.button(
+            "⚡ Features", use_container_width=True, help="Explore all features"
+        ):
+            navigate_to("features")
+
     with col_btn4:
-        if st.button("ℹ️ About", use_container_width=True, help="Learn more about Spamlyser"):
-            navigate_to('about')
-    
+        if st.button(
+            "ℹ️ About", use_container_width=True, help="Learn more about Spamlyser"
+        ):
+            navigate_to("about")
+
     st.markdown("---")
-    
+
     # Feature Showcase
     st.markdown("### 🌟 Why Choose Spamlyser Pro?")
-    
+
     col1, col2 = st.columns(2)
-    
+
     with col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
             padding: 25px;
@@ -786,9 +876,12 @@ def show_home_page():
                 for maximum accuracy in threat detection.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
+        """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             padding: 25px;
@@ -802,10 +895,13 @@ def show_home_page():
                 in milliseconds with our optimized AI pipeline.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
             padding: 25px;
@@ -819,9 +915,12 @@ def show_home_page():
                 and social engineering attack detection.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
+        """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
             padding: 25px;
@@ -835,36 +934,39 @@ def show_home_page():
                 in multiple formats for comprehensive analysis.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     st.markdown("---")
-    
+
     # Statistics Section
     st.markdown("### 📈 Platform Statistics")
-    
+
     metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
-    
+
     with metric_col1:
         st.metric("🎯 Accuracy", "97.8%", "+2.1%")
-    
+
     with metric_col2:
         st.metric("⚡ Speed", "< 100ms", "-15ms")
-    
+
     with metric_col3:
         st.metric("🛡️ Threats Blocked", "10M+", "+2.3M")
-    
+
     with metric_col4:
         st.metric("🤖 AI Models", "4", "+1")
-    
+
     st.markdown("---")
-    
+
     # How It Works Section
     st.markdown("### 🎯 How Spamlyser Pro Works")
-    
+
     step_col1, step_col2, step_col3, step_col4 = st.columns(4)
-    
+
     with step_col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="text-align: center; padding: 20px;">
             <div style="
                 width: 80px; 
@@ -882,10 +984,13 @@ def show_home_page():
             <h4 style="color: #667eea; margin: 0 0 10px 0;">Step 1</h4>
             <p style="margin: 0; font-size: 0.9rem; opacity: 0.8;">Input SMS Message</p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with step_col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="text-align: center; padding: 20px;">
             <div style="
                 width: 80px; 
@@ -903,10 +1008,13 @@ def show_home_page():
             <h4 style="color: #ff9a9e; margin: 0 0 10px 0;">Step 2</h4>
             <p style="margin: 0; font-size: 0.9rem; opacity: 0.8;">AI Analysis</p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with step_col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="text-align: center; padding: 20px;">
             <div style="
                 width: 80px; 
@@ -924,10 +1032,13 @@ def show_home_page():
             <h4 style="color: #a8edea; margin: 0 0 10px 0;">Step 3</h4>
             <p style="margin: 0; font-size: 0.9rem; opacity: 0.8;">Threat Detection</p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with step_col4:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="text-align: center; padding: 20px;">
             <div style="
                 width: 80px; 
@@ -945,11 +1056,14 @@ def show_home_page():
             <h4 style="color: #ffecd2; margin: 0 0 10px 0;">Step 4</h4>
             <p style="margin: 0; font-size: 0.9rem; opacity: 0.8;">Results & Report</p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Feedback Section
     st.markdown("---")
-    st.markdown("""
+    st.markdown(
+        """
     <div id="feedback-section" style="text-align: center; margin-bottom: 30px;">
         <h2 style="color: #00d4aa; font-size: 2.2rem; margin-bottom: 10px;">
             💬 Your Feedback Matters!
@@ -958,21 +1072,25 @@ def show_home_page():
             Help us improve Spamlyser by sharing your thoughts and suggestions
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Feedback Form
     with st.container():
         feedback_col1, feedback_col2 = st.columns([2, 1])
-        
+
         with feedback_col1:
             # Initialize session state for feedback
-            if 'feedback_submitted' not in st.session_state:
+            if "feedback_submitted" not in st.session_state:
                 st.session_state.feedback_submitted = False
-            if 'feedback_rating' not in st.session_state:
+            if "feedback_rating" not in st.session_state:
                 st.session_state.feedback_rating = 3
-                
+
             if st.session_state.feedback_submitted:
-                st.success("🎉 Thank you for your feedback! Your input helps make Spamlyser better for everyone.")
+                st.success(
+                    "🎉 Thank you for your feedback! Your input helps make Spamlyser better for everyone."
+                )
                 if st.button("Submit Another Feedback", key="another_feedback"):
                     st.session_state.feedback_submitted = False
                     st.rerun()
@@ -980,65 +1098,74 @@ def show_home_page():
                 with st.form("home_feedback_form"):
                     feedback_type = st.selectbox(
                         "Type of Feedback",
-                        options=["Bug Report", "Feature Request", "Suggestion", "Question", "Compliment", "Other"],
+                        options=[
+                            "Bug Report",
+                            "Feature Request",
+                            "Suggestion",
+                            "Question",
+                            "Compliment",
+                            "Other",
+                        ],
                         index=2,
-                        help="Select the category that best describes your feedback"
+                        help="Select the category that best describes your feedback",
                     )
-                    
+
                     # Experience rating
                     st.markdown("### Rate Your Experience")
-                    
+
                     # Form-compatible star rating using radio buttons
                     rating = st.radio(
                         "How would you rate your experience with Spamlyser?",
                         options=[1, 2, 3, 4, 5],
                         horizontal=True,
-                        index=st.session_state.feedback_rating - 1,  # Convert to 0-based index
+                        index=st.session_state.feedback_rating
+                        - 1,  # Convert to 0-based index
                         format_func=lambda x: "⭐" * x,
                         label_visibility="collapsed",
-                        help="1 = Poor, 5 = Excellent"
+                        help="1 = Poor, 5 = Excellent",
                     )
-                    
+
                     # Update session state with the selected rating
                     st.session_state.feedback_rating = rating
-                    
+
                     # Display star rating with text description
                     rating_labels = {
                         1: "Poor",
                         2: "Fair",
-                        3: "Good", 
+                        3: "Good",
                         4: "Very Good",
-                        5: "Excellent"
+                        5: "Excellent",
                     }
-                    
-                    st.markdown(f"""
+
+                    st.markdown(
+                        f"""
                     <div style="margin: 5px 0 15px 0;">
-                        <p>Your rating: {'⭐' * rating}{'☆' * (5 - rating)} - {rating_labels[rating]}</p>
+                        <p>Your rating: {"⭐" * rating}{"☆" * (5 - rating)} - {rating_labels[rating]}</p>
                     </div>
-                    """, unsafe_allow_html=True)
-                    
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
                     # Detailed feedback
                     feedback_message = st.text_area(
                         "Detailed Feedback",
                         height=120,
                         max_chars=1000,
                         help="Please provide details about your feedback. What worked well? What could be improved?",
-                        placeholder="Share your thoughts, suggestions, or report issues here..."
+                        placeholder="Share your thoughts, suggestions, or report issues here...",
                     )
-                    
+
                     # Optional email for follow-up
                     email = st.text_input(
                         "Email Address (Optional)",
                         help="Provide your email if you'd like us to follow up on your feedback",
-                        placeholder="your.email@example.com (optional)"
+                        placeholder="your.email@example.com (optional)",
                     )
-                    
+
                     submit_button = st.form_submit_button(
-                        "Submit Feedback",
-                        use_container_width=True,
-                        type="primary"
+                        "Submit Feedback", use_container_width=True, type="primary"
                     )
-                    
+
                     if submit_button:
                         if not feedback_message:
                             st.error("Please provide some feedback before submitting.")
@@ -1047,41 +1174,49 @@ def show_home_page():
                             st.session_state.feedback_submitted = True
                             # Store feedback in session state for display purposes
                             # In a real app, you would save this to a database
-                            if 'all_feedback' not in st.session_state:
+                            if "all_feedback" not in st.session_state:
                                 st.session_state.all_feedback = []
-                                
+
                             # Get rating from session state
                             user_rating = st.session_state.feedback_rating
-                                
+
                             # Add to feedback storage
-                            st.session_state.all_feedback.append({
-                                "type": feedback_type,
-                                "rating": user_rating,
-                                "message": feedback_message,
-                                "email": email,
-                                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            })
-                            
+                            st.session_state.all_feedback.append(
+                                {
+                                    "type": feedback_type,
+                                    "rating": user_rating,
+                                    "message": feedback_message,
+                                    "email": email,
+                                    "timestamp": datetime.now().strftime(
+                                        "%Y-%m-%d %H:%M:%S"
+                                    ),
+                                }
+                            )
+
                             # Try to save to file if feedback handler is available
                             try:
                                 from models.feedback_handler import FeedbackHandler
+
                                 feedback_handler = FeedbackHandler()
-                                feedback_handler.save_feedback({
-                                    "feedback_type": feedback_type,
-                                    "rating": user_rating,
-                                    "message": feedback_message,
-                                    "email": email
-                                })
-                            except Exception as e:
+                                feedback_handler.save_feedback(
+                                    {
+                                        "feedback_type": feedback_type,
+                                        "rating": user_rating,
+                                        "message": feedback_message,
+                                        "email": email,
+                                    }
+                                )
+                            except Exception:
                                 # Silently continue if saving to file fails
                                 pass
-                            
+
                             st.session_state.feedback_submitted = True
                             st.session_state.feedback_rating = rating
                             st.rerun()
-        
+
         with feedback_col2:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="background: linear-gradient(135deg, #667eea22 0%, #764ba222 100%); 
                         padding: 20px; border-radius: 10px; height: 100%;">
                 <h3>Why Share Feedback?</h3>
@@ -1095,11 +1230,15 @@ def show_home_page():
                     Your feedback directly influences our development priorities!
                 </p>
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
+
 
 def show_analyzer_page():
     """Main SMS analyzer functionality"""
-    st.markdown("""
+    st.markdown(
+        """
     <div style="text-align: center; padding: 20px 0; background: linear-gradient(90deg, #1a1a1a, #2d2d2d); border-radius: 15px; margin-bottom: 30px; border: 1px solid #404040;">
         <h1 style="color: #00d4aa; font-size: 3rem; margin: 0; text-shadow: 0 0 20px rgba(0, 212, 170, 0.3);">
             🛡️ Spamlyser Pro - Analyzer
@@ -1108,16 +1247,18 @@ def show_analyzer_page():
             Advanced Multi-Model SMS Threat Detection & Analysis Platform
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Analysis Mode Selection
     st.markdown("### 🔍 Choose Analysis Mode")
     analysis_mode = st.radio(
         "Select how you want to analyze messages:",
         ["Single Message Analysis", "Batch Processing (CSV)"],
-        help="Choose between analyzing a single message or processing multiple messages from a CSV file"
+        help="Choose between analyzing a single message or processing multiple messages from a CSV file",
     )
-    
+
     if analysis_mode == "Single Message":
         st.markdown("### 📝 Single Message Analysis")
         # Existing single message analysis code will go here
@@ -1128,18 +1269,18 @@ def show_analyzer_page():
         - Required column: `message` (The SMS text to analyze)
         - Optional columns: `id`, `sender`, `timestamp`
         """)
-        
+
         # File upload section with progress bar
         uploaded_file = st.file_uploader(
             "Choose a CSV file",
             type=["csv"],
-            help="Upload a CSV file containing messages to analyze. Max file size: 200MB"
+            help="Upload a CSV file containing messages to analyze. Max file size: 200MB",
         )
-        
+
         if uploaded_file is not None:
             try:
                 import pandas as pd
-                
+
                 # Create containers for progress tracking
                 progress_container = st.container()
                 with progress_container:
@@ -1152,55 +1293,77 @@ def show_analyzer_page():
                         speed_metric = st.empty()
                     with progress_cols[2]:
                         time_metric = st.empty()
-                    
+
                     # Add detailed metrics containers
                     detail_cols = st.columns(4)
                     processed_metric = detail_cols[0].empty()
                     spam_metric = detail_cols[1].empty()
                     ham_metric = detail_cols[2].empty()
                     confidence_metric = detail_cols[3].empty()
-                
-                # Read and validate CSV
+
+                    # Read and validate CSV
                     df = pd.read_csv(uploaded_file)
-                    if 'message' not in df.columns:
+                    if "message" not in df.columns:
                         st.error("❌ Error: CSV file must contain a 'message' column!")
                         return
-                        
+
                     # Create a callback for updating detailed metrics
                     start_time = datetime.now()
                     processed_count = 0
                     spam_count = 0
                     ham_count = 0
                     total_confidence = 0
-                    
+
                     def update_metrics(progress):
-                        nonlocal processed_count, spam_count, ham_count, total_confidence
-                        
+                        nonlocal \
+                            processed_count, \
+                            spam_count, \
+                            ham_count, \
+                            total_confidence
+
                         # Update progress and status
                         progress_bar.progress(progress)
                         processed_count = int(progress * len(df))
-                        status_text.markdown(f"✨ Processing message {processed_count} of {len(df)}...")
-                        
+                        status_text.markdown(
+                            f"✨ Processing message {processed_count} of {len(df)}..."
+                        )
+
                         # Calculate processing speed and time
                         elapsed_time = (datetime.now() - start_time).total_seconds()
                         if elapsed_time > 0:
                             speed = processed_count / elapsed_time
                             speed_metric.metric("Speed", f"{speed:.1f} msg/s")
-                            
+
                             # Estimate remaining time
                             if progress > 0:
                                 total_time = elapsed_time / progress
                                 remaining_time = total_time - elapsed_time
-                                time_metric.metric("Remaining", f"{remaining_time:.1f}s")
-                        
+                                time_metric.metric(
+                                    "Remaining", f"{remaining_time:.1f}s"
+                                )
+
                         # Update detailed metrics
-                        processed_metric.metric("Processed", f"{processed_count}/{len(df)}")
+                        processed_metric.metric(
+                            "Processed", f"{processed_count}/{len(df)}"
+                        )
                         if processed_count > 0:
-                            spam_metric.metric("Spam", f"{spam_count} ({spam_count/processed_count*100:.1f}%)")
-                            ham_metric.metric("Ham", f"{ham_count} ({ham_count/processed_count*100:.1f}%)")
-                            confidence_metric.metric("Avg Confidence", f"{(total_confidence/processed_count):.2%}")                # Show file statistics
-                st.info(f"📊 File Statistics:\n- Total messages: {len(df)}\n- File size: {uploaded_file.size/1024:.1f} KB")
-                
+                            spam_metric.metric(
+                                "Spam",
+                                f"{spam_count} ({spam_count / processed_count * 100:.1f}%)",
+                            )
+                            ham_metric.metric(
+                                "Ham",
+                                f"{ham_count} ({ham_count / processed_count * 100:.1f}%)",
+                            )
+                            confidence_metric.metric(
+                                "Avg Confidence",
+                                f"{(total_confidence / processed_count):.2%}",
+                            )  # Show file statistics
+
+                st.info(
+                    f"📊 File Statistics:\n- Total messages: {len(df)}\n- File size: {uploaded_file.size / 1024:.1f} KB"
+                )
+
                 # Batch processing options
                 col1, col2 = st.columns(2)
                 with col1:
@@ -1210,69 +1373,81 @@ def show_analyzer_page():
                         max_value=1000,
                         value=100,
                         step=10,
-                        help="Number of messages to process in each batch"
+                        help="Number of messages to process in each batch",
                     )
                 with col2:
                     report_format = st.selectbox(
                         "Report Format",
                         ["CSV", "Excel"],
-                        help="Choose the format for the analysis report"
+                        help="Choose the format for the analysis report",
                     )
-                
+
                 # Process button
-                if st.button("🚀 Start Batch Processing", type="primary", use_container_width=True):
+                if st.button(
+                    "🚀 Start Batch Processing",
+                    type="primary",
+                    use_container_width=True,
+                ):
                     import time
-                    
+
                     # Initialize processing
-                    total_messages = len(df)
-                    processed = 0
+                    len(df)
                     results = []
-                    
+
                     status_text.text("⚡ Initializing batch processing...")
                     time.sleep(1)  # Simulate initialization
-                    
+
                     # Initialize batch processor
                     from models.batch_processor import BatchProcessor
+
                     processor = BatchProcessor()
-                    
+
                     # Process all messages
                     def update_progress(progress):
-                        nonlocal processed_count, spam_count, ham_count, total_confidence
+                        nonlocal \
+                            processed_count, \
+                            spam_count, \
+                            ham_count, \
+                            total_confidence
                         current_stats = processor.batch_stats
-                        
+
                         # Update counts
-                        processed_count = current_stats['processed_messages']
-                        spam_count = current_stats['spam_detected']
-                        ham_count = current_stats['ham_detected']
-                        total_confidence = current_stats['avg_confidence'] * processed_count
-                        
+                        processed_count = current_stats["processed_messages"]
+                        spam_count = current_stats["spam_detected"]
+                        ham_count = current_stats["ham_detected"]
+                        total_confidence = (
+                            current_stats["avg_confidence"] * processed_count
+                        )
+
                         # Update all metrics
                         update_metrics(progress)
-                    
-                    messages = df['message'].tolist()
+
+                    messages = df["message"].tolist()
                     results, stats = processor.process_batch(
                         messages=messages,
                         batch_size=batch_size,
-                        progress_callback=update_progress
+                        progress_callback=update_progress,
                     )
-                    
+
                     # Generate detailed report using the batch processor
-                    results_df = processor.generate_report(results, format=report_format.lower())
-                    
+                    results_df = processor.generate_report(
+                        results, format=report_format.lower()
+                    )
+
                     # Add timestamp to filename
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    
+
                     # Generate downloadable report with summary statistics
                     if report_format == "CSV":
                         # Add summary statistics as comments at the top of CSV
                         summary = f"""# Spamlyser Pro - Batch Analysis Report
 # Generated: {timestamp}
-# Total Messages: {stats['total_messages']}
-# Spam Messages: {stats['spam_detected']} ({stats['spam_detected']/stats['total_messages']*100:.1f}%)
-# Ham Messages: {stats['ham_detected']} ({stats['ham_detected']/stats['total_messages']*100:.1f}%)
-# Average Confidence: {stats['avg_confidence']:.2%}
-# Processing Time: {stats['processing_time']:.2f} seconds
-# Messages/Second: {stats['messages_per_second']:.1f}
+# Total Messages: {stats["total_messages"]}
+# Spam Messages: {stats["spam_detected"]} ({stats["spam_detected"] / stats["total_messages"] * 100:.1f}%)
+# Ham Messages: {stats["ham_detected"]} ({stats["ham_detected"] / stats["total_messages"] * 100:.1f}%)
+# Average Confidence: {stats["avg_confidence"]:.2%}
+# Processing Time: {stats["processing_time"]:.2f} seconds
+# Messages/Second: {stats["messages_per_second"]:.1f}
 #
 """
                         report = summary + results_df.to_csv(index=False)
@@ -1280,51 +1455,77 @@ def show_analyzer_page():
                         mime = "text/csv"
                     else:  # Excel
                         from io import BytesIO
-                        import xlsxwriter
-                        
+
                         output = BytesIO()
-                        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
                             # Write main results
-                            results_df.to_excel(writer, sheet_name='Analysis Results', index=False)
-                            
+                            results_df.to_excel(
+                                writer, sheet_name="Analysis Results", index=False
+                            )
+
                             # Create summary sheet
-                            summary_df = pd.DataFrame([
-                                ['Total Messages', stats['total_messages']],
-                                ['Spam Messages', f"{stats['spam_detected']} ({stats['spam_detected']/stats['total_messages']*100:.1f}%)"],
-                                ['Ham Messages', f"{stats['ham_detected']} ({stats['ham_detected']/stats['total_messages']*100:.1f}%)"],
-                                ['Average Confidence', f"{stats['avg_confidence']:.2%}"],
-                                ['Processing Time', f"{stats['processing_time']:.2f} seconds"],
-                                ['Messages/Second', f"{stats['messages_per_second']:.1f}"],
-                                ['Generated', datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
-                            ], columns=['Metric', 'Value'])
-                            
-                            summary_df.to_excel(writer, sheet_name='Summary', index=False)
-                            
+                            summary_df = pd.DataFrame(
+                                [
+                                    ["Total Messages", stats["total_messages"]],
+                                    [
+                                        "Spam Messages",
+                                        f"{stats['spam_detected']} ({stats['spam_detected'] / stats['total_messages'] * 100:.1f}%)",
+                                    ],
+                                    [
+                                        "Ham Messages",
+                                        f"{stats['ham_detected']} ({stats['ham_detected'] / stats['total_messages'] * 100:.1f}%)",
+                                    ],
+                                    [
+                                        "Average Confidence",
+                                        f"{stats['avg_confidence']:.2%}",
+                                    ],
+                                    [
+                                        "Processing Time",
+                                        f"{stats['processing_time']:.2f} seconds",
+                                    ],
+                                    [
+                                        "Messages/Second",
+                                        f"{stats['messages_per_second']:.1f}",
+                                    ],
+                                    [
+                                        "Generated",
+                                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    ],
+                                ],
+                                columns=["Metric", "Value"],
+                            )
+
+                            summary_df.to_excel(
+                                writer, sheet_name="Summary", index=False
+                            )
+
                             # Get workbook and add formats
                             workbook = writer.book
-                            header_format = workbook.add_format({
-                                'bold': True,
-                                'bg_color': '#667eea',
-                                'font_color': 'white'
-                            })
-                            
+                            header_format = workbook.add_format(
+                                {
+                                    "bold": True,
+                                    "bg_color": "#667eea",
+                                    "font_color": "white",
+                                }
+                            )
+
                             # Format Analysis Results sheet
-                            worksheet = writer.sheets['Analysis Results']
+                            worksheet = writer.sheets["Analysis Results"]
                             for col_num, value in enumerate(results_df.columns.values):
                                 worksheet.write(0, col_num, value, header_format)
                                 worksheet.set_column(col_num, col_num, 15)
-                            
+
                             # Format Summary sheet
-                            worksheet = writer.sheets['Summary']
-                            worksheet.set_column('A:A', 20)
-                            worksheet.set_column('B:B', 40)
+                            worksheet = writer.sheets["Summary"]
+                            worksheet.set_column("A:A", 20)
+                            worksheet.set_column("B:B", 40)
                             for col_num, value in enumerate(summary_df.columns.values):
                                 worksheet.write(0, col_num, value, header_format)
-                        
+
                         report = output.getvalue()
                         filename = f"spamlyser_analysis_report_{timestamp}.xlsx"
                         mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    
+
                     # Show completion message and download button
                     st.success("✅ Batch processing completed successfully!")
                     st.download_button(
@@ -1332,147 +1533,200 @@ def show_analyzer_page():
                         data=report,
                         file_name=filename,
                         mime=mime,
-                        use_container_width=True
+                        use_container_width=True,
                     )
-                    
+
                     # Clear progress indicators
                     progress_bar.empty()
                     status_text.empty()
-                    
+
                     # Show detailed analysis results
                     st.markdown("### 📊 Analysis Results")
-                    
+
                     # Convert results to DataFrame for analysis
                     results_df = pd.DataFrame(results)
-                    
+
                     # Create tabs for different views
-                    tab1, tab2, tab3 = st.tabs(["📈 Overview", "🔍 Detailed Analysis", "⚠️ Risk Analysis"])
-                    
+                    tab1, tab2, tab3 = st.tabs(
+                        ["📈 Overview", "🔍 Detailed Analysis", "⚠️ Risk Analysis"]
+                    )
+
                     with tab1:
                         # Summary metrics
                         col1, col2, col3, col4 = st.columns(4)
                         with col1:
                             st.metric("Total Messages", f"{stats['total_messages']:,}")
                         with col2:
-                            spam_percent = stats['spam_detected']/stats['total_messages']*100
-                            st.metric("Spam Detected", f"{stats['spam_detected']} ({spam_percent:.1f}%)")
+                            spam_percent = (
+                                stats["spam_detected"] / stats["total_messages"] * 100
+                            )
+                            st.metric(
+                                "Spam Detected",
+                                f"{stats['spam_detected']} ({spam_percent:.1f}%)",
+                            )
                         with col3:
-                            st.metric("Processing Time", f"{stats['processing_time']:.1f}s")
+                            st.metric(
+                                "Processing Time", f"{stats['processing_time']:.1f}s"
+                            )
                         with col4:
-                            st.metric("Messages/Second", f"{stats['messages_per_second']:.1f}")
-                        
+                            st.metric(
+                                "Messages/Second", f"{stats['messages_per_second']:.1f}"
+                            )
+
                         # Create visualization of spam vs ham
                         fig = px.pie(
-                            values=[stats['spam_detected'], stats['ham_detected']],
-                            names=['Spam', 'Ham'],
-                            title='Message Classification Distribution',
-                            color_discrete_sequence=['#ff6b6b', '#4ecdc4']
+                            values=[stats["spam_detected"], stats["ham_detected"]],
+                            names=["Spam", "Ham"],
+                            title="Message Classification Distribution",
+                            color_discrete_sequence=["#ff6b6b", "#4ecdc4"],
                         )
                         st.plotly_chart(fig, use_container_width=True)
-                    
+
                     with tab2:
                         # Model performance comparison
                         st.subheader("Model Performance Comparison")
                         model_metrics = []
-                        for model in ['DistilBERT', 'BERT', 'RoBERTa', 'ALBERT']:
+                        for model in ["DistilBERT", "BERT", "RoBERTa", "ALBERT"]:
                             metrics = {
-                                'Model': model,
-                                'Accuracy': sum(1 for r in results if r['model_predictions'][model]['label'] == r['ensemble_predictions']['majority_voting']['label']) / len(results),
-                                'Avg Confidence': sum(r['model_predictions'][model]['score'] for r in results) / len(results)
+                                "Model": model,
+                                "Accuracy": sum(
+                                    1
+                                    for r in results
+                                    if r["model_predictions"][model]["label"]
+                                    == r["ensemble_predictions"]["majority_voting"][
+                                        "label"
+                                    ]
+                                )
+                                / len(results),
+                                "Avg Confidence": sum(
+                                    r["model_predictions"][model]["score"]
+                                    for r in results
+                                )
+                                / len(results),
                             }
                             model_metrics.append(metrics)
-                        
+
                         model_metrics_df = pd.DataFrame(model_metrics)
                         fig = px.bar(
                             model_metrics_df,
-                            x='Model',
-                            y=['Accuracy', 'Avg Confidence'],
-                            title='Model Performance Metrics',
-                            barmode='group'
+                            x="Model",
+                            y=["Accuracy", "Avg Confidence"],
+                            title="Model Performance Metrics",
+                            barmode="group",
                         )
                         st.plotly_chart(fig, use_container_width=True)
-                        
+
                         # Confidence distribution
                         confidence_data = []
                         for result in results:
-                            for model, pred in result['model_predictions'].items():
-                                confidence_data.append({
-                                    'Model': model,
-                                    'Confidence': pred['score']
-                                })
-                        
+                            for model, pred in result["model_predictions"].items():
+                                confidence_data.append(
+                                    {"Model": model, "Confidence": pred["score"]}
+                                )
+
                         confidence_df = pd.DataFrame(confidence_data)
                         fig = px.box(
                             confidence_df,
-                            x='Model',
-                            y='Confidence',
-                            title='Confidence Score Distribution by Model'
+                            x="Model",
+                            y="Confidence",
+                            title="Confidence Score Distribution by Model",
                         )
                         st.plotly_chart(fig, use_container_width=True)
-                    
+
                     with tab3:
                         # Risk indicator analysis
                         st.subheader("Risk Indicators Analysis")
-                        
+
                         # Aggregate risk indicators
                         risk_counts = defaultdict(int)
                         for result in results:
-                            for indicator, present in result['risk_indicators'].items():
+                            for indicator, present in result["risk_indicators"].items():
                                 if present:
                                     risk_counts[indicator] += 1
-                        
+
                         # Create risk indicators chart
-                        risk_df = pd.DataFrame([
-                            {'Indicator': k, 'Count': v, 'Percentage': (v/len(results))*100}
-                            for k, v in risk_counts.items()
-                        ])
-                        
-                        fig = px.bar(
-                            risk_df.sort_values('Count', ascending=False),
-                            x='Indicator',
-                            y='Count',
-                            title='Common Risk Indicators',
-                            text='Percentage',
-                            color='Count',
-                            color_continuous_scale='Reds'
+                        risk_df = pd.DataFrame(
+                            [
+                                {
+                                    "Indicator": k,
+                                    "Count": v,
+                                    "Percentage": (v / len(results)) * 100,
+                                }
+                                for k, v in risk_counts.items()
+                            ]
                         )
-                        fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+
+                        fig = px.bar(
+                            risk_df.sort_values("Count", ascending=False),
+                            x="Indicator",
+                            y="Count",
+                            title="Common Risk Indicators",
+                            text="Percentage",
+                            color="Count",
+                            color_continuous_scale="Reds",
+                        )
+                        fig.update_traces(
+                            texttemplate="%{text:.1f}%", textposition="outside"
+                        )
                         st.plotly_chart(fig, use_container_width=True)
-                        
+
                         # List high-risk messages
                         st.subheader("🚨 High-Risk Messages")
-                        high_risk_threshold = 3  # Messages with 3 or more risk indicators
+                        high_risk_threshold = (
+                            3  # Messages with 3 or more risk indicators
+                        )
                         high_risk_messages = []
-                        
+
                         for result in results:
-                            risk_count = sum(1 for v in result['risk_indicators'].values() if v)
+                            risk_count = sum(
+                                1 for v in result["risk_indicators"].values() if v
+                            )
                             if risk_count >= high_risk_threshold:
-                                high_risk_messages.append({
-                                    'Message': result['message'],
-                                    'Risk Indicators': ', '.join(k for k, v in result['risk_indicators'].items() if v),
-                                    'Spam Probability': result['ensemble_predictions']['majority_voting']['spam_probability']
-                                })
-                        
+                                high_risk_messages.append(
+                                    {
+                                        "Message": result["message"],
+                                        "Risk Indicators": ", ".join(
+                                            k
+                                            for k, v in result[
+                                                "risk_indicators"
+                                            ].items()
+                                            if v
+                                        ),
+                                        "Spam Probability": result[
+                                            "ensemble_predictions"
+                                        ]["majority_voting"]["spam_probability"],
+                                    }
+                                )
+
                         if high_risk_messages:
-                            st.dataframe(pd.DataFrame(high_risk_messages), use_container_width=True)
+                            st.dataframe(
+                                pd.DataFrame(high_risk_messages),
+                                use_container_width=True,
+                            )
                         else:
                             st.info("No high-risk messages detected in this batch.")
-            
+
             except Exception as e:
                 st.error(f"❌ Error processing file: {str(e)}")
-                st.info("Please ensure your CSV file is properly formatted and try again.")
+                st.info(
+                    "Please ensure your CSV file is properly formatted and try again."
+                )
     # The rest of the current main functionality will go here
+
 
 def show_about_page():
     """About page with detailed information"""
-    st.markdown("""
+    st.markdown(
+        """
     <div style="text-align: center; padding: 20px 0; background: linear-gradient(90deg, #1a1a1a, #2d2d2d); border-radius: 15px; margin-bottom: 30px; border: 1px solid #404040;">
         <h1 style="color: #00d4aa; font-size: 3rem; margin: 0; text-shadow: 0 0 20px rgba(0, 212, 170, 0.3);">
             ℹ️ About Spamlyser Pro
         </h1>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     st.markdown("""
     ## 🛡️ About Spamlyser Pro
     
@@ -1498,10 +1752,12 @@ def show_about_page():
     Built with ❤️ by the Spamlyser Pro team using state-of-the-art AI technology.
     """)
 
+
 def show_features_page():
     """Beautiful and interactive features page"""
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -1538,21 +1794,30 @@ def show_features_page():
             Discover the powerful capabilities that make Spamlyser Pro the most advanced SMS threat detection platform available.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Interactive Feature Categories
     st.markdown("### 🎯 Feature Categories")
-    
+
     # Feature tabs using selectbox for better interaction
     feature_category = st.selectbox(
         "Choose a category to explore:",
-        ["🤖 AI & Machine Learning", "🔒 Security & Protection", "📊 Analytics & Reporting", "⚡ Performance & Speed", "🛠️ Tools & Integration"],
-        help="Select different categories to explore specific features"
+        [
+            "🤖 AI & Machine Learning",
+            "🔒 Security & Protection",
+            "📊 Analytics & Reporting",
+            "⚡ Performance & Speed",
+            "🛠️ Tools & Integration",
+        ],
+        help="Select different categories to explore specific features",
     )
-    
+
     # Dynamic content based on selected category
     if feature_category == "🤖 AI & Machine Learning":
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 30px;
@@ -1565,12 +1830,15 @@ def show_features_page():
                 Our ensemble of state-of-the-art transformer models provides unmatched accuracy in SMS threat detection.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: #f8f9fa;
                 padding: 25px;
@@ -1590,9 +1858,12 @@ def show_features_page():
                     • 97.2% accuracy rate
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: #f8f9fa;
                 padding: 25px;
@@ -1612,10 +1883,13 @@ def show_features_page():
                     • 95.8% accuracy rate
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-        
+            """,
+                unsafe_allow_html=True,
+            )
+
         with col2:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: #f8f9fa;
                 padding: 25px;
@@ -1635,9 +1909,12 @@ def show_features_page():
                     • 97.8% accuracy rate
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: #f8f9fa;
                 padding: 25px;
@@ -1657,10 +1934,13 @@ def show_features_page():
                     • 96.9% accuracy rate
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-    
+            """,
+                unsafe_allow_html=True,
+            )
+
     elif feature_category == "🔒 Security & Protection":
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
             padding: 30px;
@@ -1673,10 +1953,12 @@ def show_features_page():
                 Multi-layered protection against various types of SMS-based threats and attacks.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         threat_col1, threat_col2 = st.columns(2)
-        
+
         with threat_col1:
             threats = [
                 {
@@ -1684,42 +1966,43 @@ def show_features_page():
                     "name": "Phishing Detection",
                     "description": "Identifies attempts to steal personal information through deceptive messages",
                     "accuracy": "98.5%",
-                    "color": "#e74c3c"
+                    "color": "#e74c3c",
                 },
                 {
                     "icon": "💰",
                     "name": "Financial Fraud",
                     "description": "Detects scams targeting bank accounts, credit cards, and financial data",
-                    "accuracy": "97.9%", 
-                    "color": "#f39c12"
+                    "accuracy": "97.9%",
+                    "color": "#f39c12",
                 },
                 {
                     "icon": "🦠",
                     "name": "Malware Links",
                     "description": "Scans for malicious URLs that could download harmful software",
                     "accuracy": "99.2%",
-                    "color": "#8e44ad"
-                }
+                    "color": "#8e44ad",
+                },
             ]
-            
+
             for threat in threats:
-                st.markdown(f"""
+                st.markdown(
+                    f"""
                 <div style="
                     background: white;
                     padding: 20px;
                     border-radius: 12px;
                     margin-bottom: 15px;
-                    border-left: 5px solid {threat['color']};
+                    border-left: 5px solid {threat["color"]};
                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 ">
-                    <h4 style="color: {threat['color']}; margin: 0 0 10px 0;">
-                        {threat['icon']} {threat['name']}
+                    <h4 style="color: {threat["color"]}; margin: 0 0 10px 0;">
+                        {threat["icon"]} {threat["name"]}
                     </h4>
                     <p style="margin: 0 0 10px 0; color: #333; line-height: 1.5;">
-                        {threat['description']}
+                        {threat["description"]}
                     </p>
                     <div style="
-                        background: {threat['color']};
+                        background: {threat["color"]};
                         color: white;
                         padding: 5px 10px;
                         border-radius: 20px;
@@ -1727,11 +2010,13 @@ def show_features_page():
                         font-size: 0.9rem;
                         font-weight: bold;
                     ">
-                        Accuracy: {threat['accuracy']}
+                        Accuracy: {threat["accuracy"]}
                     </div>
                 </div>
-                """, unsafe_allow_html=True)
-        
+                """,
+                    unsafe_allow_html=True,
+                )
+
         with threat_col2:
             threats2 = [
                 {
@@ -1739,42 +2024,43 @@ def show_features_page():
                     "name": "Social Engineering",
                     "description": "Identifies psychological manipulation tactics used in SMS attacks",
                     "accuracy": "96.7%",
-                    "color": "#2ecc71"
+                    "color": "#2ecc71",
                 },
                 {
                     "icon": "📱",
                     "name": "SIM Swapping Alerts",
                     "description": "Detects messages related to unauthorized SIM card transfers",
                     "accuracy": "98.1%",
-                    "color": "#3498db"
+                    "color": "#3498db",
                 },
                 {
                     "icon": "🔐",
                     "name": "Identity Theft",
                     "description": "Prevents attempts to gather personal identifying information",
                     "accuracy": "97.3%",
-                    "color": "#34495e"
-                }
+                    "color": "#34495e",
+                },
             ]
-            
+
             for threat in threats2:
-                st.markdown(f"""
+                st.markdown(
+                    f"""
                 <div style="
                     background: white;
                     padding: 20px;
                     border-radius: 12px;
                     margin-bottom: 15px;
-                    border-left: 5px solid {threat['color']};
+                    border-left: 5px solid {threat["color"]};
                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 ">
-                    <h4 style="color: {threat['color']}; margin: 0 0 10px 0;">
-                        {threat['icon']} {threat['name']}
+                    <h4 style="color: {threat["color"]}; margin: 0 0 10px 0;">
+                        {threat["icon"]} {threat["name"]}
                     </h4>
                     <p style="margin: 0 0 10px 0; color: #333; line-height: 1.5;">
-                        {threat['description']}
+                        {threat["description"]}
                     </p>
                     <div style="
-                        background: {threat['color']};
+                        background: {threat["color"]};
                         color: white;
                         padding: 5px 10px;
                         border-radius: 20px;
@@ -1782,13 +2068,16 @@ def show_features_page():
                         font-size: 0.9rem;
                         font-weight: bold;
                     ">
-                        Accuracy: {threat['accuracy']}
+                        Accuracy: {threat["accuracy"]}
                     </div>
                 </div>
-                """, unsafe_allow_html=True)
-    
+                """,
+                    unsafe_allow_html=True,
+                )
+
     elif feature_category == "📊 Analytics & Reporting":
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
             padding: 30px;
@@ -1801,25 +2090,52 @@ def show_features_page():
                 Comprehensive insights and detailed reports to track performance and understand threat patterns.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         # Analytics features with interactive elements
         analytics_features = [
-            {"name": "Real-time Dashboard", "icon": "📈", "desc": "Live monitoring of threat detection performance"},
-            {"name": "Historical Analysis", "icon": "📊", "desc": "Trend analysis and pattern recognition over time"},
-            {"name": "Model Performance", "icon": "🎯", "desc": "Individual and ensemble model accuracy tracking"},
-            {"name": "Threat Intelligence", "icon": "🧠", "desc": "Insights into emerging threat types and patterns"},
-            {"name": "Export Capabilities", "icon": "📤", "desc": "Multiple format exports (CSV, JSON, PDF reports)"},
-            {"name": "Custom Reports", "icon": "📋", "desc": "Tailored reporting for specific business needs"}
+            {
+                "name": "Real-time Dashboard",
+                "icon": "📈",
+                "desc": "Live monitoring of threat detection performance",
+            },
+            {
+                "name": "Historical Analysis",
+                "icon": "📊",
+                "desc": "Trend analysis and pattern recognition over time",
+            },
+            {
+                "name": "Model Performance",
+                "icon": "🎯",
+                "desc": "Individual and ensemble model accuracy tracking",
+            },
+            {
+                "name": "Threat Intelligence",
+                "icon": "🧠",
+                "desc": "Insights into emerging threat types and patterns",
+            },
+            {
+                "name": "Export Capabilities",
+                "icon": "📤",
+                "desc": "Multiple format exports (CSV, JSON, PDF reports)",
+            },
+            {
+                "name": "Custom Reports",
+                "icon": "📋",
+                "desc": "Tailored reporting for specific business needs",
+            },
         ]
-        
+
         for i in range(0, len(analytics_features), 2):
             col1, col2 = st.columns(2)
-            
+
             with col1:
                 if i < len(analytics_features):
                     feature = analytics_features[i]
-                    st.markdown(f"""
+                    st.markdown(
+                        f"""
                     <div style="
                         background: linear-gradient(135deg, #667eea, #764ba2);
                         padding: 25px;
@@ -1829,18 +2145,21 @@ def show_features_page():
                         box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
                     ">
                         <h4 style="margin: 0 0 15px 0;">
-                            {feature['icon']} {feature['name']}
+                            {feature["icon"]} {feature["name"]}
                         </h4>
                         <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
-                            {feature['desc']}
+                            {feature["desc"]}
                         </p>
                     </div>
-                    """, unsafe_allow_html=True)
-            
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
             with col2:
                 if i + 1 < len(analytics_features):
                     feature = analytics_features[i + 1]
-                    st.markdown(f"""
+                    st.markdown(
+                        f"""
                     <div style="
                         background: linear-gradient(135deg, #ff9a9e, #fecfef);
                         padding: 25px;
@@ -1850,16 +2169,19 @@ def show_features_page():
                         box-shadow: 0 5px 15px rgba(255, 154, 158, 0.3);
                     ">
                         <h4 style="margin: 0 0 15px 0;">
-                            {feature['icon']} {feature['name']}
+                            {feature["icon"]} {feature["name"]}
                         </h4>
                         <p style="margin: 0; opacity: 0.9; line-height: 1.6;">
-                            {feature['desc']}
+                            {feature["desc"]}
                         </p>
                     </div>
-                    """, unsafe_allow_html=True)
-    
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
     elif feature_category == "⚡ Performance & Speed":
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
             padding: 30px;
@@ -1872,11 +2194,13 @@ def show_features_page():
                 Optimized for speed without compromising accuracy. Built for real-time threat detection at scale.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         # Performance metrics
         perf_col1, perf_col2, perf_col3, perf_col4 = st.columns(4)
-        
+
         with perf_col1:
             st.metric("⚡ Analysis Speed", "< 50ms", "−25ms")
         with perf_col2:
@@ -1885,10 +2209,10 @@ def show_features_page():
             st.metric("📊 Throughput", "1000/sec", "+200/sec")
         with perf_col4:
             st.metric("🧠 Memory Usage", "2.1GB", "−0.5GB")
-        
+
         # Performance features
         st.markdown("---")
-        
+
         performance_details = [
             {
                 "title": "🚀 Optimized Inference Pipeline",
@@ -1896,17 +2220,17 @@ def show_features_page():
                     "GPU acceleration with CUDA support",
                     "Batch processing for multiple SMS analysis",
                     "Memory-efficient model loading",
-                    "Cached predictions for repeated patterns"
-                ]
+                    "Cached predictions for repeated patterns",
+                ],
             },
             {
-                "title": "⚖️ Smart Load Balancing", 
+                "title": "⚖️ Smart Load Balancing",
                 "details": [
                     "Intelligent model routing based on message complexity",
                     "Dynamic resource allocation",
                     "Parallel processing capabilities",
-                    "Auto-scaling based on demand"
-                ]
+                    "Auto-scaling based on demand",
+                ],
             },
             {
                 "title": "🔄 Real-time Processing",
@@ -1914,18 +2238,19 @@ def show_features_page():
                     "Stream processing architecture",
                     "Zero-downtime updates",
                     "Live model switching",
-                    "Instant threat alerts"
-                ]
-            }
+                    "Instant threat alerts",
+                ],
+            },
         ]
-        
+
         for detail in performance_details:
-            with st.expander(detail['title'], expanded=False):
-                for item in detail['details']:
+            with st.expander(detail["title"], expanded=False):
+                for item in detail["details"]:
                     st.markdown(f"✅ {item}")
-    
+
     else:  # Tools & Integration
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             padding: 30px;
@@ -1938,13 +2263,16 @@ def show_features_page():
                 Seamlessly integrate with your existing systems and workflows with our comprehensive API and tools.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         # Integration options
         integration_col1, integration_col2 = st.columns(2)
-        
+
         with integration_col1:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 25px;
@@ -1962,9 +2290,12 @@ def show_features_page():
                     <li>SDK available in multiple languages</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 25px;
@@ -1982,10 +2313,13 @@ def show_features_page():
                     <li>Battery-optimized processing</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-        
+            """,
+                unsafe_allow_html=True,
+            )
+
         with integration_col2:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 25px;
@@ -2003,9 +2337,12 @@ def show_features_page():
                     <li>High availability setup</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 25px;
@@ -2023,12 +2360,15 @@ def show_features_page():
                     <li>24/7 enterprise support</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-    
+            """,
+                unsafe_allow_html=True,
+            )
+
     st.markdown("---")
-    
+
     # Call to action
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center;
         padding: 30px;
@@ -2042,27 +2382,31 @@ def show_features_page():
             Start analyzing SMS messages with our advanced AI models today!
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Action buttons
     action_col1, action_col2, action_col3 = st.columns(3)
-    
+
     with action_col1:
         if st.button("🔍 Try SMS Analyzer", type="primary", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     with action_col2:
         if st.button("📊 View Analytics", use_container_width=True):
-            navigate_to('analytics')
-    
+            navigate_to("analytics")
+
     with action_col3:
         if st.button("🏠 Back to Home", use_container_width=True):
-            navigate_to('home')
+            navigate_to("home")
+
 
 def show_models_page():
     """Beautiful and comprehensive models page"""
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -2099,20 +2443,30 @@ def show_models_page():
             Explore our ensemble of cutting-edge AI models, each optimized for different aspects of SMS threat detection and analysis.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Model Selection
     st.markdown("### 🎯 Select a Model to Explore")
-    
+
     model_category = st.selectbox(
         "Choose an AI model to learn more:",
-        ["🚀 BERT - Bidirectional Encoder", "⚡ DistilBERT - Lightweight Champion", "🎯 RoBERTa - Robustly Optimized", "🧠 ALBERT - A Lite BERT", "🔥 Ensemble Methods", "📊 Model Comparison"],
-        help="Select different models to explore their capabilities and specifications"
+        [
+            "🚀 BERT - Bidirectional Encoder",
+            "⚡ DistilBERT - Lightweight Champion",
+            "🎯 RoBERTa - Robustly Optimized",
+            "🧠 ALBERT - A Lite BERT",
+            "🔥 Ensemble Methods",
+            "📊 Model Comparison",
+        ],
+        help="Select different models to explore their capabilities and specifications",
     )
-    
+
     # Dynamic content based on selected model
     if model_category == "🚀 BERT - Bidirectional Encoder":
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 30px;
@@ -2125,12 +2479,15 @@ def show_models_page():
                 Bidirectional Encoder Representations from Transformers - the revolutionary model that changed NLP forever.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         col1, col2 = st.columns([2, 1])
-        
+
         with col1:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 30px;
@@ -2149,9 +2506,12 @@ def show_models_page():
                     <li><strong>Max Sequence Length:</strong> 512 tokens</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 30px;
@@ -2169,16 +2529,19 @@ def show_models_page():
                     <li><strong>Fine-tuning:</strong> Specialized for SMS threat detection</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-        
+            """,
+                unsafe_allow_html=True,
+            )
+
         with col2:
             # Performance metrics for BERT
             st.metric("🎯 Accuracy", "97.2%", "+0.8%")
             st.metric("⚡ Speed", "120ms", "Standard")
             st.metric("🧠 Memory", "440MB", "Base Model")
             st.metric("🔥 F1-Score", "96.8%", "+1.2%")
-            
-            st.markdown("""
+
+            st.markdown(
+                """
             <div style="
                 background: linear-gradient(135deg, #ff9a9e, #fecfef);
                 padding: 20px;
@@ -2195,10 +2558,13 @@ def show_models_page():
                     • Research & development
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-    
+            """,
+                unsafe_allow_html=True,
+            )
+
     elif model_category == "⚡ DistilBERT - Lightweight Champion":
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
             padding: 30px;
@@ -2211,12 +2577,15 @@ def show_models_page():
                 A distilled version of BERT that's 60% smaller, 60% faster, while retaining 97% of performance.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         col1, col2 = st.columns([2, 1])
-        
+
         with col1:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 30px;
@@ -2234,9 +2603,12 @@ def show_models_page():
                     <li><strong>Fast Inference:</strong> Optimized for real-time processing</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 30px;
@@ -2254,16 +2626,19 @@ def show_models_page():
                     <li><strong>Cost Effective:</strong> Lower computational costs</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-        
+            """,
+                unsafe_allow_html=True,
+            )
+
         with col2:
             # Performance metrics for DistilBERT
             st.metric("🎯 Accuracy", "95.8%", "Efficient")
             st.metric("⚡ Speed", "48ms", "2x Faster")
             st.metric("🧠 Memory", "176MB", "60% Less")
             st.metric("🔥 F1-Score", "95.2%", "Optimized")
-            
-            st.markdown("""
+
+            st.markdown(
+                """
             <div style="
                 background: linear-gradient(135deg, #4ecdc4, #44a08d);
                 padding: 20px;
@@ -2280,10 +2655,13 @@ def show_models_page():
                     • High throughput needs
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-    
+            """,
+                unsafe_allow_html=True,
+            )
+
     elif model_category == "🎯 RoBERTa - Robustly Optimized":
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
             padding: 30px;
@@ -2296,12 +2674,15 @@ def show_models_page():
                 An optimized method for pretraining BERT with improved training methodology and dynamic masking.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         col1, col2 = st.columns([2, 1])
-        
+
         with col1:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 30px;
@@ -2319,9 +2700,12 @@ def show_models_page():
                     <li><strong>No NSP:</strong> Removed Next Sentence Prediction task</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 30px;
@@ -2339,16 +2723,19 @@ def show_models_page():
                     <li><strong>Domain Adaptation:</strong> Better SMS domain understanding</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-        
+            """,
+                unsafe_allow_html=True,
+            )
+
         with col2:
             # Performance metrics for RoBERTa
             st.metric("🎯 Accuracy", "97.8%", "+2.0%")
             st.metric("⚡ Speed", "135ms", "Robust")
             st.metric("🧠 Memory", "498MB", "Full Model")
             st.metric("🔥 F1-Score", "97.5%", "+1.8%")
-            
-            st.markdown("""
+
+            st.markdown(
+                """
             <div style="
                 background: linear-gradient(135deg, #a8edea, #fed6e3);
                 padding: 20px;
@@ -2365,10 +2752,13 @@ def show_models_page():
                     • Critical applications
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-    
+            """,
+                unsafe_allow_html=True,
+            )
+
     elif model_category == "🧠 ALBERT - A Lite BERT":
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
             padding: 30px;
@@ -2381,12 +2771,15 @@ def show_models_page():
                 Parameter-sharing and factorized embeddings for efficient yet powerful language understanding.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         col1, col2 = st.columns([2, 1])
-        
+
         with col1:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 30px;
@@ -2404,9 +2797,12 @@ def show_models_page():
                     <li><strong>Efficient Design:</strong> Better parameter utilization</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: white;
                 padding: 30px;
@@ -2424,16 +2820,19 @@ def show_models_page():
                     <li><strong>Consistent Performance:</strong> Stable across different tasks</li>
                 </ul>
             </div>
-            """, unsafe_allow_html=True)
-        
+            """,
+                unsafe_allow_html=True,
+            )
+
         with col2:
             # Performance metrics for ALBERT
             st.metric("🎯 Accuracy", "96.9%", "Efficient")
             st.metric("⚡ Speed", "85ms", "Optimized")
             st.metric("🧠 Memory", "285MB", "Reduced")
             st.metric("🔥 F1-Score", "96.4%", "Balanced")
-            
-            st.markdown("""
+
+            st.markdown(
+                """
             <div style="
                 background: linear-gradient(135deg, #667eea, #764ba2);
                 padding: 20px;
@@ -2450,10 +2849,13 @@ def show_models_page():
                     • Scalable solutions
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-    
+            """,
+                unsafe_allow_html=True,
+            )
+
     elif model_category == "🔥 Ensemble Methods":
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #667eea 100%);
             padding: 30px;
@@ -2466,8 +2868,10 @@ def show_models_page():
                 Combining multiple models for superior accuracy and robustness in SMS threat detection.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         ensemble_methods = [
             {
                 "name": "🗳️ Majority Voting",
@@ -2478,8 +2882,8 @@ def show_models_page():
                     "Each model votes for SPAM or HAM",
                     "Majority decision determines final result",
                     "Simple and interpretable method",
-                    "Robust against individual model errors"
-                ]
+                    "Robust against individual model errors",
+                ],
             },
             {
                 "name": "⚖️ Weighted Average",
@@ -2490,8 +2894,8 @@ def show_models_page():
                     "Models weighted by their accuracy",
                     "Better performers get more influence",
                     "Balanced approach to ensemble",
-                    "Optimizes overall performance"
-                ]
+                    "Optimizes overall performance",
+                ],
             },
             {
                 "name": "🎯 Confidence Weighted",
@@ -2502,8 +2906,8 @@ def show_models_page():
                     "Weights based on prediction confidence",
                     "More confident predictions matter more",
                     "Adapts to individual message complexity",
-                    "Highest accuracy ensemble method"
-                ]
+                    "Highest accuracy ensemble method",
+                ],
             },
             {
                 "name": "📊 Adaptive Threshold",
@@ -2514,84 +2918,91 @@ def show_models_page():
                     "Dynamic threshold adjustment",
                     "Adapts to changing threat landscape",
                     "Minimizes false positives",
-                    "Optimized for precision"
-                ]
-            }
+                    "Optimized for precision",
+                ],
+            },
         ]
-        
+
         for i in range(0, len(ensemble_methods), 2):
             col1, col2 = st.columns(2)
-            
+
             with col1:
                 if i < len(ensemble_methods):
                     method = ensemble_methods[i]
-                    st.markdown(f"""
+                    st.markdown(
+                        f"""
                     <div style="
                         background: white;
                         padding: 25px;
                         border-radius: 15px;
                         margin-bottom: 20px;
-                        border-left: 5px solid {method['color']};
+                        border-left: 5px solid {method["color"]};
                         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
                     ">
-                        <h4 style="color: {method['color']}; margin: 0 0 15px 0;">
-                            {method['name']}
+                        <h4 style="color: {method["color"]}; margin: 0 0 15px 0;">
+                            {method["name"]}
                         </h4>
                         <p style="margin: 0 0 15px 0; color: #333; line-height: 1.6;">
-                            {method['description']}
+                            {method["description"]}
                         </p>
                         <ul style="margin: 0 0 15px 0; color: #333; line-height: 1.6;">
-                            {''.join([f"<li>{detail}</li>" for detail in method['details']])}
+                            {"".join([f"<li>{detail}</li>" for detail in method["details"]])}
                         </ul>
                         <div style="
-                            background: {method['color']};
+                            background: {method["color"]};
                             color: white;
                             padding: 8px 15px;
                             border-radius: 25px;
                             display: inline-block;
                             font-weight: bold;
                         ">
-                            Accuracy: {method['accuracy']}
+                            Accuracy: {method["accuracy"]}
                         </div>
                     </div>
-                    """, unsafe_allow_html=True)
-            
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
             with col2:
                 if i + 1 < len(ensemble_methods):
                     method = ensemble_methods[i + 1]
-                    st.markdown(f"""
+                    st.markdown(
+                        f"""
                     <div style="
                         background: white;
                         padding: 25px;
                         border-radius: 15px;
                         margin-bottom: 20px;
-                        border-left: 5px solid {method['color']};
+                        border-left: 5px solid {method["color"]};
                         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
                     ">
-                        <h4 style="color: {method['color']}; margin: 0 0 15px 0;">
-                            {method['name']}
+                        <h4 style="color: {method["color"]}; margin: 0 0 15px 0;">
+                            {method["name"]}
                         </h4>
                         <p style="margin: 0 0 15px 0; color: #333; line-height: 1.6;">
-                            {method['description']}
+                            {method["description"]}
                         </p>
                         <ul style="margin: 0 0 15px 0; color: #333; line-height: 1.6;">
-                            {''.join([f"<li>{detail}</li>" for detail in method['details']])}
+                            {"".join([f"<li>{detail}</li>" for detail in method["details"]])}
                         </ul>
                         <div style="
-                            background: {method['color']};
+                            background: {method["color"]};
                             color: white;
                             padding: 8px 15px;
                             border-radius: 25px;
                             display: inline-block;
                             font-weight: bold;
                         ">
-                            Accuracy: {method['accuracy']}
+                            Accuracy: {method["accuracy"]}
                         </div>
                     </div>
-                    """, unsafe_allow_html=True)
-    
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
     else:  # Model Comparison
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             padding: 30px;
@@ -2604,31 +3015,35 @@ def show_models_page():
                 Comprehensive comparison of all models across different performance metrics and use cases.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         # Performance comparison table
         st.markdown("#### 📈 Performance Metrics Comparison")
-        
+
         comparison_data = {
             "Model": ["BERT", "DistilBERT", "RoBERTa", "ALBERT", "Best Ensemble"],
             "Accuracy": ["97.2%", "95.8%", "97.8%", "96.9%", "98.5%"],
             "Speed (ms)": ["120", "48", "135", "85", "95"],
             "Memory (MB)": ["440", "176", "498", "285", "1400"],
             "Parameters": ["110M", "66M", "125M", "89M", "390M"],
-            "F1-Score": ["96.8%", "95.2%", "97.5%", "96.4%", "98.2%"]
+            "F1-Score": ["96.8%", "95.2%", "97.5%", "96.4%", "98.2%"],
         }
-        
+
         import pandas as pd
+
         df = pd.DataFrame(comparison_data)
         st.dataframe(df, use_container_width=True)
-        
+
         # Visual comparison
         st.markdown("#### 🎯 Use Case Recommendations")
-        
+
         use_case_col1, use_case_col2 = st.columns(2)
-        
+
         with use_case_col1:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: linear-gradient(135deg, #667eea, #764ba2);
                 padding: 25px;
@@ -2643,9 +3058,12 @@ def show_models_page():
                     <strong>Use Cases:</strong> Live SMS scanning, mobile apps
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: linear-gradient(135deg, #4ecdc4, #44a08d);
                 padding: 25px;
@@ -2660,10 +3078,13 @@ def show_models_page():
                     <strong>Use Cases:</strong> Critical systems, enterprise security
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-        
+            """,
+                unsafe_allow_html=True,
+            )
+
         with use_case_col2:
-            st.markdown("""
+            st.markdown(
+                """
             <div style="
                 background: linear-gradient(135deg, #ff9a9e, #fecfef);
                 padding: 25px;
@@ -2678,9 +3099,12 @@ def show_models_page():
                     <strong>Use Cases:</strong> Production environments, APIs
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
+            """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                """
             <div style="
                 background: linear-gradient(135deg, #feca57, #ff9ff3);
                 padding: 25px;
@@ -2695,12 +3119,15 @@ def show_models_page():
                     <strong>Use Cases:</strong> Edge deployment, cost optimization
                 </p>
             </div>
-            """, unsafe_allow_html=True)
-    
+            """,
+                unsafe_allow_html=True,
+            )
+
     st.markdown("---")
-    
+
     # Call to action
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center;
         padding: 30px;
@@ -2714,31 +3141,35 @@ def show_models_page():
             Experience the power of our ensemble AI models in action!
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Action buttons
     action_col1, action_col2, action_col3 = st.columns(3)
-    
+
     with action_col1:
         if st.button("🔍 Test SMS Analyzer", type="primary", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     with action_col2:
         if st.button("⚡ View Features", use_container_width=True):
-            navigate_to('features')
-    
+            navigate_to("features")
+
     with action_col3:
         if st.button("🏠 Back to Home", use_container_width=True):
-            navigate_to('home')
+            navigate_to("home")
+
 
 def show_contact_page():
     """Beautiful and comprehensive contact page"""
-    
+
     # Add top padding for proper spacing
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
+
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -2775,13 +3206,16 @@ def show_contact_page():
             We're here to help you with support, collaboration, or any questions about our AI-powered SMS threat detection platform.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Contact Information Cards
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -2807,10 +3241,13 @@ def show_contact_page():
                 <strong style="color: #667eea;">sagnik@gmail.com</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -2841,10 +3278,13 @@ def show_contact_page():
                 </div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -2873,10 +3313,13 @@ def show_contact_page():
                 <strong style="color: #ff6b6b;">🔒 Open Source Project</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Interactive Contact Form Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center;
         margin: 40px 0 30px 0;
@@ -2893,10 +3336,13 @@ def show_contact_page():
             margin: 10px 0 0 0;
         ">Fill out the form below and we'll get back to you soon</p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     with st.container():
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 35px;
@@ -2906,49 +3352,68 @@ def show_contact_page():
             border: 1px solid #f0f0f0;
             border-top: 5px solid #667eea;
         ">
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
             name = st.text_input("👤 Your Name", placeholder="Enter your full name")
-            email = st.text_input("📧 Email Address", placeholder="your.email@example.com")
-            subject = st.selectbox("📋 Subject", [
-                "💡 General Inquiry",
-                "🐛 Bug Report",
-                "🚀 Feature Request",
-                "🤝 Partnership",
-                "🔧 Technical Support",
-                "📊 Enterprise Solutions"
-            ])
-        
+            email = st.text_input(
+                "📧 Email Address", placeholder="your.email@example.com"
+            )
+            st.selectbox(
+                "📋 Subject",
+                [
+                    "💡 General Inquiry",
+                    "🐛 Bug Report",
+                    "🚀 Feature Request",
+                    "🤝 Partnership",
+                    "🔧 Technical Support",
+                    "📊 Enterprise Solutions",
+                ],
+            )
+
         with col2:
-            company = st.text_input("🏢 Company (Optional)", placeholder="Your organization")
-            phone = st.text_input("📱 Phone (Optional)", placeholder="+1 (555) 123-4567")
-            priority = st.selectbox("⚡ Priority Level", [
-                "🔵 Low - General Question",
-                "🟡 Medium - Feature Request",
-                "🟠 High - Bug Report",
-                "🔴 Urgent - Critical Issue"
-            ])
-        
-        message = st.text_area("💬 Message", 
-                              placeholder="Tell us how we can help you...",
-                              height=120)
-        
+            st.text_input(
+                "🏢 Company (Optional)", placeholder="Your organization"
+            )
+            st.text_input(
+                "📱 Phone (Optional)", placeholder="+1 (555) 123-4567"
+            )
+            st.selectbox(
+                "⚡ Priority Level",
+                [
+                    "🔵 Low - General Question",
+                    "🟡 Medium - Feature Request",
+                    "🟠 High - Bug Report",
+                    "🔴 Urgent - Critical Issue",
+                ],
+            )
+
+        message = st.text_area(
+            "💬 Message", placeholder="Tell us how we can help you...", height=120
+        )
+
         # Contact form submission
         st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
         if st.button("📤 Send Message", type="primary", use_container_width=True):
             if name and email and message:
-                st.success("✅ Thank you! Your message has been received. We'll get back to you within 24 hours.")
+                st.success(
+                    "✅ Thank you! Your message has been received. We'll get back to you within 24 hours."
+                )
                 st.balloons()
             else:
-                st.error("❌ Please fill in all required fields (Name, Email, and Message)")
-        
+                st.error(
+                    "❌ Please fill in all required fields (Name, Email, and Message)"
+                )
+
         st.markdown("</div>", unsafe_allow_html=True)
-    
+
     # Team Information
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center;
         margin: 30px 0 20px 0;
@@ -2960,12 +3425,15 @@ def show_contact_page():
             font-weight: 600;
         ">👥 Meet Our Team</h3>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     team_col1, team_col2, team_col3 = st.columns(3)
-    
+
     with team_col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #667eea, #764ba2);
             padding: 20px;
@@ -2985,10 +3453,13 @@ def show_contact_page():
                 AI/ML Engineer developing advanced spam detection systems using transformer models.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with team_col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #4ecdc4, #44a08d);
             padding: 20px;
@@ -3007,10 +3478,13 @@ def show_contact_page():
                 Advanced threat detection algorithms with cybersecurity expertise for SMS protection.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with team_col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #ff6b6b, #feca57);
             padding: 20px;
@@ -3029,10 +3503,13 @@ def show_contact_page():
                 Community-driven development with modern UI/UX design for accessible AI tools.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # FAQ Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center;
         margin: 30px 0 20px 0;
@@ -3044,21 +3521,23 @@ def show_contact_page():
             font-weight: 600;
         ">❓ Frequently Asked Questions</h3>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     with st.expander("🤖 How accurate is Spamlyser's AI detection?", expanded=False):
         st.markdown("""
         Our ensemble AI models achieve **97.2% accuracy** on SMS threat detection. We use multiple 
         state-of-the-art transformer models (BERT, RoBERTa, DistilBERT, ALBERT) working together 
         to provide the most reliable spam and threat detection available.
         """)
-    
+
     with st.expander("⚡ How fast is the real-time detection?", expanded=False):
         st.markdown("""
         Spamlyser processes SMS messages in **under 50ms** on average using our optimized DistilBERT model. 
         For batch processing, we can handle thousands of messages per minute while maintaining high accuracy.
         """)
-    
+
     with st.expander("🔒 Is my data secure and private?", expanded=False):
         st.markdown("""
         Absolutely! We follow enterprise-grade security practices:
@@ -3067,7 +3546,7 @@ def show_contact_page():
         - **Privacy by design**: Our AI models don't learn from your personal data
         - **GDPR compliant**: Full compliance with international privacy regulations
         """)
-    
+
     with st.expander("💼 Do you offer enterprise solutions?", expanded=False):
         st.markdown("""
         Yes! We provide custom enterprise solutions including:
@@ -3079,7 +3558,7 @@ def show_contact_page():
         
         Contact us at **enterprise@spamlyser.ai** for more information.
         """)
-    
+
     with st.expander("🛠️ Can I integrate Spamlyser with my app?", expanded=False):
         st.markdown("""
         Yes! We offer multiple integration options:
@@ -3090,9 +3569,10 @@ def show_contact_page():
         
         Check our **API documentation** and get your free developer key to get started.
         """)
-    
+
     # Action Buttons
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center;
         margin: 30px 0 20px 0;
@@ -3104,32 +3584,36 @@ def show_contact_page():
             font-weight: 600;
         ">🎯 Quick Actions</h3>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
     action_col1, action_col2, action_col3 = st.columns(3)
-    
+
     with action_col1:
         if st.button("🤖 Explore AI Models", use_container_width=True):
-            navigate_to('models')
-    
+            navigate_to("models")
+
     with action_col2:
         if st.button("⚡ Try SMS Analyzer", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     with action_col3:
         if st.button("🏠 Back to Home", use_container_width=True):
-            navigate_to('home')
-    
+            navigate_to("home")
+
     # Add bottom padding for proper spacing
     st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
+
 def show_api_page():
     """Beautiful and comprehensive API documentation page"""
-    
+
     # Add top padding for proper spacing
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
+
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -3166,13 +3650,16 @@ def show_api_page():
             Powerful REST API endpoints for real-time SMS threat detection with comprehensive documentation and examples.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # API Overview Cards
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -3198,10 +3685,13 @@ def show_api_page():
                 <strong style="color: #667eea;">< 50ms Response Time</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -3227,10 +3717,13 @@ def show_api_page():
                 <strong style="color: #4ecdc4;">🛡️ HTTPS Encryption</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -3256,15 +3749,19 @@ def show_api_page():
                 <strong style="color: #ff6b6b;">🎯 Threat Classification</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # API Endpoints Documentation
     st.markdown("### 🚀 API Endpoints")
     st.markdown("Explore our powerful API endpoints for SMS threat detection")
     st.markdown("")  # Add some space
-    
+
     # Single Message Analysis Endpoint
-    with st.expander("🔍 **POST /api/v1/analyze** - Single Message Analysis", expanded=False):
+    with st.expander(
+        "🔍 **POST /api/v1/analyze** - Single Message Analysis", expanded=False
+    ):
         st.markdown("""
         **Analyze a single SMS message for threats and spam detection.**
         
@@ -3301,7 +3798,7 @@ def show_api_page():
         }
         ```
         """)
-    
+
     # Batch Analysis Endpoint
     with st.expander("📦 **POST /api/v1/batch** - Batch Message Analysis"):
         st.markdown("""
@@ -3355,7 +3852,7 @@ def show_api_page():
         }
         ```
         """)
-    
+
     # Model Information Endpoint
     with st.expander("🤖 **GET /api/v1/models** - Available Models"):
         st.markdown("""
@@ -3402,13 +3899,13 @@ def show_api_page():
         }
         ```
         """)
-    
+
     # Authentication & Rate Limits
     st.markdown("### 🔐 Authentication & Limits")
     st.markdown("")
-    
+
     auth_col1, auth_col2 = st.columns(2)
-    
+
     with auth_col1:
         st.info("🔑 **API Authentication**")
         st.markdown("""
@@ -3423,7 +3920,7 @@ def show_api_page():
         curl -H "Authorization: Bearer sk_test_123..."
         ```
         """)
-    
+
     with auth_col2:
         st.success("📊 **Rate Limits**")
         st.markdown("""
@@ -3439,17 +3936,18 @@ def show_api_page():
         X-RateLimit-Reset: 1696248000
         ```
         """)
-    
+
     # SDK and Integration Examples
     st.markdown("### 🛠️ SDK & Integration Examples")
     st.markdown("")
-    
+
     # Programming Language Examples
     lang_tab1, lang_tab2, lang_tab3 = st.columns(3)
-    
+
     with lang_tab1:
         with st.expander("🐍 **Python SDK**", expanded=False):
-            st.code("""
+            st.code(
+                """
 # Install: pip install spamlyser-sdk
 from spamlyser import SpamlyserClient
 
@@ -3469,11 +3967,14 @@ print(f"Threat Type: {result.threat_type}")
 # Batch analysis
 messages = ["msg1", "msg2", "msg3"]
 batch_results = client.analyze_batch(messages)
-            """, language="python")
-    
+            """,
+                language="python",
+            )
+
     with lang_tab2:
         with st.expander("📱 **JavaScript/Node.js**", expanded=False):
-            st.code("""
+            st.code(
+                """
 // Install: npm install spamlyser-js
 const SpamlyserClient = require('spamlyser-js');
 
@@ -3498,11 +3999,14 @@ const analyzeMessage = async (message) => {
 };
 
 analyzeMessage("Check this suspicious SMS");
-            """, language="javascript")
-    
+            """,
+                language="javascript",
+            )
+
     with lang_tab3:
         with st.expander("☕ **Java SDK**", expanded=False):
-            st.code("""
+            st.code(
+                """
 // Add to pom.xml: <dependency>spamlyser-java</dependency>
 import com.spamlyser.SpamlyserClient;
 import com.spamlyser.models.AnalysisResult;
@@ -3530,16 +4034,19 @@ public class SpamDetection {
         }
     }
 }
-            """, language="java")
-    
+            """,
+                language="java",
+            )
+
     # Quick Start Guide
     st.markdown("### 🚀 Quick Start Guide")
     st.markdown("")
-    
+
     step_col1, step_col2, step_col3 = st.columns(3)
-    
+
     with step_col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #667eea, #764ba2);
             padding: 20px;
@@ -3558,10 +4065,13 @@ public class SpamDetection {
                 Sign up and get your free API key from the developer portal.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with step_col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #4ecdc4, #44a08d);
             padding: 20px;
@@ -3580,10 +4090,13 @@ public class SpamDetection {
                 Send your first API request using curl, SDK, or any HTTP client.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with step_col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #ff6b6b, #feca57);
             padding: 20px;
@@ -3602,14 +4115,16 @@ public class SpamDetection {
                 Integrate spam detection into your app and start protecting users.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # API Status and Support
     st.markdown("### 📊 API Status & Support")
     st.markdown("")
-    
+
     status_col1, status_col2 = st.columns(2)
-    
+
     with status_col1:
         st.success("🟢 **System Status**")
         col1, col2 = st.columns([1, 1])
@@ -3618,7 +4133,7 @@ public class SpamDetection {
             st.metric("Avg Response", "42ms")
         with col2:
             st.metric("Status", "🟢 Operational")
-    
+
     with status_col2:
         st.error("🆘 **Developer Support**")
         st.markdown("""
@@ -3628,36 +4143,38 @@ public class SpamDetection {
         - **Support:** 24/7 developer assistance  
         - **Community:** Discord & Stack Overflow
         """)
-    
+
     # Action Buttons
     st.markdown("### 🎯 Get Started")
     st.markdown("")
-    
+
     action_col1, action_col2, action_col3 = st.columns(3)
-    
+
     with action_col1:
         if st.button("🔑 Get API Key", use_container_width=True):
             st.info("Visit our developer portal to get your free API key!")
-    
+
     with action_col2:
         if st.button("📱 Try Interactive Demo", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     with action_col3:
         if st.button("🏠 Back to Home", use_container_width=True):
-            navigate_to('home')
-    
+            navigate_to("home")
+
     # Add bottom padding for proper spacing
     st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
+
 def show_about_page():
     """Beautiful and comprehensive About Us page"""
-    
+
     # Add top padding for proper spacing
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
+
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -3694,13 +4211,16 @@ def show_about_page():
             Protecting millions of users from SMS threats using cutting-edge AI and machine learning technology.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Company Overview Cards
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -3726,10 +4246,13 @@ def show_about_page():
                 <strong style="color: #667eea;">🚀 Innovation First</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -3755,10 +4278,13 @@ def show_about_page():
                 <strong style="color: #4ecdc4;">🔒 Zero-threat Future</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -3784,14 +4310,16 @@ def show_about_page():
                 <strong style="color: #ff6b6b;">🌟 Open Source</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Company Story
     st.markdown("### 📖 Our Story")
     st.markdown("")
-    
+
     story_col1, story_col2 = st.columns([2, 1])
-    
+
     with story_col1:
         st.markdown("""
         **The Problem We Solve**
@@ -3810,22 +4338,23 @@ def show_about_page():
         Unlike traditional spam filters, Spamlyser understands context, semantics, and subtle patterns that humans might miss. 
         Our AI continuously learns and adapts to new threats, ensuring users are always protected against the latest attack vectors.
         """)
-    
+
     with story_col2:
         st.info("📊 **Impact Statistics**")
         st.metric("Accuracy Rate", "97.2%", "Best in Industry")
         st.metric("Messages Analyzed", "1M+", "Growing Daily")
         st.metric("Response Time", "< 50ms", "Lightning Fast")
         st.metric("User Protection", "99.9%", "Threat Prevention")
-    
+
     # Technology Stack
     st.markdown("### 🛠️ Technology Stack")
     st.markdown("")
-    
+
     tech_col1, tech_col2, tech_col3, tech_col4 = st.columns(4)
-    
+
     with tech_col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #667eea, #764ba2);
             padding: 20px;
@@ -3844,10 +4373,13 @@ def show_about_page():
                 BERT, RoBERTa, DistilBERT, ALBERT
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with tech_col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #4ecdc4, #44a08d);
             padding: 20px;
@@ -3866,10 +4398,13 @@ def show_about_page():
                 Python, FastAPI, Streamlit
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with tech_col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #ff6b6b, #feca57);
             padding: 20px;
@@ -3888,10 +4423,13 @@ def show_about_page():
                 AWS, Docker, Kubernetes
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with tech_col4:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #a8edea, #fed6e3);
             padding: 20px;
@@ -3910,14 +4448,16 @@ def show_about_page():
                 Transformers, PyTorch, Pandas
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Achievements & Milestones
     st.markdown("### 🏆 Achievements & Milestones")
     st.markdown("")
-    
+
     achievement_col1, achievement_col2 = st.columns(2)
-    
+
     with achievement_col1:
         st.success("🎉 **Key Achievements**")
         st.markdown("""
@@ -3933,7 +4473,7 @@ def show_about_page():
         - 🌟 Top Open Source Security Project
         - 🚀 Rising Star in Machine Learning
         """)
-    
+
     with achievement_col2:
         st.info("🔬 **Research & Development**")
         st.markdown("""
@@ -3949,15 +4489,16 @@ def show_about_page():
         - 📱 Mobile-first detection
         - 🔒 End-to-end encryption support
         """)
-    
+
     # Team Behind Spamlyser
     st.markdown("### 👥 Meet the Team")
     st.markdown("")
-    
+
     team_col1, team_col2, team_col3 = st.columns(3)
-    
+
     with team_col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #667eea, #764ba2);
             padding: 20px;
@@ -3977,10 +4518,13 @@ def show_about_page():
                 AI/ML Engineer passionate about cybersecurity and protecting digital communications through innovative technology.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with team_col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #4ecdc4, #44a08d);
             padding: 20px;
@@ -4000,10 +4544,13 @@ def show_about_page():
                 Dedicated researchers developing cutting-edge transformer models and ensemble techniques for threat detection.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with team_col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: linear-gradient(135deg, #ff6b6b, #feca57);
             padding: 20px;
@@ -4023,31 +4570,35 @@ def show_about_page():
                 Global community of developers, researchers, and security experts contributing to make digital communication safer.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Call to Action
     st.markdown("### 🚀 Join Our Mission")
     st.markdown("")
-    
+
     cta_col1, cta_col2, cta_col3 = st.columns(3)
-    
+
     with cta_col1:
         if st.button("🤝 Contribute to Project", use_container_width=True):
-            st.info("Visit our GitHub repository to contribute to the open-source project!")
-    
+            st.info(
+                "Visit our GitHub repository to contribute to the open-source project!"
+            )
+
     with cta_col2:
         if st.button("📧 Get in Touch", use_container_width=True):
-            navigate_to('contact')
-    
+            navigate_to("contact")
+
     with cta_col3:
         if st.button("🔍 Try SMS Analyzer", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     # Company Information
     st.markdown("### 📋 Company Information")
-    
+
     info_col1, info_col2 = st.columns(2)
-    
+
     with info_col1:
         st.markdown("""
         **🏢 Organization Details**
@@ -4058,7 +4609,7 @@ def show_about_page():
         - **Industry:** Cybersecurity & AI
         - **Focus:** SMS Threat Detection
         """)
-    
+
     with info_col2:
         st.markdown("""
         **🎯 Project Goals**
@@ -4069,34 +4620,36 @@ def show_about_page():
         - **Impact:** Global digital safety
         - **Community:** Developer-driven innovation
         """)
-    
+
     # Action Buttons
     st.markdown("### 🎯 Quick Navigation")
     action_col1, action_col2, action_col3 = st.columns(3)
-    
+
     with action_col1:
         if st.button("🤖 Explore AI Models", use_container_width=True):
-            navigate_to('models')
-    
+            navigate_to("models")
+
     with action_col2:
         if st.button("🔌 View API Docs", use_container_width=True):
-            navigate_to('api')
-    
+            navigate_to("api")
+
     with action_col3:
         if st.button("🏠 Back to Home", use_container_width=True):
-            navigate_to('home')
-    
+            navigate_to("home")
+
     # Add bottom padding for proper spacing
     st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
+
 def show_analytics_page():
     """Beautiful and comprehensive Analytics dashboard"""
-    
+
     # Add top padding for proper spacing
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
+
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -4133,136 +4686,130 @@ def show_analytics_page():
             Comprehensive analytics and performance insights from our AI-powered SMS threat detection system.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Key Performance Indicators
     st.markdown("### 📈 Key Performance Indicators")
-    
+
     kpi_col1, kpi_col2, kpi_col3, kpi_col4 = st.columns(4)
-    
+
     with kpi_col1:
         st.metric(
-            label="🎯 Detection Accuracy", 
-            value="97.2%", 
+            label="🎯 Detection Accuracy",
+            value="97.2%",
             delta="0.8%",
-            help="Overall accuracy across all AI models"
+            help="Overall accuracy across all AI models",
         )
-    
+
     with kpi_col2:
         st.metric(
-            label="⚡ Avg Response Time", 
-            value="42ms", 
+            label="⚡ Avg Response Time",
+            value="42ms",
             delta="-8ms",
-            help="Average API response time"
+            help="Average API response time",
         )
-    
+
     with kpi_col3:
         st.metric(
-            label="🛡️ Threats Blocked", 
-            value="156K", 
+            label="🛡️ Threats Blocked",
+            value="156K",
             delta="12.3K",
-            help="Total threats blocked this month"
+            help="Total threats blocked this month",
         )
-    
+
     with kpi_col4:
         st.metric(
-            label="📱 Messages Analyzed", 
-            value="1.2M", 
+            label="📱 Messages Analyzed",
+            value="1.2M",
             delta="89K",
-            help="Total messages processed this month"
+            help="Total messages processed this month",
         )
-    
+
     # Model Performance Comparison
     st.markdown("### 🤖 AI Model Performance Comparison")
-    
+
     # Create sample data for model comparison
     model_data = {
-        'Model': ['DistilBERT', 'BERT', 'RoBERTa', 'ALBERT', 'Ensemble'],
-        'Accuracy': [95.8, 97.2, 96.5, 94.9, 98.1],
-        'Speed (ms)': [48, 120, 95, 110, 180],
-        'Memory (MB)': [176, 440, 355, 285, 520]
+        "Model": ["DistilBERT", "BERT", "RoBERTa", "ALBERT", "Ensemble"],
+        "Accuracy": [95.8, 97.2, 96.5, 94.9, 98.1],
+        "Speed (ms)": [48, 120, 95, 110, 180],
+        "Memory (MB)": [176, 440, 355, 285, 520],
     }
-    
+
     model_df = pd.DataFrame(model_data)
-    
+
     chart_col1, chart_col2 = st.columns(2)
-    
+
     with chart_col1:
         # Accuracy comparison chart
         fig_accuracy = px.bar(
-            model_df, 
-            x='Model', 
-            y='Accuracy',
-            title='Model Accuracy Comparison (%)',
-            color='Accuracy',
-            color_continuous_scale='viridis'
+            model_df,
+            x="Model",
+            y="Accuracy",
+            title="Model Accuracy Comparison (%)",
+            color="Accuracy",
+            color_continuous_scale="viridis",
         )
-        fig_accuracy.update_layout(
-            showlegend=False,
-            height=400,
-            title_x=0.5
-        )
+        fig_accuracy.update_layout(showlegend=False, height=400, title_x=0.5)
         st.plotly_chart(fig_accuracy, use_container_width=True)
-    
+
     with chart_col2:
         # Speed comparison chart
         fig_speed = px.bar(
-            model_df, 
-            x='Model', 
-            y='Speed (ms)',
-            title='Response Time Comparison (ms)',
-            color='Speed (ms)',
-            color_continuous_scale='plasma'
+            model_df,
+            x="Model",
+            y="Speed (ms)",
+            title="Response Time Comparison (ms)",
+            color="Speed (ms)",
+            color_continuous_scale="plasma",
         )
-        fig_speed.update_layout(
-            showlegend=False,
-            height=400,
-            title_x=0.5
-        )
+        fig_speed.update_layout(showlegend=False, height=400, title_x=0.5)
         st.plotly_chart(fig_speed, use_container_width=True)
-    
+
     # Threat Detection Analysis
     st.markdown("### 🔍 Threat Detection Analysis")
-    
+
     # Sample threat data
     threat_data = {
-        'Threat Type': ['Phishing', 'Spam', 'Malware', 'Scam', 'Social Engineering'],
-        'Detected': [3456, 8923, 1234, 2567, 1890],
-        'Blocked': [3420, 8890, 1225, 2540, 1875]
+        "Threat Type": ["Phishing", "Spam", "Malware", "Scam", "Social Engineering"],
+        "Detected": [3456, 8923, 1234, 2567, 1890],
+        "Blocked": [3420, 8890, 1225, 2540, 1875],
     }
-    
+
     threat_df = pd.DataFrame(threat_data)
-    
+
     threat_col1, threat_col2 = st.columns(2)
-    
+
     with threat_col1:
         # Threat distribution pie chart
         fig_pie = px.pie(
-            threat_df, 
-            values='Detected', 
-            names='Threat Type',
-            title='Threat Type Distribution'
+            threat_df,
+            values="Detected",
+            names="Threat Type",
+            title="Threat Type Distribution",
         )
         fig_pie.update_layout(height=400, title_x=0.5)
         st.plotly_chart(fig_pie, use_container_width=True)
-    
+
     with threat_col2:
         # Detection vs Blocked comparison
         fig_comparison = px.bar(
-            threat_df, 
-            x='Threat Type',
-            y=['Detected', 'Blocked'],
-            title='Threats Detected vs Blocked',
-            barmode='group'
+            threat_df,
+            x="Threat Type",
+            y=["Detected", "Blocked"],
+            title="Threats Detected vs Blocked",
+            barmode="group",
         )
         fig_comparison.update_layout(height=400, title_x=0.5)
         st.plotly_chart(fig_comparison, use_container_width=True)
-    
+
     # Real-time Statistics
     st.markdown("### ⏱️ Real-time System Statistics")
-    
+
     stats_col1, stats_col2, stats_col3 = st.columns(3)
-    
+
     with stats_col1:
         st.info("🟢 **System Status**")
         st.markdown("""
@@ -4272,7 +4819,7 @@ def show_analytics_page():
         **Queue Length:** 0 (No delays)  
         **Last Updated:** 2 seconds ago
         """)
-    
+
     with stats_col2:
         st.success("📊 **Processing Stats**")
         st.markdown("""
@@ -4282,7 +4829,7 @@ def show_analytics_page():
         **Processing Load:** 67% capacity  
         **Error Rate:** 0.03%
         """)
-    
+
     with stats_col3:
         st.warning("🔥 **Performance Metrics**")
         st.markdown("""
@@ -4292,93 +4839,104 @@ def show_analytics_page():
         **Network:** 890 Mbps  
         **Cache Hit Rate:** 94.5%
         """)
-    
+
     # Geographical Analysis
     st.markdown("### 🌍 Geographical Threat Analysis")
-    
+
     geo_col1, geo_col2 = st.columns(2)
-    
+
     with geo_col1:
         # Sample geographical data
         geo_data = {
-            'Country': ['USA', 'India', 'UK', 'Canada', 'Australia', 'Germany', 'France', 'Japan'],
-            'Threats Detected': [12450, 8930, 5670, 3456, 2890, 4567, 3890, 2345],
-            'Success Rate (%)': [97.8, 96.5, 98.1, 97.2, 98.4, 97.9, 96.8, 97.5]
+            "Country": [
+                "USA",
+                "India",
+                "UK",
+                "Canada",
+                "Australia",
+                "Germany",
+                "France",
+                "Japan",
+            ],
+            "Threats Detected": [12450, 8930, 5670, 3456, 2890, 4567, 3890, 2345],
+            "Success Rate (%)": [97.8, 96.5, 98.1, 97.2, 98.4, 97.9, 96.8, 97.5],
         }
-        
+
         geo_df = pd.DataFrame(geo_data)
-        
+
         fig_geo = px.bar(
-            geo_df, 
-            x='Country',
-            y='Threats Detected',
-            title='Threats Detected by Country',
-            color='Success Rate (%)',
-            color_continuous_scale='RdYlGn'
+            geo_df,
+            x="Country",
+            y="Threats Detected",
+            title="Threats Detected by Country",
+            color="Success Rate (%)",
+            color_continuous_scale="RdYlGn",
         )
         fig_geo.update_layout(height=400, title_x=0.5)
         st.plotly_chart(fig_geo, use_container_width=True)
-    
+
     with geo_col2:
         # Success rate by country
         fig_success = px.line(
-            geo_df, 
-            x='Country',
-            y='Success Rate (%)',
-            title='Detection Success Rate by Country',
-            markers=True
+            geo_df,
+            x="Country",
+            y="Success Rate (%)",
+            title="Detection Success Rate by Country",
+            markers=True,
         )
         fig_success.update_layout(height=400, title_x=0.5)
         st.plotly_chart(fig_success, use_container_width=True)
-    
+
     # Temporal Analysis
     st.markdown("### 📅 Temporal Analysis")
-    
+
     # Sample temporal data
     import datetime
-    dates = pd.date_range(start='2025-09-01', end='2025-10-01', freq='D')
+
+    dates = pd.date_range(start="2025-09-01", end="2025-10-01", freq="D")
     temporal_data = {
-        'Date': dates,
-        'Messages': np.random.normal(15000, 2000, len(dates)).astype(int),
-        'Threats': np.random.normal(1500, 300, len(dates)).astype(int),
-        'Accuracy': np.random.normal(97.2, 0.5, len(dates))
+        "Date": dates,
+        "Messages": np.random.normal(15000, 2000, len(dates)).astype(int),
+        "Threats": np.random.normal(1500, 300, len(dates)).astype(int),
+        "Accuracy": np.random.normal(97.2, 0.5, len(dates)),
     }
-    
+
     temporal_df = pd.DataFrame(temporal_data)
-    
+
     temp_col1, temp_col2 = st.columns(2)
-    
+
     with temp_col1:
         # Messages over time
         fig_messages = px.line(
-            temporal_df, 
-            x='Date',
-            y='Messages',
-            title='Daily Message Volume',
-            line_shape='spline'
+            temporal_df,
+            x="Date",
+            y="Messages",
+            title="Daily Message Volume",
+            line_shape="spline",
         )
         fig_messages.update_layout(height=400, title_x=0.5)
         st.plotly_chart(fig_messages, use_container_width=True)
-    
+
     with temp_col2:
         # Accuracy trend
         fig_accuracy_trend = px.line(
-            temporal_df, 
-            x='Date',
-            y='Accuracy',
-            title='Accuracy Trend Over Time',
-            line_shape='spline'
+            temporal_df,
+            x="Date",
+            y="Accuracy",
+            title="Accuracy Trend Over Time",
+            line_shape="spline",
         )
         fig_accuracy_trend.update_layout(height=400, title_x=0.5)
         st.plotly_chart(fig_accuracy_trend, use_container_width=True)
-    
+
     # Advanced Analytics
     st.markdown("### 🔬 Advanced Analytics")
-    
+
     advanced_col1, advanced_col2, advanced_col3 = st.columns(3)
-    
+
     with advanced_col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -4398,10 +4956,13 @@ def show_analytics_page():
                 Deep analysis of model performance, feature importance, and prediction confidence distributions.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with advanced_col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -4421,10 +4982,13 @@ def show_analytics_page():
                 Predictive analytics for threat patterns, seasonal variations, and emerging attack vectors.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with advanced_col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -4444,83 +5008,87 @@ def show_analytics_page():
                 Generate detailed reports for compliance, security audits, and performance reviews.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Data Export and Tools
     st.markdown("### 🛠️ Analytics Tools & Export")
-    
+
     tools_col1, tools_col2 = st.columns(2)
-    
+
     with tools_col1:
         st.markdown("**📊 Data Visualization Options**")
-        chart_type = st.selectbox(
+        st.selectbox(
             "Choose chart type",
             ["Line Chart", "Bar Chart", "Pie Chart", "Scatter Plot", "Heatmap"],
-            help="Select different visualization types for data analysis"
+            help="Select different visualization types for data analysis",
         )
-        
-        date_range = st.date_input(
+
+        st.date_input(
             "Select date range",
             value=[datetime.date(2025, 9, 1), datetime.date(2025, 10, 1)],
-            help="Choose date range for analysis"
+            help="Choose date range for analysis",
         )
-    
+
     with tools_col2:
         st.markdown("**📁 Export Options**")
         export_format = st.selectbox(
             "Export format",
             ["CSV", "JSON", "Excel", "PDF Report"],
-            help="Choose format for data export"
+            help="Choose format for data export",
         )
-        
+
         if st.button("📥 Export Analytics Data", use_container_width=True):
             st.success(f"Analytics data exported successfully as {export_format}!")
             st.info("Download link will be sent to your registered email address.")
-    
+
     # Real-time Monitoring
     st.markdown("### 🔄 Real-time Monitoring")
-    
+
     monitor_col1, monitor_col2, monitor_col3 = st.columns(3)
-    
+
     with monitor_col1:
         if st.button("🔴 Start Live Monitoring", use_container_width=True):
             st.info("Live monitoring started! Updates every 5 seconds.")
-    
+
     with monitor_col2:
         if st.button("⚠️ Set Alert Threshold", use_container_width=True):
             st.warning("Alert threshold configuration opened.")
-    
+
     with monitor_col3:
         if st.button("📧 Configure Notifications", use_container_width=True):
             st.success("Notification settings updated!")
-    
+
     # Action Buttons
     st.markdown("### 🎯 Quick Actions")
     action_col1, action_col2, action_col3 = st.columns(3)
-    
+
     with action_col1:
         if st.button("🤖 View Models", use_container_width=True):
-            navigate_to('models')
-    
+            navigate_to("models")
+
     with action_col2:
         if st.button("🔍 Try Analyzer", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     with action_col3:
         if st.button("🏠 Back to Home", use_container_width=True):
-            navigate_to('home')
-    
+            navigate_to("home")
+
     # Add bottom padding for proper spacing
     st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
+
 def show_help_page():
     """Beautiful and comprehensive Help page"""
-    
+
     # Add top padding for proper spacing
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
+
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -4557,13 +5125,16 @@ def show_help_page():
             Everything you need to know about using Spamlyser effectively and troubleshooting common issues.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Quick Help Categories
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -4589,10 +5160,13 @@ def show_help_page():
                 <strong style="color: #667eea;">🎯 First Analysis</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -4618,10 +5192,13 @@ def show_help_page():
                 <strong style="color: #4ecdc4;">📚 Documentation</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -4647,12 +5224,14 @@ def show_help_page():
                 <strong style="color: #ff6b6b;">⚡ Performance Tips</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Frequently Asked Questions
     st.markdown("### ❓ Frequently Asked Questions")
     st.markdown("")
-    
+
     # Getting Started FAQs
     with st.expander("🚀 **Getting Started**", expanded=True):
         st.markdown("""
@@ -4682,7 +5261,7 @@ def show_help_page():
         - **Risk Factors**: What made the message suspicious
         - **Recommendations**: Suggested actions
         """)
-    
+
     # API Integration FAQs
     with st.expander("🔌 **API Integration**"):
         st.markdown("""
@@ -4716,7 +5295,7 @@ def show_help_page():
         - Batch processing: `POST /api/v1/batch`
         - Supports up to 1000 messages per batch
         """)
-    
+
     # Models & Performance FAQs
     with st.expander("🤖 **AI Models & Performance**"):
         st.markdown("""
@@ -4752,7 +5331,7 @@ def show_help_page():
         - Update to the latest model versions
         - Consider domain-specific fine-tuning
         """)
-    
+
     # Troubleshooting FAQs
     with st.expander("🛠️ **Troubleshooting & Support**"):
         st.markdown("""
@@ -4788,13 +5367,13 @@ def show_help_page():
         3. **Community Forums**: Discuss with other users
         4. **Email**: Direct contact for urgent issues
         """)
-    
+
     # Quick Start Tutorial
     st.markdown("### 📚 Quick Start Tutorial")
     st.markdown("")
-    
+
     tutorial_col1, tutorial_col2 = st.columns([2, 1])
-    
+
     with tutorial_col1:
         st.markdown("""
         **🎯 Your First SMS Analysis in 3 Steps:**
@@ -4819,7 +5398,7 @@ def show_help_page():
         - **Confidence Score**: Higher percentage = more certain classification
         - **Threat Type**: Specific category (phishing, scam, promotional, etc.)
         """)
-    
+
     with tutorial_col2:
         st.success("💡 **Pro Tips**")
         st.markdown("""
@@ -4836,16 +5415,16 @@ def show_help_page():
         - Social media notifications
         - Friend/family messages
         """)
-        
+
         if st.button("🔍 Try SMS Analyzer Now", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     # Resources & Documentation
     st.markdown("### 📖 Resources & Documentation")
     st.markdown("")
-    
+
     resources_col1, resources_col2, resources_col3 = st.columns(3)
-    
+
     with resources_col1:
         st.info("📚 **Documentation**")
         st.markdown("""
@@ -4855,10 +5434,10 @@ def show_help_page():
         - 📊 **Analytics Guide**: Understanding metrics
         - 🛠️ **Developer Tools**: Integration examples
         """)
-        
+
         if st.button("📚 View Documentation", use_container_width=True):
-            navigate_to('api')
-    
+            navigate_to("api")
+
     with resources_col2:
         st.warning("🎓 **Tutorials**")
         st.markdown("""
@@ -4868,10 +5447,10 @@ def show_help_page():
         - 💻 **API Integration**: Developer guide
         - 🎯 **Best Practices**: Optimization tips
         """)
-        
+
         if st.button("🤖 Explore Models", use_container_width=True):
-            navigate_to('models')
-    
+            navigate_to("models")
+
     with resources_col3:
         st.error("🆘 **Support**")
         st.markdown("""
@@ -4881,16 +5460,16 @@ def show_help_page():
         - 🐛 **Report Issues**: Bug reports
         - 💡 **Feature Requests**: Suggest improvements
         """)
-        
+
         if st.button("📞 Contact Support", use_container_width=True):
-            navigate_to('contact')
-    
+            navigate_to("contact")
+
     # Common Issues & Solutions
     st.markdown("### 🔧 Common Issues & Solutions")
     st.markdown("")
-    
+
     issues_col1, issues_col2 = st.columns(2)
-    
+
     with issues_col1:
         st.markdown("""
         **🐛 Common Problems:**
@@ -4911,7 +5490,7 @@ def show_help_page():
         - *Solution*: Use same model for consistency  
         - *Note*: Different models may give different results
         """)
-    
+
     with issues_col2:
         st.markdown("""
         **⚡ Performance Optimization:**
@@ -4932,52 +5511,54 @@ def show_help_page():
         - Cache results when appropriate
         - Monitor rate limits and usage
         """)
-    
+
     # Contact & Support Section
     st.markdown("### 💬 Still Need Help?")
     st.markdown("")
-    
+
     support_col1, support_col2, support_col3 = st.columns(3)
-    
+
     with support_col1:
         if st.button("📧 Email Support", use_container_width=True):
             st.info("📧 Contact us at: support@spamlyser.ai")
-    
+
     with support_col2:
         if st.button("💬 Community Chat", use_container_width=True):
             st.info("🌐 Join our community discussions on GitHub!")
-    
+
     with support_col3:
         if st.button("📝 Report Issue", use_container_width=True):
             st.info("🐛 Report bugs and issues on our GitHub repository")
-    
+
     # Quick Navigation
     st.markdown("### 🎯 Quick Navigation")
     action_col1, action_col2, action_col3 = st.columns(3)
-    
+
     with action_col1:
         if st.button("🔍 SMS Analyzer", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     with action_col2:
         if st.button("🤖 AI Models", use_container_width=True):
-            navigate_to('models')
-    
+            navigate_to("models")
+
     with action_col3:
         if st.button("🏠 Back to Home", use_container_width=True):
-            navigate_to('home')
-    
+            navigate_to("home")
+
     # Add bottom padding for proper spacing
     st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
+
 def show_docs_page():
     """Beautiful and comprehensive Documentation page"""
-    
+
     # Add top padding for proper spacing
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
+
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -5014,13 +5595,16 @@ def show_docs_page():
             Everything you need to integrate, customize, and maximize Spamlyser's capabilities.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Documentation Categories
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -5049,10 +5633,13 @@ def show_docs_page():
                 <strong style="color: #4f46e5;">🎯 Basic Usage</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -5081,10 +5668,13 @@ def show_docs_page():
                 <strong style="color: #7c3aed;">💻 Code Examples</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -5113,12 +5703,14 @@ def show_docs_page():
                 <strong style="color: #ec4899;">📊 Performance</strong>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Documentation Sections
     st.markdown("## 📖 Documentation Sections")
     st.markdown("")
-    
+
     # Installation & Setup
     with st.expander("🚀 **Installation & Setup**", expanded=True):
         st.markdown("""
@@ -5170,7 +5762,7 @@ def show_docs_page():
         - `STREAMLIT_SERVER_ADDRESS`: Server address (default: 0.0.0.0)
         - `MODEL_CACHE_DIR`: Directory for model caching
         """)
-    
+
     # API Documentation
     with st.expander("🔌 **API Documentation**"):
         st.markdown("""
@@ -5252,7 +5844,7 @@ def show_docs_page():
         - **Pro Tier:** 10,000 requests/hour  
         - **Enterprise:** Unlimited
         """)
-    
+
     # SDK Documentation
     with st.expander("💻 **SDK & Code Examples**"):
         st.markdown("""
@@ -5343,7 +5935,7 @@ def show_docs_page():
             return jsonify(result.to_dict())
         ```
         """)
-    
+
     # AI Models Documentation
     with st.expander("🤖 **AI Models & Architecture**"):
         st.markdown("""
@@ -5431,7 +6023,7 @@ def show_docs_page():
         | ALBERT | 96.1% | 95.9% | 96.3% | 96.1% |
         | Ensemble | 98.2% | 98.0% | 98.4% | 98.2% |
         """)
-    
+
     # Advanced Configuration
     with st.expander("⚙️ **Advanced Configuration**"):
         st.markdown("""
@@ -5560,7 +6152,7 @@ def show_docs_page():
             return result
         ```
         """)
-    
+
     # Deployment Guide
     with st.expander("🚀 **Deployment Guide**"):
         st.markdown("""
@@ -5713,31 +6305,31 @@ def show_docs_page():
         - Monitor for vulnerabilities
         - Implement logging and monitoring
         """)
-    
+
     # Navigation & Resources
     st.markdown("### 🎯 Quick Actions")
     action_col1, action_col2, action_col3, action_col4 = st.columns(4)
-    
+
     with action_col1:
         if st.button("🔍 Try SMS Analyzer", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     with action_col2:
         if st.button("🔌 View API", use_container_width=True):
-            navigate_to('api')
-    
+            navigate_to("api")
+
     with action_col3:
         if st.button("🤖 Explore Models", use_container_width=True):
-            navigate_to('models')
-    
+            navigate_to("models")
+
     with action_col4:
         if st.button("❓ Get Help", use_container_width=True):
-            navigate_to('help')
-    
+            navigate_to("help")
+
     # Additional Resources
     st.markdown("### 📚 Additional Resources")
     resource_col1, resource_col2, resource_col3 = st.columns(3)
-    
+
     with resource_col1:
         st.info("🐱 **GitHub Repository**")
         st.markdown("""
@@ -5748,7 +6340,7 @@ def show_docs_page():
         - Release notes
         """)
         st.markdown("[View on GitHub →](https://github.com/Kavlin-Kaur/Spamlyser)")
-    
+
     with resource_col2:
         st.success("📊 **Performance Metrics**")
         st.markdown("""
@@ -5759,8 +6351,8 @@ def show_docs_page():
         - Real-world performance
         """)
         if st.button("📈 View Analytics", use_container_width=True):
-            navigate_to('analytics')
-    
+            navigate_to("analytics")
+
     with resource_col3:
         st.warning("💬 **Community Support**")
         st.markdown("""
@@ -5771,28 +6363,33 @@ def show_docs_page():
         - Contributing guide
         """)
         if st.button("📞 Contact Us", use_container_width=True):
-            navigate_to('contact')
-    
+            navigate_to("contact")
+
     # Footer with version info
     st.markdown("---")
-    st.markdown("""
+    st.markdown(
+        """
     <div style="text-align: center; color: #666; padding: 20px 0;">
         <strong>Spamlyser v2.0</strong> • By Sagnik • 
         <a href="https://github.com/Kavlin-Kaur/Spamlyser" style="color: #4f46e5;">Open Source</a>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Add bottom padding for proper spacing
     st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
+
 def show_settings_page():
     """Beautiful and comprehensive Settings page"""
-    
+
     # Add top padding for proper spacing
     st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
+
     # Hero Section
-    st.markdown("""
+    st.markdown(
+        """
     <div style="
         text-align: center; 
         padding: 40px 20px; 
@@ -5829,13 +6426,16 @@ def show_settings_page():
             Configure models, preferences, and system settings for optimal performance.
         </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     # Settings Categories
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -5855,10 +6455,13 @@ def show_settings_page():
                 Configure default models, performance settings, and prediction thresholds.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -5878,10 +6481,13 @@ def show_settings_page():
                 Customize themes, display options, and user interface preferences.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with col3:
-        st.markdown("""
+        st.markdown(
+            """
         <div style="
             background: white;
             padding: 25px;
@@ -5901,69 +6507,73 @@ def show_settings_page():
                 Optimize processing speed, memory usage, and system resources.
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Initialize session state for settings if not exists
-    if 'settings' not in st.session_state:
+    if "settings" not in st.session_state:
         st.session_state.settings = {
-            'default_model': 'DistilBERT',
-            'confidence_threshold': 0.7,
-            'enable_detailed_analysis': True,
-            'auto_preprocess': True,
-            'theme': 'Light',
-            'show_confidence_scores': True,
-            'enable_batch_mode': False,
-            'max_message_length': 500,
-            'cache_models': True,
-            'gpu_acceleration': False
+            "default_model": "DistilBERT",
+            "confidence_threshold": 0.7,
+            "enable_detailed_analysis": True,
+            "auto_preprocess": True,
+            "theme": "Light",
+            "show_confidence_scores": True,
+            "enable_batch_mode": False,
+            "max_message_length": 500,
+            "cache_models": True,
+            "gpu_acceleration": False,
         }
-    
+
     # Model Configuration Section
     st.markdown("## 🤖 AI Model Configuration")
     st.markdown("")
-    
+
     model_col1, model_col2 = st.columns(2)
-    
+
     with model_col1:
         st.markdown("### Default Model Selection")
         default_model = st.selectbox(
             "Choose your preferred AI model:",
-            options=['DistilBERT', 'BERT', 'RoBERTa', 'ALBERT', 'Ensemble'],
-            index=['DistilBERT', 'BERT', 'RoBERTa', 'ALBERT', 'Ensemble'].index(st.session_state.settings['default_model']),
-            help="DistilBERT: Fast | BERT: Balanced | RoBERTa: Accurate | ALBERT: Efficient | Ensemble: Best"
+            options=["DistilBERT", "BERT", "RoBERTa", "ALBERT", "Ensemble"],
+            index=["DistilBERT", "BERT", "RoBERTa", "ALBERT", "Ensemble"].index(
+                st.session_state.settings["default_model"]
+            ),
+            help="DistilBERT: Fast | BERT: Balanced | RoBERTa: Accurate | ALBERT: Efficient | Ensemble: Best",
         )
-        st.session_state.settings['default_model'] = default_model
-        
+        st.session_state.settings["default_model"] = default_model
+
         st.markdown("### Prediction Threshold")
         confidence_threshold = st.slider(
             "Confidence threshold for classification:",
             min_value=0.1,
             max_value=1.0,
-            value=st.session_state.settings['confidence_threshold'],
+            value=st.session_state.settings["confidence_threshold"],
             step=0.05,
-            help="Messages below this confidence will be marked as uncertain"
+            help="Messages below this confidence will be marked as uncertain",
         )
-        st.session_state.settings['confidence_threshold'] = confidence_threshold
-        
+        st.session_state.settings["confidence_threshold"] = confidence_threshold
+
         st.markdown("### Processing Options")
         enable_detailed = st.checkbox(
             "Enable detailed threat analysis",
-            value=st.session_state.settings['enable_detailed_analysis'],
-            help="Provides threat categories, risk factors, and recommendations"
+            value=st.session_state.settings["enable_detailed_analysis"],
+            help="Provides threat categories, risk factors, and recommendations",
         )
-        st.session_state.settings['enable_detailed_analysis'] = enable_detailed
-        
+        st.session_state.settings["enable_detailed_analysis"] = enable_detailed
+
         auto_preprocess = st.checkbox(
             "Auto-preprocess messages",
-            value=st.session_state.settings['auto_preprocess'],
-            help="Automatically clean and normalize text before analysis"
+            value=st.session_state.settings["auto_preprocess"],
+            help="Automatically clean and normalize text before analysis",
         )
-        st.session_state.settings['auto_preprocess'] = auto_preprocess
-    
+        st.session_state.settings["auto_preprocess"] = auto_preprocess
+
     with model_col2:
         st.info("📊 **Current Model Performance**")
-        
-        if default_model == 'DistilBERT':
+
+        if default_model == "DistilBERT":
             st.markdown("""
             **DistilBERT Performance:**
             - ✅ **Accuracy**: 94.2%
@@ -5971,7 +6581,7 @@ def show_settings_page():
             - 💾 **Memory**: 250MB
             - 🎯 **Best for**: Real-time analysis
             """)
-        elif default_model == 'BERT':
+        elif default_model == "BERT":
             st.markdown("""
             **BERT Performance:**
             - ✅ **Accuracy**: 96.8%
@@ -5979,7 +6589,7 @@ def show_settings_page():
             - 💾 **Memory**: 420MB
             - 🎯 **Best for**: Balanced performance
             """)
-        elif default_model == 'RoBERTa':
+        elif default_model == "RoBERTa":
             st.markdown("""
             **RoBERTa Performance:**
             - ✅ **Accuracy**: 97.5%
@@ -5987,7 +6597,7 @@ def show_settings_page():
             - 💾 **Memory**: 480MB
             - 🎯 **Best for**: High accuracy needs
             """)
-        elif default_model == 'ALBERT':
+        elif default_model == "ALBERT":
             st.markdown("""
             **ALBERT Performance:**
             - ✅ **Accuracy**: 96.1%
@@ -6003,108 +6613,108 @@ def show_settings_page():
             - 💾 **Memory**: 1.2GB
             - 🎯 **Best for**: Maximum accuracy
             """)
-        
+
         st.success(f"🎯 **Confidence Threshold**: {confidence_threshold:.1%}")
         st.markdown(f"""
         Messages with confidence **above {confidence_threshold:.1%}** will be classified normally.
         
         Messages **below {confidence_threshold:.1%}** will be flagged for manual review.
         """)
-    
+
     st.markdown("---")
-    
+
     # Interface Configuration
     st.markdown("## 🎨 Interface & Display Settings")
     st.markdown("")
-    
+
     interface_col1, interface_col2 = st.columns(2)
-    
+
     with interface_col1:
         st.markdown("### Theme & Appearance")
         theme = st.selectbox(
             "Choose interface theme:",
-            options=['Light', 'Dark', 'Auto'],
-            index=['Light', 'Dark', 'Auto'].index(st.session_state.settings['theme']),
-            help="Light: Always light | Dark: Always dark | Auto: Follow system"
+            options=["Light", "Dark", "Auto"],
+            index=["Light", "Dark", "Auto"].index(st.session_state.settings["theme"]),
+            help="Light: Always light | Dark: Always dark | Auto: Follow system",
         )
-        st.session_state.settings['theme'] = theme
-        
+        st.session_state.settings["theme"] = theme
+
         show_confidence = st.checkbox(
             "Always show confidence scores",
-            value=st.session_state.settings['show_confidence_scores'],
-            help="Display confidence percentages with all results"
+            value=st.session_state.settings["show_confidence_scores"],
+            help="Display confidence percentages with all results",
         )
-        st.session_state.settings['show_confidence_scores'] = show_confidence
-        
+        st.session_state.settings["show_confidence_scores"] = show_confidence
+
         st.markdown("### Message Processing")
         max_length = st.number_input(
             "Maximum message length (characters):",
             min_value=100,
             max_value=2000,
-            value=st.session_state.settings['max_message_length'],
+            value=st.session_state.settings["max_message_length"],
             step=50,
-            help="Longer messages will be truncated"
+            help="Longer messages will be truncated",
         )
-        st.session_state.settings['max_message_length'] = max_length
-    
+        st.session_state.settings["max_message_length"] = max_length
+
     with interface_col2:
         st.markdown("### Advanced Options")
         enable_batch = st.checkbox(
             "Enable batch processing mode",
-            value=st.session_state.settings['enable_batch_mode'],
-            help="Allow analysis of multiple messages at once"
+            value=st.session_state.settings["enable_batch_mode"],
+            help="Allow analysis of multiple messages at once",
         )
-        st.session_state.settings['enable_batch_mode'] = enable_batch
-        
-        if theme == 'Dark':
+        st.session_state.settings["enable_batch_mode"] = enable_batch
+
+        if theme == "Dark":
             st.markdown("🌙 **Dark theme** reduces eye strain in low light")
-        elif theme == 'Light':
+        elif theme == "Light":
             st.markdown("☀️ **Light theme** provides maximum readability")
         else:
             st.markdown("🔄 **Auto theme** adapts to your system settings")
-        
+
         if show_confidence:
             st.success("📊 Confidence scores will be displayed")
         else:
             st.info("📊 Confidence scores will be hidden")
-    
+
     st.markdown("---")
-    
+
     # Performance Configuration
     st.markdown("## ⚡ Performance & System Settings")
     st.markdown("")
-    
+
     perf_col1, perf_col2 = st.columns(2)
-    
+
     with perf_col1:
         st.markdown("### Optimization Settings")
         cache_models = st.checkbox(
             "Cache models in memory",
-            value=st.session_state.settings['cache_models'],
-            help="Keep models loaded for faster subsequent analysis"
+            value=st.session_state.settings["cache_models"],
+            help="Keep models loaded for faster subsequent analysis",
         )
-        st.session_state.settings['cache_models'] = cache_models
-        
+        st.session_state.settings["cache_models"] = cache_models
+
         gpu_acceleration = st.checkbox(
             "Enable GPU acceleration",
-            value=st.session_state.settings['gpu_acceleration'],
-            help="Use GPU if available for faster processing (requires CUDA)"
+            value=st.session_state.settings["gpu_acceleration"],
+            help="Use GPU if available for faster processing (requires CUDA)",
         )
-        st.session_state.settings['gpu_acceleration'] = gpu_acceleration
-        
+        st.session_state.settings["gpu_acceleration"] = gpu_acceleration
+
         if cache_models:
             st.success("✅ Models will be cached for faster loading")
         else:
             st.warning("⚠️ Models will load fresh each time")
-        
+
         if gpu_acceleration:
             st.info("🚀 GPU acceleration enabled (if available)")
         else:
             st.info("💻 Using CPU processing")
-    
+
     with perf_col2:
         st.markdown("### System Information")
-        
+
         # Mock system info (in real app, you'd get actual system info)
         st.markdown("""
         **Current System:**
@@ -6115,121 +6725,134 @@ def show_settings_page():
         - 📦 **Python**: 3.11.4
         - 🔥 **PyTorch**: 2.0.1
         """)
-        
+
         if st.button("🔍 Run System Check", use_container_width=True):
             with st.spinner("Checking system performance..."):
                 import time
+
                 time.sleep(2)  # Simulate system check
-            st.success("✅ System check completed! All components are working optimally.")
-    
+            st.success(
+                "✅ System check completed! All components are working optimally."
+            )
+
     st.markdown("---")
-    
+
     # Export/Import Settings
     st.markdown("## 💾 Settings Management")
     st.markdown("")
-    
+
     export_col1, export_col2, export_col3 = st.columns(3)
-    
+
     with export_col1:
         if st.button("📤 Export Settings", use_container_width=True):
             import json
+
             settings_json = json.dumps(st.session_state.settings, indent=2)
             st.download_button(
                 label="⬇️ Download Settings File",
                 data=settings_json,
                 file_name="spamlyser_settings.json",
-                mime="application/json"
+                mime="application/json",
             )
             st.success("Settings exported successfully!")
-    
+
     with export_col2:
-        uploaded_file = st.file_uploader("📥 Import Settings", type=['json'])
+        uploaded_file = st.file_uploader("📥 Import Settings", type=["json"])
         if uploaded_file is not None:
             try:
                 import json
+
                 imported_settings = json.load(uploaded_file)
                 st.session_state.settings.update(imported_settings)
                 st.success("Settings imported successfully!")
                 st.rerun()
             except Exception as e:
                 st.error(f"Error importing settings: {str(e)}")
-    
+
     with export_col3:
         if st.button("🔄 Reset to Defaults", use_container_width=True):
             # Reset to default settings
             st.session_state.settings = {
-                'default_model': 'DistilBERT',
-                'confidence_threshold': 0.7,
-                'enable_detailed_analysis': True,
-                'auto_preprocess': True,
-                'theme': 'Light',
-                'show_confidence_scores': True,
-                'enable_batch_mode': False,
-                'max_message_length': 500,
-                'cache_models': True,
-                'gpu_acceleration': False
+                "default_model": "DistilBERT",
+                "confidence_threshold": 0.7,
+                "enable_detailed_analysis": True,
+                "auto_preprocess": True,
+                "theme": "Light",
+                "show_confidence_scores": True,
+                "enable_batch_mode": False,
+                "max_message_length": 500,
+                "cache_models": True,
+                "gpu_acceleration": False,
             }
             st.success("Settings reset to defaults!")
             st.rerun()
-    
+
     # Quick Actions
     st.markdown("### 🎯 Quick Actions")
     action_col1, action_col2, action_col3, action_col4 = st.columns(4)
-    
+
     with action_col1:
         if st.button("🔍 Test Settings", use_container_width=True):
-            navigate_to('analyzer')
-    
+            navigate_to("analyzer")
+
     with action_col2:
         if st.button("🤖 View Models", use_container_width=True):
-            navigate_to('models')
-    
+            navigate_to("models")
+
     with action_col3:
         if st.button("📚 Documentation", use_container_width=True):
-            navigate_to('docs')
-    
+            navigate_to("docs")
+
     with action_col4:
         if st.button("🏠 Back to Home", use_container_width=True):
-            navigate_to('home')
-    
+            navigate_to("home")
+
     # Settings Summary
     st.markdown("### 📋 Current Configuration Summary")
-    
+
     summary_col1, summary_col2 = st.columns(2)
-    
+
     with summary_col1:
         st.markdown(f"""
         **🤖 AI Model Settings:**
-        - Default Model: **{st.session_state.settings['default_model']}**
-        - Confidence Threshold: **{st.session_state.settings['confidence_threshold']:.1%}**
-        - Detailed Analysis: **{'✅ Enabled' if st.session_state.settings['enable_detailed_analysis'] else '❌ Disabled'}**
-        - Auto Preprocessing: **{'✅ Enabled' if st.session_state.settings['auto_preprocess'] else '❌ Disabled'}**
+        - Default Model: **{st.session_state.settings["default_model"]}**
+        - Confidence Threshold: **{st.session_state.settings["confidence_threshold"]:.1%}**
+        - Detailed Analysis: **{"✅ Enabled" if st.session_state.settings["enable_detailed_analysis"] else "❌ Disabled"}**
+        - Auto Preprocessing: **{"✅ Enabled" if st.session_state.settings["auto_preprocess"] else "❌ Disabled"}**
         """)
-    
+
     with summary_col2:
         st.markdown(f"""
         **🎨 Interface Settings:**
-        - Theme: **{st.session_state.settings['theme']}**
-        - Show Confidence: **{'✅ Yes' if st.session_state.settings['show_confidence_scores'] else '❌ No'}**
-        - Batch Mode: **{'✅ Enabled' if st.session_state.settings['enable_batch_mode'] else '❌ Disabled'}**
-        - Max Message Length: **{st.session_state.settings['max_message_length']} chars**
+        - Theme: **{st.session_state.settings["theme"]}**
+        - Show Confidence: **{"✅ Yes" if st.session_state.settings["show_confidence_scores"] else "❌ No"}**
+        - Batch Mode: **{"✅ Enabled" if st.session_state.settings["enable_batch_mode"] else "❌ Disabled"}**
+        - Max Message Length: **{st.session_state.settings["max_message_length"]} chars**
         """)
-    
-    
+
     st.markdown("---")
     st.markdown("## 🛡️ Custom Threat Rules Editor")
-    st.markdown("Define custom allowlist and blocklist rules that evaluate immediately before the AI model inference to block malicious inputs or pass safe ones.")
-    
+    st.markdown(
+        "Define custom allowlist and blocklist rules that evaluate immediately before the AI model inference to block malicious inputs or pass safe ones."
+    )
+
     from models.custom_rules_manager import load_custom_rules, save_custom_rules
+
     rules = load_custom_rules()
-    
+
     col_allow, col_block = st.columns(2)
-    
+
     with col_allow:
         st.subheader("🟢 Domain Allowlist")
-        st.caption("Messages containing these domain names or keywords will be immediately classified as HAM (Legitimate).")
-        
-        new_allow = st.text_input("Add Safe Domain / Keyword", placeholder="e.g. internal-domain.org", key="new_allow_input")
+        st.caption(
+            "Messages containing these domain names or keywords will be immediately classified as HAM (Legitimate)."
+        )
+
+        new_allow = st.text_input(
+            "Add Safe Domain / Keyword",
+            placeholder="e.g. internal-domain.org",
+            key="new_allow_input",
+        )
         if st.button("➕ Add to Allowlist", key="btn_add_allow"):
             if new_allow.strip():
                 if new_allow.strip() not in rules["allowlist"]:
@@ -6239,7 +6862,7 @@ def show_settings_page():
                     st.rerun()
                 else:
                     st.warning("This domain is already in the allowlist.")
-                    
+
         st.markdown("##### Current Allowlisted Domains:")
         if rules["allowlist"]:
             for idx, domain in enumerate(rules["allowlist"]):
@@ -6255,12 +6878,19 @@ def show_settings_page():
 
     with col_block:
         st.subheader("🔴 Regex Blocklist")
-        st.caption("Messages matching these regular expressions or keywords will be immediately classified as SPAM.")
-        
-        new_block = st.text_input("Add Block Pattern (Regex or Keyword)", placeholder="e.g. \\burgent-claim-100k\\b", key="new_block_input")
+        st.caption(
+            "Messages matching these regular expressions or keywords will be immediately classified as SPAM."
+        )
+
+        new_block = st.text_input(
+            "Add Block Pattern (Regex or Keyword)",
+            placeholder="e.g. \\burgent-claim-100k\\b",
+            key="new_block_input",
+        )
         if st.button("➕ Add to Blocklist", key="btn_add_block"):
             if new_block.strip():
                 import re
+
                 try:
                     re.compile(new_block.strip())
                     if new_block.strip() not in rules["blocklist"]:
@@ -6272,7 +6902,7 @@ def show_settings_page():
                         st.warning("This pattern is already in the blocklist.")
                 except re.error as e:
                     st.error(f"Invalid Regular Expression pattern: {str(e)}")
-                    
+
         st.markdown("##### Current Blocklist Patterns:")
         if rules["blocklist"]:
             for idx, pattern in enumerate(rules["blocklist"]):
@@ -6285,27 +6915,31 @@ def show_settings_page():
                     st.rerun()
         else:
             st.info("No custom blocklist patterns configured.")
-            
+
     st.markdown("---")
-    
+
     # Save confirmation
     if st.button("💾 Save All Settings", use_container_width=True, type="primary"):
         st.success("✅ All settings saved successfully!")
         st.balloons()
-    
+
     # Add bottom padding for proper spacing
     st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
+
 def show_placeholder_page(page_name, icon):
     """Placeholder for other pages"""
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div style="text-align: center; padding: 20px 0; background: linear-gradient(90deg, #1a1a1a, #2d2d2d); border-radius: 15px; margin-bottom: 30px; border: 1px solid #404040;">
         <h1 style="color: #00d4aa; font-size: 3rem; margin: 0; text-shadow: 0 0 20px rgba(0, 212, 170, 0.3);">
             {icon} {page_name.title()}
         </h1>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
     st.markdown(f"""
     ## {icon} {page_name.title()} Page
     
@@ -6316,42 +6950,54 @@ def show_placeholder_page(page_name, icon):
     ### 🔙 Navigation
     Use the footer links below to navigate to other sections of Spamlyser Pro.
     """)
-    
+
     if st.button("🏠 Back to Home", type="primary"):
-        navigate_to('home')
+        navigate_to("home")
+
 
 # --- Load Sample Messages (with fallback) ---
 try:
     sample_df = pd.read_csv("sample_data.csv")
 except FileNotFoundError:
-    st.warning("`sample_data.csv` not found. Creating a dummy DataFrame for sample messages.")
-    sample_df = pd.DataFrame({
-        'message': [
-            "WINNER! You have been selected for a £1000 prize. Call now!",
-            "Hi Mom, just letting you know I'm home safe.",
-            "Free entry to our exclusive lottery! Text WIN to 87879.",
-            "Meeting at 3 PM, don't be late.",
-            "Urgent: Your bank account has been compromised. Verify at https://bit.ly/malicious",
-            "Hey, how are you doing today?",
-            "Congratulations! You've won a new iPhone! Claim your prize here: http://tinyurl.com/prize",
-            "Just confirming our appointment for tomorrow at 10 AM.",
-            "Your subscription is expiring. Renew now to avoid service interruption."
-        ]
-    })
+    st.warning(
+        "`sample_data.csv` not found. Creating a dummy DataFrame for sample messages."
+    )
+    sample_df = pd.DataFrame(
+        {
+            "message": [
+                "WINNER! You have been selected for a £1000 prize. Call now!",
+                "Hi Mom, just letting you know I'm home safe.",
+                "Free entry to our exclusive lottery! Text WIN to 87879.",
+                "Meeting at 3 PM, don't be late.",
+                "Urgent: Your bank account has been compromised. Verify at https://bit.ly/malicious",
+                "Hey, how are you doing today?",
+                "Congratulations! You've won a new iPhone! Claim your prize here: http://tinyurl.com/prize",
+                "Just confirming our appointment for tomorrow at 10 AM.",
+                "Your subscription is expiring. Renew now to avoid service interruption.",
+            ]
+        }
+    )
 
 # --- Session State Initialization ---
-if 'classification_history' not in st.session_state:
+if "classification_history" not in st.session_state:
     st.session_state.classification_history = []
-if 'model_stats' not in st.session_state:
-    st.session_state.model_stats = {model: {'spam': 0, 'ham': 0, 'total': 0} for model in ["DistilBERT", "BERT", "RoBERTa", "ALBERT"]}
-if 'ensemble_tracker' not in st.session_state:
+if "model_stats" not in st.session_state:
+    st.session_state.model_stats = {
+        model: {"spam": 0, "ham": 0, "total": 0}
+        for model in ["DistilBERT", "BERT", "RoBERTa", "ALBERT"]
+    }
+if "ensemble_tracker" not in st.session_state:
     st.session_state.ensemble_tracker = ModelPerformanceTracker()
-if 'ensemble_classifier' not in st.session_state:
-    st.session_state.ensemble_classifier = EnsembleSpamClassifier(performance_tracker=st.session_state.ensemble_tracker)
-if 'ensemble_history' not in st.session_state:
+if "ensemble_classifier" not in st.session_state:
+    st.session_state.ensemble_classifier = EnsembleSpamClassifier(
+        performance_tracker=st.session_state.ensemble_tracker
+    )
+if "ensemble_history" not in st.session_state:
     st.session_state.ensemble_history = []
-if 'loaded_models' not in st.session_state:
-    st.session_state.loaded_models = {model_name: None for model_name in ["DistilBERT", "BERT", "RoBERTa", "ALBERT"]}
+if "loaded_models" not in st.session_state:
+    st.session_state.loaded_models = {
+        model_name: None for model_name in ["DistilBERT", "BERT", "RoBERTa", "ALBERT"]
+    }
 
 
 # --- Model Configurations ---
@@ -6360,26 +7006,26 @@ MODEL_OPTIONS = {
         "id": "mreccentric/distilbert-base-uncased-spamlyser",
         "description": "Lightweight & Fast",
         "icon": "⚡",
-        "color": "#ff6b6b"
+        "color": "#ff6b6b",
     },
     "BERT": {
         "id": "mreccentric/bert-base-uncased-spamlyser",
         "description": "Balanced Performance",
         "icon": "🎯",
-        "color": "#4ecdc4"
+        "color": "#4ecdc4",
     },
     "RoBERTa": {
         "id": "mreccentric/roberta-base-spamlyser",
         "description": "Robust & Accurate",
         "icon": "🚀",
-        "color": "#45b7d1"
+        "color": "#45b7d1",
     },
     "ALBERT": {
         "id": "mreccentric/albert-base-v2-spamlyser",
         "description": "Parameter Efficient",
         "icon": "🧠",
-        "color": "#96ceb4"
-    }
+        "color": "#96ceb4",
+    },
 }
 
 ENSEMBLE_METHODS = {
@@ -6387,54 +7033,57 @@ ENSEMBLE_METHODS = {
         "name": "Majority Voting",
         "description": "Each model votes, majority wins",
         "icon": "🗳️",
-        "color": "#ff6b6b"
+        "color": "#ff6b6b",
     },
     "weighted_average": {
         "name": "Weighted Average",
         "description": "Combines probabilities with model weights",
         "icon": "⚖️",
-        "color": "#4ecdc4"
+        "color": "#4ecdc4",
     },
     "confidence_weighted": {
         "name": "Confidence Weighted",
         "description": "Weights votes by model confidence",
         "icon": "🎯",
-        "color": "#45b7d1"
+        "color": "#45b7d1",
     },
     "adaptive_threshold": {
         "name": "Adaptive Threshold",
         "description": "Adjusts threshold based on agreement",
         "icon": "🔧",
-        "color": "#96ceb4"
+        "color": "#96ceb4",
     },
     "meta_ensemble": {
         "name": "Meta Ensemble",
         "description": "Combines all methods, picks best",
         "icon": "🧠",
-        "color": "#a855f7"
-    }
+        "color": "#a855f7",
+    },
 }
+
 
 # --- Main Page Router ---
 def main():
     """Main function to route between different pages"""
-    
+
     # Display the top navigation bar
     top_navigation_bar()
-    
+
     # Define the feedback page function directly
     def show_feedback_page():
         """Feedback page for user comments, suggestions, and bug reports"""
         # Import the feedback handler
         try:
             from models.feedback_handler import FeedbackHandler
+
             feedback_handler = FeedbackHandler()
         except ImportError:
             st.warning("Feedback handler not found. Feedback will not be saved.")
             feedback_handler = None
-        
+
         # Feedback page header
-        st.markdown("""
+        st.markdown(
+            """
         <div style="text-align: center; padding: 20px 0; background: linear-gradient(90deg, #1a1a1a, #2d2d2d); border-radius: 15px; margin-bottom: 30px; border: 1px solid #404040;">
             <h1 style="color: #00d4aa; font-size: 3rem; margin: 0; text-shadow: 0 0 20px rgba(0, 212, 170, 0.3);">
                 💬 Feedback
@@ -6443,20 +7092,24 @@ def main():
                 Help us improve Spamlyser by sharing your thoughts!
             </p>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         # Initialize session state for feedback form and submission status
-        if 'feedback_submitted' not in st.session_state:
+        if "feedback_submitted" not in st.session_state:
             st.session_state.feedback_submitted = False
-        if 'feedback_rating' not in st.session_state:
+        if "feedback_rating" not in st.session_state:
             st.session_state.feedback_rating = 3
-        if 'feedback_context' not in st.session_state:
+        if "feedback_context" not in st.session_state:
             st.session_state.feedback_context = None
-        
+
         # Check if feedback was just submitted
         if st.session_state.feedback_submitted:
-            st.success("🎉 Thank you for your feedback! Your input helps make Spamlyser better for everyone.")
-            
+            st.success(
+                "🎉 Thank you for your feedback! Your input helps make Spamlyser better for everyone."
+            )
+
             # Add a button to submit another feedback
             if st.button("Submit Another Feedback"):
                 st.session_state.feedback_submitted = False
@@ -6473,21 +7126,30 @@ def main():
                 - Suggest improvements
                 - Share your experience
                 """)
-                
+
                 # Create a form to collect feedback
                 with st.form("feedback_form"):
                     # Feedback type selection
                     feedback_type = st.selectbox(
                         "Type of Feedback",
-                        options=["Bug Report", "Feature Request", "Suggestion", "Question", "Compliment", "Other"],
+                        options=[
+                            "Bug Report",
+                            "Feature Request",
+                            "Suggestion",
+                            "Question",
+                            "Compliment",
+                            "Other",
+                        ],
                         index=2,
-                        help="Select the category that best describes your feedback"
+                        help="Select the category that best describes your feedback",
                     )
-                    
+
                     # Context display if available
                     if st.session_state.feedback_context:
-                        st.info(f"Providing feedback about: **{st.session_state.feedback_context}**")
-                    
+                        st.info(
+                            f"Providing feedback about: **{st.session_state.feedback_context}**"
+                        )
+
                     # Experience rating
                     col1, col2 = st.columns([1, 4])
                     with col1:
@@ -6499,47 +7161,51 @@ def main():
                             max_value=5,
                             value=st.session_state.feedback_rating,
                             help="1 = Poor, 5 = Excellent",
-                            label_visibility="collapsed"
+                            label_visibility="collapsed",
                         )
-                    
+
                     # Rating stars visualization
-                    st.markdown(f"""
+                    st.markdown(
+                        f"""
                     <div style="text-align: center; margin-bottom: 20px;">
-                        {'⭐' * rating}{'☆' * (5 - rating)}
+                        {"⭐" * rating}{"☆" * (5 - rating)}
                     </div>
-                    """, unsafe_allow_html=True)
-                    
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
                     # Detailed feedback
                     feedback_message = st.text_area(
                         "Detailed Feedback",
                         height=150,
                         max_chars=1000,
                         help="Please provide details about your feedback. What worked well? What could be improved?",
-                        placeholder="Share your thoughts, suggestions, or report issues here..."
+                        placeholder="Share your thoughts, suggestions, or report issues here...",
                     )
-                    
+
                     # Optional email for follow-up
                     st.markdown("### Contact Information (Optional)")
                     email = st.text_input(
                         "Email Address",
                         help="Provide your email if you'd like us to follow up on your feedback",
-                        placeholder="your.email@example.com (optional)"
+                        placeholder="your.email@example.com (optional)",
                     )
-                    
+
                     # Privacy note
-                    st.markdown("""
+                    st.markdown(
+                        """
                     <div style="font-size: 0.8rem; color: #888888; margin-bottom: 15px;">
                         <i>Your email will only be used to respond to your feedback if necessary and will not be shared with third parties.</i>
                     </div>
-                    """, unsafe_allow_html=True)
-                    
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
                     # Submit button
                     submit_button = st.form_submit_button(
-                        "Submit Feedback",
-                        use_container_width=True,
-                        type="primary"
+                        "Submit Feedback", use_container_width=True, type="primary"
                     )
-                    
+
                     # Handle form submission
                     if submit_button:
                         if not feedback_message:
@@ -6551,12 +7217,14 @@ def main():
                                 "rating": rating,
                                 "message": feedback_message,
                                 "email": email if email else None,
-                                "context": st.session_state.feedback_context if st.session_state.feedback_context else "General"
+                                "context": st.session_state.feedback_context
+                                if st.session_state.feedback_context
+                                else "General",
                             }
-                            
+
                             # Reset context after using it
                             st.session_state.feedback_context = None
-                            
+
                             # Save feedback if handler is available
                             if feedback_handler:
                                 success = feedback_handler.save_feedback(feedback_data)
@@ -6565,13 +7233,15 @@ def main():
                                     st.session_state.feedback_rating = rating
                                     st.rerun()
                                 else:
-                                    st.error("There was an error saving your feedback. Please try again later.")
+                                    st.error(
+                                        "There was an error saving your feedback. Please try again later."
+                                    )
                             else:
                                 # Mock success if handler is not available (for demo)
                                 st.session_state.feedback_submitted = True
                                 st.session_state.feedback_rating = rating
                                 st.rerun()
-            
+
             # Additional information
             with st.expander("Why We Value Your Feedback"):
                 st.markdown("""
@@ -6588,54 +7258,56 @@ def main():
                 
                 We review all feedback regularly and use it to prioritize improvements and new features. If you've provided your email, we may reach out for clarification or to let you know when your suggestion has been implemented.
                 """)
-        
+
         # Navigation buttons
         st.markdown("<hr>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("🏠 Back to Home", use_container_width=True):
-                navigate_to('home')
+                navigate_to("home")
         with col2:
             if st.button("🔍 Try SMS Analysis", use_container_width=True):
-                navigate_to('analyzer')
+                navigate_to("analyzer")
         with col3:
             if st.button("❓ Get Help", use_container_width=True):
-                navigate_to('help')
-    
+                navigate_to("help")
+
     # Page routing logic
-    if st.session_state.current_page == 'home':
+    if st.session_state.current_page == "home":
         show_home_page()
-    elif st.session_state.current_page == 'analyzer':
+    elif st.session_state.current_page == "analyzer":
         show_analyzer_page()
-    elif st.session_state.current_page == 'about':
+    elif st.session_state.current_page == "about":
         show_about_page()
-    elif st.session_state.current_page == 'features':
+    elif st.session_state.current_page == "features":
         show_features_page()
-    elif st.session_state.current_page == 'analytics':
+    elif st.session_state.current_page == "analytics":
         show_analytics_page()
-    elif st.session_state.current_page == 'models':
+    elif st.session_state.current_page == "models":
         show_models_page()
-    elif st.session_state.current_page == 'feedback':
+    elif st.session_state.current_page == "feedback":
         show_feedback_page()
-    elif st.session_state.current_page == 'help':
+    elif st.session_state.current_page == "help":
         show_help_page()
-    elif st.session_state.current_page == 'contact':
+    elif st.session_state.current_page == "contact":
         show_contact_page()
-    elif st.session_state.current_page == 'docs':
+    elif st.session_state.current_page == "docs":
         show_docs_page()
-    elif st.session_state.current_page == 'api':
+    elif st.session_state.current_page == "api":
         show_api_page()
-    elif st.session_state.current_page == 'settings':
+    elif st.session_state.current_page == "settings":
         show_settings_page()
     else:
         # Default to home if unknown page
-        st.session_state.current_page = 'home'
+        st.session_state.current_page = "home"
         show_home_page()
 
+
 # --- Analyzer Page Content ---
-if st.session_state.current_page == 'analyzer':
+if st.session_state.current_page == "analyzer":
     # --- Header for Analyzer ---
-    st.markdown("""
+    st.markdown(
+        """
     <div style="text-align: center; padding: 20px 0; background: linear-gradient(90deg, #1a1a1a, #2d2d2d); border-radius: 15px; margin-bottom: 30px; border: 1px solid #404040;">
         <h1 style="color: #00d4aa; font-size: 3rem; margin: 0; text-shadow: 0 0 20px rgba(0, 212, 170, 0.3);">
             🛡️ Spamlyser Pro - SMS Analyzer
@@ -6644,89 +7316,110 @@ if st.session_state.current_page == 'analyzer':
             Advanced Multi-Model SMS Threat Detection & Analysis Platform
         </p>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 # --- Sidebar ---
 with st.sidebar:
-
     # --- NEW EXPANDER FOR CONTROLS ---
     with st.expander("⚙️ Analysis Controls", expanded=True):
-        
         # Dark Mode Toggle (Keep this one outside, but close)
-        if 'dark_mode' not in st.session_state:
+        if "dark_mode" not in st.session_state:
             st.session_state.dark_mode = False
-        
+
         # [REMOVED] st.markdown (the colored Analysis Mode header)
-        
-        st.session_state.dark_mode = st.checkbox("🌙 Enable Dark Mode", 
-                                                value=st.session_state.dark_mode, 
-                                                help="Toggle dark mode for the app")
+
+        st.session_state.dark_mode = st.checkbox(
+            "🌙 Enable Dark Mode",
+            value=st.session_state.dark_mode,
+            help="Toggle dark mode for the app",
+        )
 
         # Calibrate option
-        if 'enable_calibration' not in st.session_state:
+        if "enable_calibration" not in st.session_state:
             st.session_state.enable_calibration = False
-            
-        st.session_state.enable_calibration = st.checkbox("🎯 Calibrate Confidence",
-                                                        value=st.session_state.enable_calibration,
-                                                        help="Map raw outputs to calibrated empirical probabilities")
-        
+
+        st.session_state.enable_calibration = st.checkbox(
+            "🎯 Calibrate Confidence",
+            value=st.session_state.enable_calibration,
+            help="Map raw outputs to calibrated empirical probabilities",
+        )
+
         if st.session_state.enable_calibration:
             st.session_state.calibration_method = st.selectbox(
                 "Calibration Mode",
                 ["temperature", "platt"],
-                format_func=lambda x: "Temperature Scaling" if x == "temperature" else "Platt Scaling",
-                key="calibration_method_select"
+                format_func=lambda x: (
+                    "Temperature Scaling" if x == "temperature" else "Platt Scaling"
+                ),
+                key="calibration_method_select",
             )
-        
+
         analysis_mode = st.radio(
             "Choose Analysis Mode",
             ["Single Model", "Ensemble Analysis"],
-            help="Single Model: Use one model at a time\nEnsemble: Use all models together"
+            help="Single Model: Use one model at a time\nEnsemble: Use all models together",
         )
 
     if analysis_mode == "Single Model":
         selected_model_name = st.selectbox(
             "Choose AI Model",
             list(MODEL_OPTIONS.keys()),
-            format_func=lambda x: f"{MODEL_OPTIONS[x]['icon']} {x} - {MODEL_OPTIONS[x]['description']}"
+            format_func=lambda x: (
+                f"{MODEL_OPTIONS[x]['icon']} {x} - {MODEL_OPTIONS[x]['description']}"
+            ),
         )
         model_info = MODEL_OPTIONS[selected_model_name]
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="model-info">
-            <h4 style="color: {model_info['color']}; margin: 0 0 10px 0;">
-                {model_info['icon']} {selected_model_name}
+            <h4 style="color: {model_info["color"]}; margin: 0 0 10px 0;">
+                {model_info["icon"]} {selected_model_name}
             </h4>
             <p style="color: #ccc; margin: 0; font-size: 0.9rem;">
-                {model_info['description']}
+                {model_info["description"]}
             </p>
         </div>
-        """, unsafe_allow_html=True)
-    else: # Ensemble Analysis Mode
+        """,
+            unsafe_allow_html=True,
+        )
+    else:  # Ensemble Analysis Mode
         st.markdown("### 🎯 Ensemble Configuration")
         selected_ensemble_method = st.selectbox(
             "Choose Ensemble Method",
             list(ENSEMBLE_METHODS.keys()),
-            format_func=lambda x: f"{ENSEMBLE_METHODS[x]['icon']} {ENSEMBLE_METHODS[x]['name']}"
+            format_func=lambda x: (
+                f"{ENSEMBLE_METHODS[x]['icon']} {ENSEMBLE_METHODS[x]['name']}"
+            ),
         )
         method_info = ENSEMBLE_METHODS[selected_ensemble_method]
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="model-info">
-            <h4 style="color: {method_info['color']}; margin: 0 0 10px 0;">
-                {method_info['icon']} {method_info['name']}
+            <h4 style="color: {method_info["color"]}; margin: 0 0 10px 0;">
+                {method_info["icon"]} {method_info["name"]}
             </h4>
             <p style="color: #ccc; margin: 0; font-size: 0.9rem;">
-                {method_info['description']}
+                {method_info["description"]}
             </p>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
         if selected_ensemble_method == "weighted_average":
             st.markdown("#### ⚖️ Model Weights")
             weights = {}
             for model_name in MODEL_OPTIONS.keys():
-                default_weight = st.session_state.ensemble_classifier.model_weights.get(model_name, 0.25)
+                default_weight = st.session_state.ensemble_classifier.model_weights.get(
+                    model_name, 0.25
+                )
                 weights[model_name] = st.slider(
                     f"{MODEL_OPTIONS[model_name]['icon']} {model_name}",
-                    0.0, 1.0, default_weight, 0.05
+                    0.0,
+                    1.0,
+                    default_weight,
+                    0.05,
                 )
             if st.button("Update Weights"):
                 st.session_state.ensemble_classifier.update_model_weights(weights)
@@ -6739,37 +7432,56 @@ with st.sidebar:
 
     # Sidebar Overall Stats
     st.markdown("### 📊 Overall Statistics")
-    total_single_predictions = sum(st.session_state.model_stats[model]['total'] for model in MODEL_OPTIONS)
+    total_single_predictions = sum(
+        st.session_state.model_stats[model]["total"] for model in MODEL_OPTIONS
+    )
     total_ensemble_predictions = len(st.session_state.ensemble_history)
     total_predictions_overall = total_single_predictions + total_ensemble_predictions
 
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div class="metric-container" style="background: rgba(30, 30, 30, 0.9); border: 1px solid #444;">
         <p style="color: #00d4aa; font-size: 1.1rem; margin-bottom: 5px; font-weight: 500;">Total Predictions</p>
         <h3 style="color: #f0f0f0; margin: 10px 0; font-size: 1.8rem;">{total_predictions_overall}</h3>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
-    overall_spam_count = sum(st.session_state.model_stats[model]['spam'] for model in MODEL_OPTIONS) + \
-                         sum(1 for entry in st.session_state.ensemble_history if entry['prediction'] == 'SPAM')
-    overall_ham_count = sum(st.session_state.model_stats[model]['ham'] for model in MODEL_OPTIONS) + \
-                        sum(1 for entry in st.session_state.ensemble_history if entry['prediction'] == 'HAM')
+    overall_spam_count = sum(
+        st.session_state.model_stats[model]["spam"] for model in MODEL_OPTIONS
+    ) + sum(
+        1
+        for entry in st.session_state.ensemble_history
+        if entry["prediction"] == "SPAM"
+    )
+    overall_ham_count = sum(
+        st.session_state.model_stats[model]["ham"] for model in MODEL_OPTIONS
+    ) + sum(
+        1 for entry in st.session_state.ensemble_history if entry["prediction"] == "HAM"
+    )
 
     col_spam, col_ham = st.columns(2)
     with col_spam:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="metric-container spam-alert" style="padding: 15px;">
             <p style="color: #ff6b6b; font-size: 1rem; margin-bottom: 5px;">Spam Count</p>
             <h4 style="color: #ff6b6b; margin-top: 0;">{overall_spam_count}</h4>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
     with col_ham:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="metric-container ham-safe" style="padding: 15px;">
             <p style="color: #6bff6b; font-size: 1rem; margin-bottom: 5px;">Ham Count</p>
             <h4 style="color: #6bff6b; margin-top: 0;">{overall_ham_count}</h4>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
 
 # --- Model Loading Helpers ---
@@ -6791,6 +7503,7 @@ def load_model(model_id):
         st.error(f"❌ Error loading model {model_id}: {str(e)}")
         return None
 
+
 @st.cache_resource
 def _load_model_cached(model_id):
     try:
@@ -6799,29 +7512,34 @@ def _load_model_cached(model_id):
         if tokenizer is None or model is None:
             return None
         pipe = pipeline(
-            "text-classification", 
-            model=model, 
+            "text-classification",
+            model=model,
             tokenizer=tokenizer,
-            device=0 if torch.cuda.is_available() else -1
+            device=0 if torch.cuda.is_available() else -1,
         )
         return pipe
     except Exception as e:
         st.error(f"❌ Error creating pipeline for {model_id}: {str(e)}")
         return None
 
+
 def load_model_if_needed(model_name, _progress_callback=None):
     if st.session_state.loaded_models[model_name] is None:
         model_id = MODEL_OPTIONS[model_name]["id"]
         status_container = st.empty()
+
         def update_status(message):
             if status_container:
                 status_container.info(message)
             if _progress_callback:
                 _progress_callback(message)
+
         try:
             update_status(f"Starting to load {model_name}...")
             update_status(f"🔄 Loading tokenizer for {model_name}...")
-            update_status(f"🤖 Loading {model_name} model... (This may take a few minutes)")
+            update_status(
+                f"🤖 Loading {model_name} model... (This may take a few minutes)"
+            )
             model = _load_model_cached(model_id)
             if model is not None:
                 update_status(f"✅ Successfully loaded {model_name}")
@@ -6838,26 +7556,28 @@ def load_model_if_needed(model_name, _progress_callback=None):
             status_container.empty()
     return st.session_state.loaded_models[model_name]
 
+
 def get_loaded_models():
     models = {}
     progress_bar = st.progress(0)
     status_text = st.empty()
     total_models = len(MODEL_OPTIONS)
+
     def update_progress(progress, message=""):
         progress_bar.progress(progress)
         if message:
             status_text.info(message)
+
     for i, (name, model_info) in enumerate(MODEL_OPTIONS.items()):
         update_progress(
             (i / total_models) * 0.9,
-            f"Loading {name} model ({i+1}/{total_models})..."
+            f"Loading {name} model ({i + 1}/{total_models})...",
         )
         models[name] = load_model_if_needed(
-            name, 
+            name,
             _progress_callback=lambda msg: update_progress(
-                (i / total_models) * 0.9, 
-                f"{name}: {msg}"
-            )
+                (i / total_models) * 0.9, f"{name}: {msg}"
+            ),
         )
     update_progress(1.0, "✅ All models loaded successfully!")
     time.sleep(1)
@@ -6865,11 +7585,13 @@ def get_loaded_models():
     status_text.empty()
     return models
 
+
 load_all_models = get_loaded_models
 
 # --- Dynamic CSS for Dark Mode ---
-if st.session_state.get('dark_mode', False):
-    st.markdown("""
+if st.session_state.get("dark_mode", False):
+    st.markdown(
+        """
     <style>
         .main, .stApp {
             background: #181f2f;
@@ -6931,9 +7653,12 @@ if st.session_state.get('dark_mode', False):
             border-radius: 8px;
         }
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 else:
-    st.markdown("""
+    st.markdown(
+        """
     <style>
         .main, .stApp {
             background: #f4f8ff;
@@ -6982,33 +7707,49 @@ else:
             color: #fff;
         }
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
     # ...existing code...
+
 
 # --- Helper Functions ---
 def analyse_message_features(message):
     features = {
-        'length': len(message),
-        'word_count': len(message.split()),
-        'uppercase_ratio': sum(1 for c in message if c.isupper()) / len(message) if message else 0,
-        'digit_ratio': sum(1 for c in message if c.isdigit()) / len(message) if message else 0,
-        'special_chars': len(re.findall(r'[!@#$%^&*(),.?":{}|<>]', message)),
-        'urls': len(re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', message)),
-        'phone_numbers': len(re.findall(r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b', message)),
-        'exclamation_marks': message.count('!'),
-        'question_marks': message.count('?')
+        "length": len(message),
+        "word_count": len(message.split()),
+        "uppercase_ratio": sum(1 for c in message if c.isupper()) / len(message)
+        if message
+        else 0,
+        "digit_ratio": sum(1 for c in message if c.isdigit()) / len(message)
+        if message
+        else 0,
+        "special_chars": len(re.findall(r'[!@#$%^&*(),.?":{}|<>]', message)),
+        "urls": len(
+            re.findall(
+                r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",
+                message,
+            )
+        ),
+        "phone_numbers": len(re.findall(r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b", message)),
+        "exclamation_marks": message.count("!"),
+        "question_marks": message.count("?"),
     }
     return features
+
+
 # This creates a comprehensive dashboard using your existing session state data
+
 
 def render_spamlyser_dashboard():
     """
     Advanced Analytics Dashboard - Add this function to your app.py
     Uses existing session state data: classification_history, ensemble_history, model_stats
     """
-    
+
     st.markdown("---")
-    st.markdown("""
+    st.markdown(
+        """
     <div class="dashboard-content" style="text-align: center; padding: 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; margin: 20px 0; border: 2px solid #8b5cf6;">
         <h1 style="color: white; font-size: 2.8rem; margin: 0; text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);">
             📊 Advanced Analytics Dashboard
@@ -7017,47 +7758,60 @@ def render_spamlyser_dashboard():
             Real-time Performance Insights & Threat Intelligence
         </p>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     # Dashboard tabs with proper container
     st.markdown('<div class="dashboard-tabs-container">', unsafe_allow_html=True)
-    
-    dashboard_tabs = st.tabs(["🎯 Overview", "🤖 Model Performance", "🧠 Ensemble Analytics", "📊 Detailed Stats", "⚡ Real-time Monitor", "🎛️ Confidence Calibration"])
+
+    dashboard_tabs = st.tabs(
+        [
+            "🎯 Overview",
+            "🤖 Model Performance",
+            "🧠 Ensemble Analytics",
+            "📊 Detailed Stats",
+            "⚡ Real-time Monitor",
+            "🎛️ Confidence Calibration",
+        ]
+    )
 
     with dashboard_tabs[0]:  # Overview Tab
         st.markdown('<div class="dashboard-tab-content">', unsafe_allow_html=True)
         render_overview_dashboard()
-        st.markdown('</div>', unsafe_allow_html=True)
-    
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with dashboard_tabs[1]:  # Model Performance Tab
         st.markdown('<div class="dashboard-tab-content">', unsafe_allow_html=True)
         render_model_performance_dashboard()
-        st.markdown('</div>', unsafe_allow_html=True)
-    
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with dashboard_tabs[2]:  # Ensemble Analytics Tab
         st.markdown('<div class="dashboard-tab-content">', unsafe_allow_html=True)
         render_ensemble_dashboard()
-        st.markdown('</div>', unsafe_allow_html=True)
-    
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with dashboard_tabs[3]:  # Detailed Stats Tab
         st.markdown('<div class="dashboard-tab-content">', unsafe_allow_html=True)
         render_detailed_stats_dashboard()
-        st.markdown('</div>', unsafe_allow_html=True)
-    
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with dashboard_tabs[4]:  # Real-time Monitor Tab
         st.markdown('<div class="dashboard-tab-content">', unsafe_allow_html=True)
         render_realtime_monitor()
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with dashboard_tabs[5]:  # Confidence Calibration Tab
         st.markdown('<div class="dashboard-tab-content">', unsafe_allow_html=True)
         render_confidence_calibration()
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 def render_overview_dashboard():
-    st.markdown("""
+    st.markdown(
+        """
 <style>
 /* Fix column layout to prevent overlapping */
 .stColumns > div {
@@ -7110,8 +7864,10 @@ def render_overview_dashboard():
     clear: both;
 }
 </style>
-""", unsafe_allow_html=True)
-    
+""",
+        unsafe_allow_html=True,
+    )
+
     # --- Calculate key metrics ---
     total_single = len(st.session_state.classification_history)
     total_ensemble = len(st.session_state.ensemble_history)
@@ -7125,77 +7881,109 @@ def render_overview_dashboard():
 
     # --- SPAM ---
     with col1:
-        spam_single = sum(1 for item in st.session_state.classification_history if item['prediction'] == 'SPAM')
-        spam_ensemble = sum(1 for item in st.session_state.ensemble_history if item['prediction'] == 'SPAM')
+        spam_single = sum(
+            1
+            for item in st.session_state.classification_history
+            if item["prediction"] == "SPAM"
+        )
+        spam_ensemble = sum(
+            1
+            for item in st.session_state.ensemble_history
+            if item["prediction"] == "SPAM"
+        )
         total_spam = spam_single + spam_ensemble
         spam_rate = (total_spam / total_messages * 100) if total_messages > 0 else 0
 
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="metric-container" style="background: rgba(30, 30, 30, 0.9); border: 1px solid #ff4444; padding: 15px; border-radius: 8px;">
             <p style="color: #ff6b6b; font-size: 1.1rem; margin-bottom: 5px; font-weight: 500;">Spam Count</p>
             <h3 style="color: #ff6b6b; margin: 10px 0; font-size: 1.8rem;">{total_spam}</h3>
             <small style="color: #ff9999;">{spam_rate:.1f}% detection rate</small>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     # --- HAM ---
     with col2:
         total_ham = total_messages - total_spam
         ham_rate = (total_ham / total_messages * 100) if total_messages > 0 else 0
 
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="metric-container" style="background: rgba(30, 30, 30, 0.9); border: 1px solid #44ff44; padding: 15px; border-radius: 8px;">
             <p style="color: #4ecdc4; font-size: 1.1rem; margin-bottom: 5px; font-weight: 500;">Ham Count</p>
             <h3 style="color: #4ecdc4; margin: 10px 0; font-size: 1.8rem;">{total_ham}</h3>
             <small style="color: #99ff99;">{ham_rate:.1f}% legitimate</small>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     # --- Avg Confidence ---
     with col3:
-        all_confidences = [item['confidence'] for item in st.session_state.classification_history] + \
-                          [item['confidence'] for item in st.session_state.ensemble_history]
-        avg_confidence = sum(all_confidences) / len(all_confidences) if all_confidences else 0
+        all_confidences = [
+            item["confidence"] for item in st.session_state.classification_history
+        ] + [item["confidence"] for item in st.session_state.ensemble_history]
+        avg_confidence = (
+            sum(all_confidences) / len(all_confidences) if all_confidences else 0
+        )
 
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="metric-container" style="border: 2px solid #00d4aa;">
             <h2 style="color: #00d4aa;">🎯 {avg_confidence:.1%}</h2>
             <p>Avg Confidence</p>
             <small>Model certainty</small>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     # --- Total Analyzed ---
     with col4:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="metric-container" style="border: 2px solid #a855f7;">
             <h2 style="color: #a855f7;">📱 {total_messages}</h2>
             <p>Total Analyzed</p>
             <small>Messages processed</small>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     # --- Preferred Mode ---
     with col5:
-        mode_ratio = (total_ensemble / total_messages * 100) if total_messages > 0 else 0
+        mode_ratio = (
+            (total_ensemble / total_messages * 100) if total_messages > 0 else 0
+        )
         preferred_mode = "Ensemble" if total_ensemble > total_single else "Ensemble"
 
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="metric-container" style="border: 2px solid #ffd93d;">
             <h2 style="color: #ffd93d;">🧠 {preferred_mode}</h2>
             <p>Preferred Mode</p>
             <small>{mode_ratio:.0f}% ensemble usage</small>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
     # Threat Level Indicator
     st.markdown("### 🛡️ Current Threat Assessment")
-    
+
     # Calculate threat level based on recent activity
-    recent_items = (st.session_state.classification_history + st.session_state.ensemble_history)[-20:]
+    recent_items = (
+        st.session_state.classification_history + st.session_state.ensemble_history
+    )[-20:]
     if recent_items:
-        recent_spam_count = sum(1 for item in recent_items if item['prediction'] == 'SPAM')
+        recent_spam_count = sum(
+            1 for item in recent_items if item["prediction"] == "SPAM"
+        )
         recent_spam_ratio = recent_spam_count / len(recent_items)
-        
+
         if recent_spam_ratio > 0.7:
             threat_level = "🔴 CRITICAL"
             threat_color = "#ff4444"
@@ -7216,335 +8004,411 @@ def render_overview_dashboard():
             threat_level = "🔵 MINIMAL"
             threat_color = "#4ecdc4"
             threat_desc = "Very low threat level"
-        
+
         threat_col1, threat_col2 = st.columns([2, 3])
-        
+
         with threat_col1:
-            st.markdown(f"""
+            st.markdown(
+                f"""
             <div style="background: linear-gradient(145deg, #1a1a1a, #2d2d2d); padding: 25px; border-radius: 15px; border: 3px solid {threat_color}; text-align: center;">
                 <h2 style="color: {threat_color}; margin: 0; font-size: 2rem;">{threat_level}</h2>
                 <p style="color: #ccc; margin: 10px 0;">{threat_desc}</p>
                 <small style="color: #888;">Based on last {len(recent_items)} messages</small>
             </div>
-            """, unsafe_allow_html=True)
-        
+            """,
+                unsafe_allow_html=True,
+            )
+
         with threat_col2:
             # Recent activity timeline
             if len(recent_items) >= 5:
                 timeline_data = []
                 for i, item in enumerate(recent_items[-10:]):  # Last 10 items
-                    timeline_data.append({
-                        'Index': i+1,
-                        'Prediction': 1 if item['prediction'] == 'SPAM' else 0,
-                        'Confidence': item['confidence'],
-                        'Type': 'SPAM' if item['prediction'] == 'SPAM' else 'HAM'
-                    })
-                
+                    timeline_data.append(
+                        {
+                            "Index": i + 1,
+                            "Prediction": 1 if item["prediction"] == "SPAM" else 0,
+                            "Confidence": item["confidence"],
+                            "Type": "SPAM" if item["prediction"] == "SPAM" else "HAM",
+                        }
+                    )
+
                 fig_timeline = go.Figure()
-                
+
                 # Add spam/ham indicators
-                spam_data = [item for item in timeline_data if item['Type'] == 'SPAM']
-                ham_data = [item for item in timeline_data if item['Type'] == 'HAM']
-                
+                spam_data = [item for item in timeline_data if item["Type"] == "SPAM"]
+                ham_data = [item for item in timeline_data if item["Type"] == "HAM"]
+
                 if spam_data:
-                    fig_timeline.add_trace(go.Scatter(
-                        x=[item['Index'] for item in spam_data],
-                        y=[1 for _ in spam_data],
-                        mode='markers',
-                        marker=dict(color='#ff6b6b', size=12, symbol='triangle-up'),
-                        name='SPAM',
-                        text=[f"Confidence: {item['Confidence']:.1%}" for item in spam_data]
-                    ))
-                
+                    fig_timeline.add_trace(
+                        go.Scatter(
+                            x=[item["Index"] for item in spam_data],
+                            y=[1 for _ in spam_data],
+                            mode="markers",
+                            marker=dict(color="#ff6b6b", size=12, symbol="triangle-up"),
+                            name="SPAM",
+                            text=[
+                                f"Confidence: {item['Confidence']:.1%}"
+                                for item in spam_data
+                            ],
+                        )
+                    )
+
                 if ham_data:
-                    fig_timeline.add_trace(go.Scatter(
-                        x=[item['Index'] for item in ham_data],
-                        y=[0 for _ in ham_data],
-                        mode='markers',
-                        marker=dict(color='#4ecdc4', size=12, symbol='circle'),
-                        name='HAM',
-                        text=[f"Confidence: {item['Confidence']:.1%}" for item in ham_data]
-                    ))
-                
+                    fig_timeline.add_trace(
+                        go.Scatter(
+                            x=[item["Index"] for item in ham_data],
+                            y=[0 for _ in ham_data],
+                            mode="markers",
+                            marker=dict(color="#4ecdc4", size=12, symbol="circle"),
+                            name="HAM",
+                            text=[
+                                f"Confidence: {item['Confidence']:.1%}"
+                                for item in ham_data
+                            ],
+                        )
+                    )
+
                 fig_timeline.update_layout(
                     title="Recent Activity Timeline",
                     xaxis_title="Message Sequence",
-                    yaxis=dict(tickvals=[0, 1], ticktext=['HAM', 'SPAM']),
+                    yaxis=dict(tickvals=[0, 1], ticktext=["HAM", "SPAM"]),
                     height=300,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#1a73e8'),  # Changed to blue for better visibility
-                    showlegend=True
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font=dict(color="#1a73e8"),  # Changed to blue for better visibility
+                    showlegend=True,
                 )
-                
+
                 st.plotly_chart(fig_timeline, use_container_width=True)
+
 
 def render_model_performance_dashboard():
     """Individual model performance analysis"""
-    
-    if not st.session_state.model_stats or all(stats['total'] == 0 for stats in st.session_state.model_stats.values()):
-        st.info("🤖 No single model data available. Try the Single Model analysis mode!")
+
+    if not st.session_state.model_stats or all(
+        stats["total"] == 0 for stats in st.session_state.model_stats.values()
+    ):
+        st.info(
+            "🤖 No single model data available. Try the Single Model analysis mode!"
+        )
         return
-    
+
     st.markdown("### 🎯 Individual Model Performance")
-    
+
     # Model comparison charts
     model_names = []
     spam_counts = []
     ham_counts = []
     total_counts = []
     colors = []
-    
+
     for model_name, stats in st.session_state.model_stats.items():
-        if stats['total'] > 0:
+        if stats["total"] > 0:
             model_names.append(model_name)
-            spam_counts.append(stats['spam'])
-            ham_counts.append(stats['ham'])
-            total_counts.append(stats['total'])
-            colors.append(MODEL_OPTIONS[model_name]['color'])
-    
+            spam_counts.append(stats["spam"])
+            ham_counts.append(stats["ham"])
+            total_counts.append(stats["total"])
+            colors.append(MODEL_OPTIONS[model_name]["color"])
+
     if model_names:
         col1, col2 = st.columns(2)
-        
+
         with col1:
             # Stacked bar chart
             fig_models = go.Figure()
-            fig_models.add_trace(go.Bar(name='SPAM', x=model_names, y=spam_counts, marker_color='#ff6b6b'))
-            fig_models.add_trace(go.Bar(name='HAM', x=model_names, y=ham_counts, marker_color='#4ecdc4'))
-            
+            fig_models.add_trace(
+                go.Bar(
+                    name="SPAM", x=model_names, y=spam_counts, marker_color="#ff6b6b"
+                )
+            )
+            fig_models.add_trace(
+                go.Bar(name="HAM", x=model_names, y=ham_counts, marker_color="#4ecdc4")
+            )
+
             fig_models.update_layout(
-                title='Model Predictions Breakdown',
-                barmode='stack',
+                title="Model Predictions Breakdown",
+                barmode="stack",
                 height=400,
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='white')
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="white"),
             )
             st.plotly_chart(fig_models, use_container_width=True)
-        
+
         with col2:
             # Model usage pie chart
-            fig_usage = go.Figure(data=[go.Pie(
-                labels=[f"{MODEL_OPTIONS[name]['icon']} {name}" for name in model_names],
-                values=total_counts,
-                marker_colors=colors,
-                hole=.3
-            )])
-            
+            fig_usage = go.Figure(
+                data=[
+                    go.Pie(
+                        labels=[
+                            f"{MODEL_OPTIONS[name]['icon']} {name}"
+                            for name in model_names
+                        ],
+                        values=total_counts,
+                        marker_colors=colors,
+                        hole=0.3,
+                    )
+                ]
+            )
+
             fig_usage.update_layout(
                 title="Model Usage Distribution",
                 height=400,
-                paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='white')
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="white"),
             )
             st.plotly_chart(fig_usage, use_container_width=True)
-        
+
         # Detailed model stats table
         st.markdown("### 📊 Detailed Model Statistics")
-        
+
         model_stats_data = []
         for model_name, stats in st.session_state.model_stats.items():
-            if stats['total'] > 0:
-                spam_rate = (stats['spam'] / stats['total'] * 100) if stats['total'] > 0 else 0
-                model_stats_data.append({
-                    'Model': f"{MODEL_OPTIONS[model_name]['icon']} {model_name}",
-                    'Total Predictions': stats['total'],
-                    'SPAM Detected': stats['spam'],
-                    'HAM Detected': stats['ham'],
-                    'SPAM Rate': f"{spam_rate:.1f}%",
-                    'Description': MODEL_OPTIONS[model_name]['description']
-                })
-        
+            if stats["total"] > 0:
+                spam_rate = (
+                    (stats["spam"] / stats["total"] * 100) if stats["total"] > 0 else 0
+                )
+                model_stats_data.append(
+                    {
+                        "Model": f"{MODEL_OPTIONS[model_name]['icon']} {model_name}",
+                        "Total Predictions": stats["total"],
+                        "SPAM Detected": stats["spam"],
+                        "HAM Detected": stats["ham"],
+                        "SPAM Rate": f"{spam_rate:.1f}%",
+                        "Description": MODEL_OPTIONS[model_name]["description"],
+                    }
+                )
+
         if model_stats_data:
             df_model_stats = pd.DataFrame(model_stats_data)
             st.dataframe(df_model_stats, use_container_width=True)
 
+
 def render_ensemble_dashboard():
     """Ensemble methods performance analysis"""
-    
+
     if not st.session_state.ensemble_history:
         st.info("🧠 No ensemble data available. Try the Ensemble Analysis mode!")
         return
-    
+
     st.markdown("### 🧠 Ensemble Method Analytics")
-    
+
     # Analyze ensemble history
-    method_stats = defaultdict(lambda: {'count': 0, 'spam': 0, 'confidences': []})
-    
+    method_stats = defaultdict(lambda: {"count": 0, "spam": 0, "confidences": []})
+
     for item in st.session_state.ensemble_history:
-        method = item['method']
-        method_stats[method]['count'] += 1
-        method_stats[method]['confidences'].append(item['confidence'])
-        if item['prediction'] == 'SPAM':
-            method_stats[method]['spam'] += 1
-    
+        method = item["method"]
+        method_stats[method]["count"] += 1
+        method_stats[method]["confidences"].append(item["confidence"])
+        if item["prediction"] == "SPAM":
+            method_stats[method]["spam"] += 1
+
     if method_stats:
         col1, col2 = st.columns(2)
-        
+
         with col1:
             # Method usage and performance
             methods = list(method_stats.keys())
-            method_counts = [method_stats[method]['count'] for method in methods]
-            avg_confidences = [sum(method_stats[method]['confidences'])/len(method_stats[method]['confidences']) for method in methods]
-            
+            method_counts = [method_stats[method]["count"] for method in methods]
+            avg_confidences = [
+                sum(method_stats[method]["confidences"])
+                / len(method_stats[method]["confidences"])
+                for method in methods
+            ]
+
             fig_methods = go.Figure()
-            
+
             # Bar chart for usage
-            fig_methods.add_trace(go.Bar(
-                name='Usage Count',
-                x=methods,
-                y=method_counts,
-                yaxis='y',
-                marker_color='#00d4aa',
-                opacity=0.7
-            ))
-            
-            # Line chart for average confidence
-            fig_methods.add_trace(go.Scatter(
-                name='Avg Confidence',
-                x=methods,
-                y=[conf * max(method_counts) for conf in avg_confidences],  # Scale for visibility
-                yaxis='y2',
-                mode='lines+markers',
-                marker_color='#ff6b6b',
-                line=dict(width=3)
-            ))
-            
-            fig_methods.update_layout(
-                title='Ensemble Method Performance',
-                yaxis=dict(title='Usage Count', side='left'),
-                yaxis2=dict(title='Avg Confidence (Scaled)', side='right', overlaying='y'),
-                height=400,
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='white')
+            fig_methods.add_trace(
+                go.Bar(
+                    name="Usage Count",
+                    x=methods,
+                    y=method_counts,
+                    yaxis="y",
+                    marker_color="#00d4aa",
+                    opacity=0.7,
+                )
             )
-            
+
+            # Line chart for average confidence
+            fig_methods.add_trace(
+                go.Scatter(
+                    name="Avg Confidence",
+                    x=methods,
+                    y=[
+                        conf * max(method_counts) for conf in avg_confidences
+                    ],  # Scale for visibility
+                    yaxis="y2",
+                    mode="lines+markers",
+                    marker_color="#ff6b6b",
+                    line=dict(width=3),
+                )
+            )
+
+            fig_methods.update_layout(
+                title="Ensemble Method Performance",
+                yaxis=dict(title="Usage Count", side="left"),
+                yaxis2=dict(
+                    title="Avg Confidence (Scaled)", side="right", overlaying="y"
+                ),
+                height=400,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="white"),
+            )
+
             st.plotly_chart(fig_methods, use_container_width=True)
-        
+
         with col2:
             # Ensemble method comparison table
             ensemble_data = []
             for method, stats in method_stats.items():
-                avg_conf = sum(stats['confidences']) / len(stats['confidences'])
-                spam_rate = (stats['spam'] / stats['count'] * 100) if stats['count'] > 0 else 0
-                
+                avg_conf = sum(stats["confidences"]) / len(stats["confidences"])
+                spam_rate = (
+                    (stats["spam"] / stats["count"] * 100) if stats["count"] > 0 else 0
+                )
+
                 # Get method info from your ENSEMBLE_METHODS dict
-                method_info = ENSEMBLE_METHODS.get(method, {'name': method, 'icon': '🔧'})
-                
-                ensemble_data.append({
-                    'Method': f"{method_info['icon']} {method_info['name'][:15]}",
-                    'Uses': stats['count'],
-                    'Avg Confidence': f"{avg_conf:.1%}",
-                    'SPAM Rate': f"{spam_rate:.1f}%",
-                    'Total SPAM': stats['spam']
-                })
-            
+                method_info = ENSEMBLE_METHODS.get(
+                    method, {"name": method, "icon": "🔧"}
+                )
+
+                ensemble_data.append(
+                    {
+                        "Method": f"{method_info['icon']} {method_info['name'][:15]}",
+                        "Uses": stats["count"],
+                        "Avg Confidence": f"{avg_conf:.1%}",
+                        "SPAM Rate": f"{spam_rate:.1f}%",
+                        "Total SPAM": stats["spam"],
+                    }
+                )
+
             df_ensemble = pd.DataFrame(ensemble_data)
             st.dataframe(df_ensemble, use_container_width=True)
-            
+
             # Best performing method highlight
             if ensemble_data:
-                best_method = max(ensemble_data, key=lambda x: float(x['Avg Confidence'].rstrip('%'))/100)
-                st.markdown(f"""
+                best_method = max(
+                    ensemble_data,
+                    key=lambda x: float(x["Avg Confidence"].rstrip("%")) / 100,
+                )
+                st.markdown(
+                    f"""
                 <div style="background: linear-gradient(145deg, #1a2a3a, #2a3a4a); padding: 15px; border-radius: 10px; border: 2px solid #00d4aa; margin: 15px 0;">
                     <h4 style="color: #00d4aa; margin: 0;">🏆 Top Performer</h4>
-                    <p style="color: #ccc; margin: 5px 0;">{best_method['Method']} - {best_method['Avg Confidence']} confidence</p>
+                    <p style="color: #ccc; margin: 5px 0;">{best_method["Method"]} - {best_method["Avg Confidence"]} confidence</p>
                 </div>
-                """, unsafe_allow_html=True)
+                """,
+                    unsafe_allow_html=True,
+                )
+
 
 def render_detailed_stats_dashboard():
     """Detailed statistical analysis"""
-    
+
     st.markdown("### 📊 Detailed Statistical Analysis")
-    
-    all_data = st.session_state.classification_history + st.session_state.ensemble_history
-    
+
+    all_data = (
+        st.session_state.classification_history + st.session_state.ensemble_history
+    )
+
     if not all_data:
         st.info("📈 No data available for detailed analysis.")
         return
-    
+
     # Confidence distribution analysis
     col1, col2 = st.columns(2)
-    
+
     with col1:
         st.markdown("#### 📈 Confidence Distribution")
-        
-        confidences = [item['confidence'] for item in all_data]
-        
+
+        confidences = [item["confidence"] for item in all_data]
+
         fig_hist = go.Figure()
-        fig_hist.add_trace(go.Histogram(
-            x=confidences,
-            nbinsx=25,
-            marker_color='rgba(0, 212, 170, 0.7)',
-            marker_line_color='rgba(0, 212, 170, 1)',
-            marker_line_width=1,
-            name='Confidence Distribution'
-        ))
-        
+        fig_hist.add_trace(
+            go.Histogram(
+                x=confidences,
+                nbinsx=25,
+                marker_color="rgba(0, 212, 170, 0.7)",
+                marker_line_color="rgba(0, 212, 170, 1)",
+                marker_line_width=1,
+                name="Confidence Distribution",
+            )
+        )
+
         # Add statistical lines
         mean_conf = np.mean(confidences)
-        fig_hist.add_vline(x=mean_conf, line_dash="dash", line_color="red", 
-                          annotation_text=f"Mean: {mean_conf:.2f}")
-        
+        fig_hist.add_vline(
+            x=mean_conf,
+            line_dash="dash",
+            line_color="red",
+            annotation_text=f"Mean: {mean_conf:.2f}",
+        )
+
         fig_hist.update_layout(
             title="Model Confidence Distribution",
             xaxis_title="Confidence Score",
             yaxis_title="Frequency",
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#1a73e8'),  # Changed to blue for better visibility
-            height=350
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#1a73e8"),  # Changed to blue for better visibility
+            height=350,
         )
-        
+
         st.plotly_chart(fig_hist, use_container_width=True)
-    
+
     with col2:
         st.markdown("#### 🎯 Prediction Accuracy by Confidence")
-        
+
         # Bin predictions by confidence ranges
         confidence_ranges = []
         accuracy_estimates = []
-        
+
         for i in range(0, 100, 10):
             lower = i / 100
             upper = (i + 10) / 100
-            range_data = [item for item in all_data if lower <= item['confidence'] < upper]
-            
+            range_data = [
+                item for item in all_data if lower <= item["confidence"] < upper
+            ]
+
             if range_data:
-                confidence_ranges.append(f"{i}-{i+10}%")
+                confidence_ranges.append(f"{i}-{i + 10}%")
                 # Mock accuracy calculation based on confidence (higher confidence = higher accuracy)
                 accuracy_estimates.append(min(95, 60 + (i * 0.35)))
-        
+
         if confidence_ranges:
             fig_acc = go.Figure()
-            fig_acc.add_trace(go.Bar(
-                x=confidence_ranges,
-                y=accuracy_estimates,
-                marker_color='rgba(255, 107, 107, 0.7)',
-                name='Estimated Accuracy'
-            ))
-            
+            fig_acc.add_trace(
+                go.Bar(
+                    x=confidence_ranges,
+                    y=accuracy_estimates,
+                    marker_color="rgba(255, 107, 107, 0.7)",
+                    name="Estimated Accuracy",
+                )
+            )
+
             fig_acc.update_layout(
                 title="Accuracy by Confidence Range",
                 xaxis_title="Confidence Range",
                 yaxis_title="Estimated Accuracy %",
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#1a73e8'),  # Changed to blue for better visibility
-                height=350
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#1a73e8"),  # Changed to blue for better visibility
+                height=350,
             )
-            
+
             st.plotly_chart(fig_acc, use_container_width=True)
-    
+
     # Statistical summary
     st.markdown("#### 📋 Statistical Summary")
-    
+
     summary_col1, summary_col2, summary_col3 = st.columns(3)
-    
+
     with summary_col1:
-        confidences = [item['confidence'] for item in all_data]
-        st.markdown(f"""
+        confidences = [item["confidence"] for item in all_data]
+        st.markdown(
+            f"""
         <div class="feature-card">
             <h4 style="color: #00d4aa;">Confidence Statistics</h4>
             <p><strong>Mean:</strong> {np.mean(confidences):.3f}</p>
@@ -7552,31 +8416,37 @@ def render_detailed_stats_dashboard():
             <p><strong>Std Dev:</strong> {np.std(confidences):.3f}</p>
             <p><strong>Min/Max:</strong> {np.min(confidences):.3f} / {np.max(confidences):.3f}</p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with summary_col2:
-        spam_predictions = [item for item in all_data if item['prediction'] == 'SPAM']
-        ham_predictions = [item for item in all_data if item['prediction'] == 'HAM']
-        
-        st.markdown(f"""
+        spam_predictions = [item for item in all_data if item["prediction"] == "SPAM"]
+        ham_predictions = [item for item in all_data if item["prediction"] == "HAM"]
+
+        st.markdown(
+            f"""
         <div class="feature-card">
             <h4 style="color: #ff6b6b;">Classification Summary</h4>
             <p><strong>Total Messages:</strong> {len(all_data)}</p>
             <p><strong>SPAM Detected:</strong> {len(spam_predictions)}</p>
             <p><strong>HAM (Safe):</strong> {len(ham_predictions)}</p>
-            <p><strong>SPAM Rate:</strong> {len(spam_predictions)/len(all_data)*100:.1f}%</p>
+            <p><strong>SPAM Rate:</strong> {len(spam_predictions) / len(all_data) * 100:.1f}%</p>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with summary_col3:
         if spam_predictions and ham_predictions:
-            spam_conf_avg = np.mean([item['confidence'] for item in spam_predictions])
-            ham_conf_avg = np.mean([item['confidence'] for item in ham_predictions])
+            spam_conf_avg = np.mean([item["confidence"] for item in spam_predictions])
+            ham_conf_avg = np.mean([item["confidence"] for item in ham_predictions])
         else:
             spam_conf_avg = 0
             ham_conf_avg = 0
-            
-        st.markdown(f"""
+
+        st.markdown(
+            f"""
         <div class="feature-card">
             <h4 style="color: #4ecdc4;">Confidence by Type</h4>
             <p><strong>SPAM Avg Conf:</strong> {spam_conf_avg:.3f}</p>
@@ -7584,24 +8454,36 @@ def render_detailed_stats_dashboard():
             <p><strong>Confidence Gap:</strong> {abs(spam_conf_avg - ham_conf_avg):.3f}</p>
             <p><strong>Higher Conf:</strong> {"SPAM" if spam_conf_avg > ham_conf_avg else "HAM"}</p>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
 
 def render_confidence_calibration():
     """Confidence calibration dashboard tab"""
     st.markdown("### 🎛️ Expected Calibration Error (ECE) & Confidence Calibration")
-    st.markdown("Ensemble deep learning models tend to output confidence probabilities that are uncalibrated (often overconfident on incorrect predictions). Calibration maps raw probability scores to empirical accuracies.")
+    st.markdown(
+        "Ensemble deep learning models tend to output confidence probabilities that are uncalibrated (often overconfident on incorrect predictions). Calibration maps raw probability scores to empirical accuracies."
+    )
 
     from models.calibration import ConfidenceCalibrator
-    
+
     # Initialize calibrator in session state if not present
-    if 'calibrator' not in st.session_state:
-        st.session_state.calibrator = ConfidenceCalibrator(temperature=1.65, platt_a=0.85, platt_b=-0.1)
+    if "calibrator" not in st.session_state:
+        st.session_state.calibrator = ConfidenceCalibrator(
+            temperature=1.65, platt_a=0.85, platt_b=-0.1
+        )
 
     calibrator = st.session_state.calibrator
 
     # Let user select calibration method
-    cal_method = st.selectbox("Scaling Method", ["temperature", "platt"], format_func=lambda x: "Temperature Scaling" if x == "temperature" else "Platt Scaling")
+    cal_method = st.selectbox(
+        "Scaling Method",
+        ["temperature", "platt"],
+        format_func=lambda x: (
+            "Temperature Scaling" if x == "temperature" else "Platt Scaling"
+        ),
+    )
 
     # Generate synthetic validation split for illustration & fitting
     np.random.seed(42)
@@ -7613,7 +8495,7 @@ def render_confidence_calibration():
             y_prob[i] = np.random.beta(5, 1.2)  # Biased towards 1
         else:
             y_prob[i] = np.random.beta(1.2, 5)  # Biased towards 0
-            
+
     # Calculate uncalibrated ECE
     ece_uncal = calibrator.calculate_ece(y_true, y_prob)
 
@@ -7621,21 +8503,37 @@ def render_confidence_calibration():
     if st.button("🔄 Fit Calibrator on Validation Split", type="primary"):
         if cal_method == "temperature":
             opt_temp = calibrator.fit_temperature(y_true, y_prob)
-            st.success(f"Successfully fit Temperature Scaling! Optimal Temperature T = {opt_temp:.3f}")
+            st.success(
+                f"Successfully fit Temperature Scaling! Optimal Temperature T = {opt_temp:.3f}"
+            )
         else:
             opt_a, opt_b = calibrator.fit_platt(y_true, y_prob)
-            st.success(f"Successfully fit Platt Scaling! Platt A = {opt_a:.3f}, Platt B = {opt_b:.3f}")
-            
+            st.success(
+                f"Successfully fit Platt Scaling! Platt A = {opt_a:.3f}, Platt B = {opt_b:.3f}"
+            )
+
     # Calculate calibrated ECE
-    y_prob_cal = np.array([calibrator.calibrate_probability(p, method=cal_method) for p in y_prob])
+    y_prob_cal = np.array(
+        [calibrator.calibrate_probability(p, method=cal_method) for p in y_prob]
+    )
     ece_cal = calibrator.calculate_ece(y_true, y_prob_cal)
 
     # Display ECE comparison metrics
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Expected Calibration Error (Before Calibration)", f"{ece_uncal:.2%}", help="Lower is better. 0% is perfectly calibrated.")
+        st.metric(
+            "Expected Calibration Error (Before Calibration)",
+            f"{ece_uncal:.2%}",
+            help="Lower is better. 0% is perfectly calibrated.",
+        )
     with col2:
-        st.metric("Expected Calibration Error (After Calibration)", f"{ece_cal:.2%}", delta=f"{ece_cal - ece_uncal:.2%}", delta_color="inverse", help="Lower is better.")
+        st.metric(
+            "Expected Calibration Error (After Calibration)",
+            f"{ece_cal:.2%}",
+            delta=f"{ece_cal - ece_uncal:.2%}",
+            delta_color="inverse",
+            help="Lower is better.",
+        )
 
     # Plot reliability diagram / calibration curve
     curve_uncal = calibrator.generate_calibration_curve(y_true, y_prob)
@@ -7643,13 +8541,37 @@ def render_confidence_calibration():
 
     fig = go.Figure()
     # Perfect calibration line
-    fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', name='Perfect Calibration', line=dict(dash='dash', color='grey')))
-    
+    fig.add_trace(
+        go.Scatter(
+            x=[0, 1],
+            y=[0, 1],
+            mode="lines",
+            name="Perfect Calibration",
+            line=dict(dash="dash", color="grey"),
+        )
+    )
+
     # Uncalibrated curve
-    fig.add_trace(go.Scatter(x=curve_uncal['confidences'], y=curve_uncal['accuracies'], mode='lines+markers', name='Before Calibration', line=dict(color='#ff4d4d', width=2)))
-    
+    fig.add_trace(
+        go.Scatter(
+            x=curve_uncal["confidences"],
+            y=curve_uncal["accuracies"],
+            mode="lines+markers",
+            name="Before Calibration",
+            line=dict(color="#ff4d4d", width=2),
+        )
+    )
+
     # Calibrated curve
-    fig.add_trace(go.Scatter(x=curve_cal['confidences'], y=curve_cal['accuracies'], mode='lines+markers', name='After Calibration', line=dict(color='#2ecc71', width=2)))
+    fig.add_trace(
+        go.Scatter(
+            x=curve_cal["confidences"],
+            y=curve_cal["accuracies"],
+            mode="lines+markers",
+            name="After Calibration",
+            line=dict(color="#2ecc71", width=2),
+        )
+    )
 
     fig.update_layout(
         title="Reliability Diagram (Calibration Curve)",
@@ -7657,113 +8579,142 @@ def render_confidence_calibration():
         yaxis_title="Accuracy",
         legend_title="Legend",
         height=450,
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white')
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="white"),
     )
     st.plotly_chart(fig, use_container_width=True)
 
 
 def render_realtime_monitor():
     """Real-time monitoring dashboard"""
-    
+
     st.markdown("### ⚡ Real-time System Monitor")
-    
+
     # System status indicators
     status_col1, status_col2, status_col3, status_col4 = st.columns(4)
-    
+
     with status_col1:
         # Model loading status
-        loaded_models = sum(1 for model in st.session_state.loaded_models.values() if model is not None)
+        loaded_models = sum(
+            1 for model in st.session_state.loaded_models.values() if model is not None
+        )
         total_models = len(st.session_state.loaded_models)
-        
+
         status_color = "#4ecdc4" if loaded_models == total_models else "#ff8800"
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="metric-container" style="border: 2px solid {status_color};">
             <h3 style="color: {status_color};">🤖 Models</h3>
             <h2 style="color: {status_color}; margin: 5px 0;">{loaded_models}/{total_models}</h2>
             <small style="color: #888;">Loaded & Ready</small>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with status_col2:
         # Ensemble system status
-        ensemble_status = "ACTIVE" if st.session_state.ensemble_classifier else "INACTIVE"
+        ensemble_status = (
+            "ACTIVE" if st.session_state.ensemble_classifier else "INACTIVE"
+        )
         status_color = "#4ecdc4" if ensemble_status == "ACTIVE" else "#ff6b6b"
-        
-        st.markdown(f"""
+
+        st.markdown(
+            f"""
         <div class="metric-container" style="border: 2px solid {status_color};">
             <h3 style="color: {status_color};">🧠 Ensemble</h3>
             <h2 style="color: {status_color}; margin: 5px 0;">{ensemble_status}</h2>
             <small style="color: #888;">System Status</small>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with status_col3:
         # Performance tracker status
         tracker_active = st.session_state.ensemble_tracker is not None
         status_color = "#4ecdc4" if tracker_active else "#ff6b6b"
-        
-        st.markdown(f"""
+
+        st.markdown(
+            f"""
         <div class="metric-container" style="border: 2px solid {status_color};">
             <h3 style="color: {status_color};">📊 Tracker</h3>
             <h2 style="color: {status_color}; margin: 5px 0;">{"ON" if tracker_active else "OFF"}</h2>
             <small style="color: #888;">Performance Monitor</small>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     with status_col4:
         # Memory usage (mock)
         memory_usage = 67  # Mock percentage
-        status_color = "#4ecdc4" if memory_usage < 80 else "#ff8800" if memory_usage < 90 else "#ff6b6b"
-        
-        st.markdown(f"""
+        status_color = (
+            "#4ecdc4"
+            if memory_usage < 80
+            else "#ff8800"
+            if memory_usage < 90
+            else "#ff6b6b"
+        )
+
+        st.markdown(
+            f"""
         <div class="metric-container" style="border: 2px solid {status_color};">
             <h3 style="color: {status_color};">💾 Memory</h3>
             <h2 style="color: {status_color}; margin: 5px 0;">{memory_usage}%</h2>
             <small style="color: #888;">System Usage</small>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Real-time controls
     st.markdown("#### ⚙️ Real-time Controls")
-    
+
     control_col1, control_col2, control_col3 = st.columns(3)
-    
+
     with control_col1:
-        auto_refresh = st.checkbox("🔄 Auto-refresh Dashboard", key="dashboard_auto_refresh")
+        auto_refresh = st.checkbox(
+            "🔄 Auto-refresh Dashboard", key="dashboard_auto_refresh"
+        )
         if auto_refresh:
-            refresh_interval = st.slider("Refresh Interval (seconds)", 5, 60, 10)
-    
+            st.slider("Refresh Interval (seconds)", 5, 60, 10)
+
     with control_col2:
         if st.button("🧹 Clear All History", type="secondary"):
             if st.button("⚠️ Confirm Clear", type="primary"):
                 st.session_state.classification_history = []
                 st.session_state.ensemble_history = []
-                st.session_state.model_stats = {model: {'spam': 0, 'ham': 0, 'total': 0} for model in MODEL_OPTIONS.keys()}
+                st.session_state.model_stats = {
+                    model: {"spam": 0, "ham": 0, "total": 0}
+                    for model in MODEL_OPTIONS.keys()
+                }
                 st.success("✅ History cleared!")
                 time.sleep(1)
                 st.rerun()
-    
+
     with control_col3:
         if st.button("💾 Export Dashboard Data"):
             # Create comprehensive export
             dashboard_data = {
-                'classification_history': st.session_state.classification_history,
-                'ensemble_history': st.session_state.ensemble_history,
-                'model_stats': st.session_state.model_stats,
-                'export_timestamp': datetime.now().isoformat(),
-                'total_messages': len(st.session_state.classification_history) + len(st.session_state.ensemble_history)
+                "classification_history": st.session_state.classification_history,
+                "ensemble_history": st.session_state.ensemble_history,
+                "model_stats": st.session_state.model_stats,
+                "export_timestamp": datetime.now().isoformat(),
+                "total_messages": len(st.session_state.classification_history)
+                + len(st.session_state.ensemble_history),
             }
-            
+
             json_data = st.json.dumps(dashboard_data, indent=2, default=str)
-            
+
             st.download_button(
                 label="📥 Download Dashboard Data (JSON)",
                 data=json_data,
                 file_name=f"spamlyser_dashboard_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                mime="application/json"
+                mime="application/json",
             )
+
 
 # Add this to your main app.py file after your existing analysis section:
 
@@ -7771,29 +8722,42 @@ def render_realtime_monitor():
 if st.sidebar.button("📊 Open Dashboard", key="open_dashboard"):
     st.session_state.show_dashboard = True
 
-if st.session_state.get('show_dashboard', False):
+if st.session_state.get("show_dashboard", False):
     render_spamlyser_dashboard()
-    
+
     if st.button("❌ Close Dashboard", key="close_dashboard"):
         st.session_state.show_dashboard = False
         st.rerun()  # Rerun to reset the state
 
+
 def get_risk_indicators(message, prediction, threat_type=None):
     indicators = []
-    spam_keywords = ['free', 'win', 'winner', 'congratulations', 'urgent', 'limited', 'offer', 'click', 'call now']
+    spam_keywords = [
+        "free",
+        "win",
+        "winner",
+        "congratulations",
+        "urgent",
+        "limited",
+        "offer",
+        "click",
+        "call now",
+    ]
     found_keywords = [word for word in spam_keywords if word.lower() in message.lower()]
-    
+
     if prediction == "SPAM":
         # Add threat-specific indicators and advice
         if threat_type and threat_type in THREAT_CATEGORIES:
             threat_info = THREAT_CATEGORIES[threat_type]
-            indicators.append(f"{threat_info['icon']} {threat_type} detected: {threat_info['description']}")
-            
+            indicators.append(
+                f"{threat_info['icon']} {threat_type} detected: {threat_info['description']}"
+            )
+
             # Add threat-specific advice
             threat_advice = get_threat_specific_advice(threat_type)
             for advice in threat_advice:
                 indicators.append(f"💡 {advice}")
-    
+
     # General indicators (for all messages)
     if found_keywords:
         indicators.append(f"⚠️ Spam keywords detected: {', '.join(found_keywords)}")
@@ -7801,13 +8765,14 @@ def get_risk_indicators(message, prediction, threat_type=None):
         uppercase_ratio = sum(1 for c in message if c.isupper()) / len(message)
         if uppercase_ratio > 0.3:
             indicators.append("🔴 Excessive uppercase usage")
-    if message.count('!') > 2:
+    if message.count("!") > 2:
         indicators.append("❗ Multiple exclamation marks")
-    if re.search(r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b', message):
+    if re.search(r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b", message):
         indicators.append("📞 Phone number detected")
-    if re.search(r'http[s]?://', message):
+    if re.search(r"http[s]?://", message):
         indicators.append("🔗 URL detected")
     return indicators
+
 
 def get_ensemble_predictions(message, models):
     predictions = {}
@@ -7816,157 +8781,191 @@ def get_ensemble_predictions(message, models):
             try:
                 result = model(message)[0]
                 predictions[model_name] = {
-                    'label': result['label'].upper(),
-                    'score': result['score']
+                    "label": result["label"].upper(),
+                    "score": result["score"],
                 }
             except Exception as e:
                 st.warning(f"Error with {model_name}: {str(e)}")
                 continue
     return predictions
 
+
 def create_predict_proba(classifier):
     """
     Creates a batch-processing prediction function for LIME.
     `classifier` is a Hugging Face pipeline object.
     """
+
     def predict_proba_batch(texts: List[str]) -> np.ndarray:
         # 1. Get predictions for the whole batch at once
         # The pipeline is highly optimized for this!
-        predictions = classifier(texts, top_k=2) # Get probabilities for both classes
+        predictions = classifier(texts, top_k=2)  # Get probabilities for both classes
 
         results = []
         for pred_list in predictions:
             # 2. Create a dictionary for easy lookup of scores by label
-            score_dict = {p['label'].upper(): p['score'] for p in pred_list}
-            
+            score_dict = {p["label"].upper(): p["score"] for p in pred_list}
+
             # 3. Get the score for SPAM, defaulting to 0.0 if not found
-            spam_score = score_dict.get('SPAM', 0.0)
-            
+            spam_score = score_dict.get("SPAM", 0.0)
+
             # 4. LIME expects probabilities for all classes. Order is [HAM, SPAM]
             # The HAM score will be 1.0 - SPAM score
             results.append([1.0 - spam_score, spam_score])
-            
+
         return np.array(results)
-        
-    return predict_proba_batch# --- Main Interface ---
+
+    return predict_proba_batch  # --- Main Interface ---
+
+
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div class="analysis-header">
         <h3 style="color: #00d4aa; margin: 0;">🔍 {analysis_mode} Analysis</h3>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     # Message input with sample selector
     sample_messages = [""] + sample_df["message"].tolist()
-    st.markdown("<div style='color: #3b82f6; margin-bottom: 0.5rem; font-weight: 500;'>Choose a sample message (or type your own below):</div>", unsafe_allow_html=True)
-    selected_message = st.selectbox("Sample Messages", sample_messages, key="sample_selector")
+    st.markdown(
+        "<div style='color: #3b82f6; margin-bottom: 0.5rem; font-weight: 500;'>Choose a sample message (or type your own below):</div>",
+        unsafe_allow_html=True,
+    )
+    selected_message = st.selectbox(
+        "Sample Messages", sample_messages, key="sample_selector"
+    )
 
     # Set initial value of text_area based on sample_selector or previous user input
-    user_sms_initial_value = selected_message if selected_message else st.session_state.get('user_sms_input_value', "")
-    st.markdown("<div style='color: #3b82f6; margin-top: 1rem; margin-bottom: 0.5rem; font-weight: 500;'>Enter SMS message to analyse</div>", unsafe_allow_html=True)
+    user_sms_initial_value = (
+        selected_message
+        if selected_message
+        else st.session_state.get("user_sms_input_value", "")
+    )
+    st.markdown(
+        "<div style='color: #3b82f6; margin-top: 1rem; margin-bottom: 0.5rem; font-weight: 500;'>Enter SMS message to analyse</div>",
+        unsafe_allow_html=True,
+    )
     user_sms = st.text_area(
         "SMS Message",
         value=user_sms_initial_value,
         height=120,
         placeholder="Type or paste your SMS message here...",
-        help="Enter the SMS message you want to classify as spam or ham (legitimate)"
+        help="Enter the SMS message you want to classify as spam or ham (legitimate)",
     )
     # Store current text_area value in session state for persistence
     st.session_state.user_sms_input_value = user_sms
-    
+
     # Analysis controls
     col_a, col_b, col_c = st.columns([1, 1, 2])
     with col_a:
-        analyse_btn = st.button("🔍 Analyse Message", type="primary", use_container_width=True)
+        analyse_btn = st.button(
+            "🔍 Analyse Message", type="primary", use_container_width=True
+        )
     with col_b:
         clear_btn = st.button("🗑️ Clear", use_container_width=True)
-    
+
     # Test word analysis button (always visible)
     if st.button("🔍 Word Analysis", key="test_word_analysis", type="primary"):
         st.markdown("### 🔍 Word Analysis")
-        
+
         # Use the current message from the text area
-        test_message = user_sms if user_sms.strip() else "Congratulations! You won a free prize, click now!"
+        test_message = (
+            user_sms
+            if user_sms.strip()
+            else "Congratulations! You won a free prize, click now!"
+        )
         st.markdown(f"**Analyzing Message:** {test_message}")
-        
+
         # Create word analyzer
         analyzer = WordAnalyzer()
-        
+
         # Analyze the text
         with st.spinner("🔍 Analyzing message..."):
             analysis = analyzer.analyze_text(test_message)
-        
+
         # Show the highlighted text
         st.markdown("#### 📝 Your Message with Word Analysis")
-        st.markdown("**🔴 Red words** = Spam indicators | **🟢 Green words** = Ham indicators | **🟠 Orange words** = Suspicious patterns")
-        
+        st.markdown(
+            "**🔴 Red words** = Spam indicators | **🟢 Green words** = Ham indicators | **🟠 Orange words** = Suspicious patterns"
+        )
+
         highlighted_html = analyzer.create_highlighted_html(analysis)
         st.markdown(highlighted_html, unsafe_allow_html=True)
-        
+
         # Show summary
         summary = analyzer.get_explanation_summary(analysis)
-        
+
         # Always count neutral words as ham for clearer UI in HAM messages
-        spam_count = len(summary['top_spam_words'])
-        ham_count = len(summary['top_ham_words'])
-        
+        spam_count = len(summary["top_spam_words"])
+        ham_count = len(summary["top_ham_words"])
+
         # For HAM messages, all non-spam words are considered ham indicators
-        if analysis.get('predicted_class') == 'HAM':
-            neutral_words = [w for w in analysis['words'] if not w.get('is_spammy', False) and not w.get('is_hammy', False)]
+        if analysis.get("predicted_class") == "HAM":
+            neutral_words = [
+                w
+                for w in analysis["words"]
+                if not w.get("is_spammy", False) and not w.get("is_hammy", False)
+            ]
             ham_count += len(neutral_words)
-            
+
             # Add neutral words to the top_ham_words list for visibility
             for word in neutral_words:
-                if word['word'] not in [w['word'] for w in summary['top_ham_words']]:
-                    summary['top_ham_words'].append({
-                        'word': word['word'],
-                        'influence': -0.2,  # Give it a small negative influence (ham)
-                        'type': 'neutral-ham'
-                    })
-        
-        st.success(f"✅ Analysis complete! Found {spam_count} spam indicators and {ham_count} ham indicators.")
-        
+                if word["word"] not in [w["word"] for w in summary["top_ham_words"]]:
+                    summary["top_ham_words"].append(
+                        {
+                            "word": word["word"],
+                            "influence": -0.2,  # Give it a small negative influence (ham)
+                            "type": "neutral-ham",
+                        }
+                    )
+
+        st.success(
+            f"✅ Analysis complete! Found {spam_count} spam indicators and {ham_count} ham indicators."
+        )
+
         # Show more detailed breakdown
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("**Spam Indicators:**")
             if spam_count > 0:
-                for word in summary['top_spam_words']:
-                    influence = word.get('influence', 0.0)
+                for word in summary["top_spam_words"]:
+                    influence = word.get("influence", 0.0)
                     st.markdown(f"🔴 **{word['word']}** (Score: {influence:.2f})")
             else:
                 st.info("No spam indicators found")
-                
+
         with col2:
             st.markdown("**Ham Indicators:**")
             if ham_count > 0:
-                for word in summary['top_ham_words']:
-                    influence = word.get('influence', 0.0)
+                for word in summary["top_ham_words"]:
+                    influence = word.get("influence", 0.0)
                     # Make sure we use the absolute value for ham scores
                     st.markdown(f"🟢 **{word['word']}** (Score: {abs(influence):.2f})")
             else:
                 st.info("No ham indicators found")
-        
+
         # Add a feedback button
         st.markdown("---")
         # Removed feedback option and kept only the "Try Another Message" button
         if st.button("🔍 Try Another Message", use_container_width=True):
             st.session_state.user_sms_input_value = ""
             st.rerun()
-        
+
         if "sample_selector" in st.session_state:
             st.session_state.pop("sample_selector")
-        
 
-        st.rerun() # Rerun to update the UI with cleared values
-
+        st.rerun()  # Rerun to update the UI with cleared values
 
 
 if analyse_btn and user_sms.strip():
     if analysis_mode == "Single Model":
         from models.smart_preprocess import preprocess_message
+
         preprocessed = preprocess_message(user_sms)
         cleaned_sms = preprocessed["cleaned"]
         suspicious_features = preprocessed["suspicious"]
@@ -7975,84 +8974,113 @@ if analyse_btn and user_sms.strip():
             with st.spinner(f"🤖 Analyzing with {selected_model_name}..."):
                 time.sleep(0.5)
                 from models.custom_rules_manager import check_custom_rules
+
                 rule_match = check_custom_rules(cleaned_sms)
-                
+
                 if rule_match is not None:
                     label = rule_match
                     confidence = 1.0
-                    st.info(f"💡 Matched custom {'Allowlist' if label == 'HAM' else 'Blocklist'} rule. ML model inference bypassed.")
+                    st.info(
+                        f"💡 Matched custom {'Allowlist' if label == 'HAM' else 'Blocklist'} rule. ML model inference bypassed."
+                    )
                 else:
                     result = classifier(cleaned_sms)[0]
-                    label = normalize_label(result['label'], result.get('score'))
-                    confidence = result['score']
-                    
+                    label = normalize_label(result["label"], result.get("score"))
+                    confidence = result["score"]
+
                     # Apply calibration if enabled
-                    if st.session_state.get('enable_calibration', False):
+                    if st.session_state.get("enable_calibration", False):
                         from models.calibration import ConfidenceCalibrator
-                        if 'calibrator' not in st.session_state:
-                            st.session_state.calibrator = ConfidenceCalibrator(temperature=1.65, platt_a=0.85, platt_b=-0.1)
-                        
-                        cal_method = st.session_state.get('calibration_method', 'temperature')
+
+                        if "calibrator" not in st.session_state:
+                            st.session_state.calibrator = ConfidenceCalibrator(
+                                temperature=1.65, platt_a=0.85, platt_b=-0.1
+                            )
+
+                        cal_method = st.session_state.get(
+                            "calibration_method", "temperature"
+                        )
                         raw_prob = confidence if label == "SPAM" else 1.0 - confidence
-                        calibrated_prob = st.session_state.calibrator.calibrate_probability(raw_prob, method=cal_method)
-                        
+                        calibrated_prob = (
+                            st.session_state.calibrator.calibrate_probability(
+                                raw_prob, method=cal_method
+                            )
+                        )
+
                         if calibrated_prob >= 0.5:
                             label = "SPAM"
                             confidence = calibrated_prob
                         else:
                             label = "HAM"
                             confidence = 1.0 - calibrated_prob
-                
+
                 # Store prediction results in session state for explanation
                 st.session_state.user_sms = user_sms
                 st.session_state.current_prediction_label = label
                 st.session_state.current_prediction_confidence = confidence
-                
+
                 # Special case for DistilBERT - it sometimes misses obvious scams
                 if selected_model_name == "DistilBERT" and label == "HAM":
                     text_lower = cleaned_sms.lower()
                     # Check for common money scam patterns
-                    if any(pattern in text_lower for pattern in [
-                            "won", "$", "cash", "prize", "claim", "click yes", 
-                            "lottery", "winner", "congratulation"
-                        ]):
+                    if any(
+                        pattern in text_lower
+                        for pattern in [
+                            "won",
+                            "$",
+                            "cash",
+                            "prize",
+                            "claim",
+                            "click yes",
+                            "lottery",
+                            "winner",
+                            "congratulation",
+                        ]
+                    ):
                         # Check for combination patterns that are strong indicators of scams
-                        if (("won" in text_lower or "win" in text_lower) and 
-                            ("$" in text_lower or "cash" in text_lower or "prize" in text_lower)):
+                        if ("won" in text_lower or "win" in text_lower) and (
+                            "$" in text_lower
+                            or "cash" in text_lower
+                            or "prize" in text_lower
+                        ):
                             # Override the classification for this clear scam case
                             label = "SPAM"
                             confidence = max(confidence, 0.85)  # Boost confidence
                             st.info("💡 Scam pattern detected and corrected")
-                
+
                 # If SPAM, classify the threat type
                 threat_type = None
                 threat_confidence = 0.0
                 threat_metadata = {}
                 if label == "SPAM":
-                    threat_type, threat_confidence, threat_metadata = classify_threat_type(
-                        cleaned_sms, confidence
+                    threat_type, threat_confidence, threat_metadata = (
+                        classify_threat_type(cleaned_sms, confidence)
                     )
-                
+
                 key = label.lower()
                 if key in st.session_state.model_stats[selected_model_name]:
                     st.session_state.model_stats[selected_model_name][key] += 1
-                st.session_state.model_stats[selected_model_name]['total'] += 1
-                st.session_state.classification_history.append({
-                    'timestamp': datetime.now(),
-                    'message': user_sms[:100] + "..." if len(user_sms) > 100 else user_sms, # Increased snippet length
-                    'prediction': label,
-                    'confidence': confidence,
-                    'model': selected_model_name,
-                    'preprocessed': cleaned_sms,
-                    'suspicious_features': suspicious_features,
-                    'threat_type': threat_type,
-                    'threat_confidence': threat_confidence
-                })
+                st.session_state.model_stats[selected_model_name]["total"] += 1
+                st.session_state.classification_history.append(
+                    {
+                        "timestamp": datetime.now(),
+                        "message": user_sms[:100] + "..."
+                        if len(user_sms) > 100
+                        else user_sms,  # Increased snippet length
+                        "prediction": label,
+                        "confidence": confidence,
+                        "model": selected_model_name,
+                        "preprocessed": cleaned_sms,
+                        "suspicious_features": suspicious_features,
+                        "threat_type": threat_type,
+                        "threat_confidence": threat_confidence,
+                    }
+                )
                 features = analyse_message_features(cleaned_sms)
-                
+
                 risk_indicators = get_risk_indicators(cleaned_sms, label, threat_type)
                 st.markdown("### 🎯 Classification Results")
-                
+
                 card_class = "spam-alert" if label == "SPAM" else "ham-safe"
                 icon = "🚨" if label == "SPAM" else "✅"
                 # Create prediction card with threat info if applicable
@@ -8060,128 +9088,147 @@ if analyse_btn and user_sms.strip():
                 if label == "SPAM" and threat_type:
                     # Create the threat info section directly without using an f-string template
                     threat_info = THREAT_CATEGORIES.get(threat_type, {})
-                    threat_icon = threat_info.get('icon', '⚠️')
-                    threat_color = threat_info.get('color', '#ff6b6b')
-                    threat_description = threat_info.get('description', 'Suspicious message')
-                    
+                    threat_icon = threat_info.get("icon", "⚠️")
+                    threat_color = threat_info.get("color", "#ff6b6b")
+                    threat_description = threat_info.get(
+                        "description", "Suspicious message"
+                    )
+
                     # Use st.markdown to create a separate HTML element for threat info
                     threat_html = f'<div style="margin-top: 15px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.1);"><h4 style="margin: 0; color: {threat_color};">{threat_icon} {threat_type}</h4><p style="margin: 5px 0 0 0; opacity: 0.9;">{threat_description} (Confidence: {threat_confidence:.1%})</p></div>'
-                    
+
                 # Use st.markdown with proper escaping and unsafe_allow_html=True
                 model_info_html = f"""
                 <div class="prediction-card {card_class}">
                     <h2 style="margin: 0 0 15px 0;">{icon} {label}</h2>
                     <h3 style="margin: 0;">Confidence: {confidence:.2%}</h3>
                     <p style="margin: 15px 0 0 0; opacity: 0.8;">
-                        Model: {selected_model_name} | Analysed: {datetime.now().strftime('%H:%M:%S')}
+                        Model: {selected_model_name} | Analysed: {datetime.now().strftime("%H:%M:%S")}
                     </p>
                 </div>
                 """
                 st.markdown(model_info_html, unsafe_allow_html=True)
-                
+
                 # Display threat information separately if it exists
                 if label == "SPAM" and threat_type:
                     st.markdown(threat_html, unsafe_allow_html=True)
 
                 # Generate and display LIME explanation for single model predictions
-                with st.expander("🔍 Show Model Explainability (LIME Analysis)", expanded=True):
+                with st.expander(
+                    "🔍 Show Model Explainability (LIME Analysis)", expanded=True
+                ):
                     from models.model_explainer import ModelExplainer
-                    
+
                     def predict_fn(texts):
                         results = classifier(list(texts))
                         probs = []
                         for res in results:
-                            lbl = res['label'].upper()
-                            scr = res['score']
-                            if lbl == 'SPAM':
+                            lbl = res["label"].upper()
+                            scr = res["score"]
+                            if lbl == "SPAM":
                                 probs.append([1.0 - scr, scr])
                             else:
                                 probs.append([scr, 1.0 - scr])
                         return np.array(probs)
-                    
+
                     explainer = ModelExplainer(predict_fn, class_names=["HAM", "SPAM"])
                     # Use lower num_samples for speed to prevent prediction bottlenecks
-                    explanation_data = explainer.explain_prediction(cleaned_sms, num_features=10, num_samples=150)
-                    
-                    if 'error' in explanation_data:
+                    explanation_data = explainer.explain_prediction(
+                        cleaned_sms, num_features=10, num_samples=150
+                    )
+
+                    if "error" in explanation_data:
                         st.error(f"LIME Analysis Error: {explanation_data['error']}")
                     else:
                         # Extract important words for prediction
                         spam_features = []
-                        for feat in explanation_data.get('features', []):
-                            if feat['class'] == 'SPAM':
-                                spam_features = feat['important_words']
+                        for feat in explanation_data.get("features", []):
+                            if feat["class"] == "SPAM":
+                                spam_features = feat["important_words"]
                                 break
-                        
+
                         if spam_features:
                             # Sort features so highest absolute weights are plotted correctly
-                            sorted_features = sorted(spam_features, key=lambda x: x['weight'])
-                            
-                            words = [f['word'] for f in sorted_features]
-                            weights = [f['weight'] for f in sorted_features]
-                            
+                            sorted_features = sorted(
+                                spam_features, key=lambda x: x["weight"]
+                            )
+
+                            words = [f["word"] for f in sorted_features]
+                            weights = [f["weight"] for f in sorted_features]
+
                             # Red for Spam, Green for Ham
-                            colors = ['#ff4d4d' if w > 0 else '#2ecc71' for w in weights]
-                            
+                            colors = [
+                                "#ff4d4d" if w > 0 else "#2ecc71" for w in weights
+                            ]
+
                             fig = go.Figure()
-                            fig.add_trace(go.Bar(
-                                y=words,
-                                x=weights,
-                                orientation='h',
-                                marker_color=colors,
-                                text=[f"{w:+.4f}" for w in weights],
-                                textposition='auto',
-                                hoverinfo='y+x',
-                            ))
-                            
+                            fig.add_trace(
+                                go.Bar(
+                                    y=words,
+                                    x=weights,
+                                    orientation="h",
+                                    marker_color=colors,
+                                    text=[f"{w:+.4f}" for w in weights],
+                                    textposition="auto",
+                                    hoverinfo="y+x",
+                                )
+                            )
+
                             fig.update_layout(
                                 title=dict(
                                     text="Word Importance (LIME Attribute Weights)",
-                                    font=dict(size=16, color='white')
+                                    font=dict(size=16, color="white"),
                                 ),
                                 xaxis=dict(
                                     title="Influence towards SPAM",
-                                    titlefont=dict(color='white'),
-                                    tickfont=dict(color='white'),
-                                    gridcolor='rgba(255,255,255,0.1)'
+                                    titlefont=dict(color="white"),
+                                    tickfont=dict(color="white"),
+                                    gridcolor="rgba(255,255,255,0.1)",
                                 ),
                                 yaxis=dict(
                                     title="Tokens",
-                                    titlefont=dict(color='white'),
-                                    tickfont=dict(color='white')
+                                    titlefont=dict(color="white"),
+                                    tickfont=dict(color="white"),
                                 ),
                                 height=max(320, len(words) * 35),
                                 margin=dict(l=100, r=20, t=50, b=40),
-                                paper_bgcolor='rgba(0,0,0,0)',
-                                plot_bgcolor='rgba(0,0,0,0)',
+                                paper_bgcolor="rgba(0,0,0,0)",
+                                plot_bgcolor="rgba(0,0,0,0)",
                             )
                             st.plotly_chart(fig, use_container_width=True)
-                            st.markdown("**Legend:** 🔴 Red bars indicate words pushing towards **SPAM** | 🟢 Green bars indicate words pushing towards **HAM**")
+                            st.markdown(
+                                "**Legend:** 🔴 Red bars indicate words pushing towards **SPAM** | 🟢 Green bars indicate words pushing towards **HAM**"
+                            )
                         else:
-                            st.info("No significant word features could be extracted for LIME explanation.")
-                
-    else: # Ensemble Analysis
+                            st.info(
+                                "No significant word features could be extracted for LIME explanation."
+                            )
+
+    else:  # Ensemble Analysis
         from models.custom_rules_manager import check_custom_rules
+
         rule_match = check_custom_rules(user_sms)
-        
+
         if rule_match is not None:
             label = rule_match
             confidence = 1.0
             spam_prob = 1.0 if label == "SPAM" else 0.0
-            
+
             ensemble_result = {
-                'label': label,
-                'confidence': confidence,
-                'spam_probability': spam_prob,
-                'method': 'Custom Rules Bypass',
-                'details': f"Message matched custom {'Allowlist' if label == 'HAM' else 'Blocklist'} rule.",
-                'metadata': {}
+                "label": label,
+                "confidence": confidence,
+                "spam_probability": spam_prob,
+                "method": "Custom Rules Bypass",
+                "details": f"Message matched custom {'Allowlist' if label == 'HAM' else 'Blocklist'} rule.",
+                "metadata": {},
             }
             predictions = {
-                model_name: {'label': label, 'score': confidence} 
+                model_name: {"label": label, "score": confidence}
                 for model_name in MODEL_OPTIONS.keys()
             }
-            st.info(f"💡 Matched custom {'Allowlist' if label == 'HAM' else 'Blocklist'} rule. Ensemble models bypassed.")
+            st.info(
+                f"💡 Matched custom {'Allowlist' if label == 'HAM' else 'Blocklist'} rule. Ensemble models bypassed."
+            )
         else:
             with st.spinner("🤖 Loading all models for ensemble analysis..."):
                 models = {}
@@ -8194,179 +9241,235 @@ if analyse_btn and user_sms.strip():
                         ensemble_result = st.session_state.ensemble_classifier.get_ensemble_prediction(
                             predictions, selected_ensemble_method
                         )
-                    
-                    # If SPAM, classify the threat type
-                    threat_type = None
-                    threat_confidence = 0.0
-                    threat_metadata = {}
-                    if ensemble_result['label'] == "SPAM":
-                        threat_type, threat_confidence, threat_metadata = classify_threat_type(
-                            user_sms, ensemble_result['spam_probability']
+
+                        # If SPAM, classify the threat type
+                        threat_type = None
+                        threat_confidence = 0.0
+                        threat_metadata = {}
+                        if ensemble_result["label"] == "SPAM":
+                            threat_type, threat_confidence, threat_metadata = (
+                                classify_threat_type(
+                                    user_sms, ensemble_result["spam_probability"]
+                                )
+                            )
+                            # Add threat info to ensemble result
+                            ensemble_result["threat_type"] = threat_type
+                            ensemble_result["threat_confidence"] = threat_confidence
+                            ensemble_result["metadata"]["threat"] = threat_metadata
+
+                        st.session_state.ensemble_history.append(
+                            {
+                                "timestamp": datetime.now(),
+                                "message": user_sms[:100] + "..."
+                                if len(user_sms) > 100
+                                else user_sms,  # Increased snippet length
+                                "prediction": ensemble_result["label"],
+                                "confidence": ensemble_result["confidence"],
+                                "method": selected_ensemble_method,
+                                "spam_probability": ensemble_result["spam_probability"],
+                                "threat_type": threat_type,
+                                "threat_confidence": threat_confidence,
+                            }
                         )
-                        # Add threat info to ensemble result
-                        ensemble_result['threat_type'] = threat_type
-                        ensemble_result['threat_confidence'] = threat_confidence
-                        ensemble_result['metadata']['threat'] = threat_metadata
-                    
-                    st.session_state.ensemble_history.append({
-                        'timestamp': datetime.now(),
-                        'message': user_sms[:100] + "..." if len(user_sms) > 100 else user_sms, # Increased snippet length
-                        'prediction': ensemble_result['label'],
-                        'confidence': ensemble_result['confidence'],
-                        'method': selected_ensemble_method,
-                        'spam_probability': ensemble_result['spam_probability'],
-                        'threat_type': threat_type,
-                        'threat_confidence': threat_confidence
-                    })
-                    features = analyse_message_features(user_sms)
-                    risk_indicators = get_risk_indicators(user_sms, ensemble_result['label'], threat_type)
-                    st.markdown("### 🎯 Ensemble Classification Results")
-                    card_class = "spam-alert" if ensemble_result['label'] == "SPAM" else "ham-safe"
-                    icon = "🚨" if ensemble_result['label'] == "SPAM" else "✅"
-                    # Create prediction card with threat info if applicable
-                    threat_html = ""
-                    if ensemble_result['label'] == "SPAM" and threat_type:
-                        # Create the threat info section directly without using an f-string template
-                        threat_info = THREAT_CATEGORIES.get(threat_type, {})
-                        threat_icon = threat_info.get('icon', '⚠️')
-                        threat_color = threat_info.get('color', '#ff6b6b')
-                        threat_description = threat_info.get('description', 'Suspicious message')
-                        
-                        # Use a single-line string to avoid formatting issues
-                        threat_html = f'<div style="margin-top: 15px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.1);"><h4 style="margin: 0; color: {threat_color};">{threat_icon} {threat_type}</h4><p style="margin: 5px 0 0 0; opacity: 0.9;">{threat_description} (Confidence: {threat_confidence:.1%})</p></div>'
-                    
-                    # Use st.markdown with proper escaping and unsafe_allow_html=True
-                    ensemble_info_html = f"""
-                    <div class="prediction-card {card_class} ensemble-card">
-                        <h2 style="margin: 0 0 15px 0;">{icon} {ensemble_result['label']}</h2>
-                        <h3 style="margin: 0;">Confidence: {ensemble_result['confidence']:.2%}</h3>
-                        <h4 style="margin: 10px 0;">Spam Probability: {ensemble_result['spam_probability']:.2%}</h4>
-                        <p style="margin: 15px 0 0 0; opacity: 0.8;">
-                            Method: {ENSEMBLE_METHODS[selected_ensemble_method]['name']} | 
-                            Analysed: {datetime.now().strftime('%H:%M:%S')}
-                        </p>
-                    </div>
-                    """
-                    st.markdown(ensemble_info_html, unsafe_allow_html=True)
-                    
-                    # Display threat information separately if it exists
-                    if ensemble_result['label'] == "SPAM" and threat_type:
-                        st.markdown(threat_html, unsafe_allow_html=True)
-                    
-                    st.markdown("#### 🤖 Individual Model Predictions")
-                    cols = st.columns(len(predictions))
-                    for i, (model_name, pred) in enumerate(predictions.items()):
-                        # Save individual model prediction to a global tracking list
-                        if 'model_vote_history' not in st.session_state:
-                            st.session_state.model_vote_history = []
+                        features = analyse_message_features(user_sms)
+                        risk_indicators = get_risk_indicators(
+                            user_sms, ensemble_result["label"], threat_type
+                        )
+                        st.markdown("### 🎯 Ensemble Classification Results")
+                        card_class = (
+                            "spam-alert"
+                            if ensemble_result["label"] == "SPAM"
+                            else "ham-safe"
+                        )
+                        icon = "🚨" if ensemble_result["label"] == "SPAM" else "✅"
+                        # Create prediction card with threat info if applicable
+                        threat_html = ""
+                        if ensemble_result["label"] == "SPAM" and threat_type:
+                            # Create the threat info section directly without using an f-string template
+                            threat_info = THREAT_CATEGORIES.get(threat_type, {})
+                            threat_icon = threat_info.get("icon", "⚠️")
+                            threat_color = threat_info.get("color", "#ff6b6b")
+                            threat_description = threat_info.get(
+                                "description", "Suspicious message"
+                            )
 
-                        st.session_state.model_vote_history.append({
-                            'model': model_name,
-                            'label': pred['label'],
-                            'confidence': pred['score'],
-                            'message': user_sms,
-                            'timestamp': datetime.now()
-                        })
+                            # Use a single-line string to avoid formatting issues
+                            threat_html = f'<div style="margin-top: 15px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.1);"><h4 style="margin: 0; color: {threat_color};">{threat_icon} {threat_type}</h4><p style="margin: 5px 0 0 0; opacity: 0.9;">{threat_description} (Confidence: {threat_confidence:.1%})</p></div>'
 
-                        with cols[i]:
-                            color = "#ff6b6b" if pred['label'] == "SPAM" else "#4ecdc4"
-                            st.markdown(f"""
-                            <div class="method-comparison">
-                                <h5 style="color: {MODEL_OPTIONS[model_name]['color']}; margin: 0;">
-                                    {MODEL_OPTIONS[model_name]['icon']} {model_name}
-                                </h5>
-                                <p style="color: {color}; margin: 5px 0; font-weight: bold;">
-                                    {pred['label']}
-                                </p>
-                                <p style="margin: 0; font-size: 0.9rem;">
-                                    {pred['score']:.2%}
-                                </p>
-                            </div>
-                            """, unsafe_allow_html=True)
-                    st.markdown("#### 📊 Ensemble Method Details")
-                    st.markdown(f"**Method:** {ensemble_result['method']}")
-                    st.markdown(f"**Details:** {ensemble_result['details']}")
-                    if 'model_contributions' in ensemble_result:
-                        st.markdown("##### Model Contributions:")
-                        for contrib in ensemble_result['model_contributions']:
-                            st.write(f"- {contrib['model']}: Weight {contrib['weight']:.3f}, "
-                                   f"Contribution: {contrib['contribution']:.3f}")
-                    if st.checkbox("🔍 Show All Ensemble Methods Comparison"):
-                        st.markdown("#### 🎯 All Methods Comparison")
-                        all_results = st.session_state.ensemble_classifier.get_all_predictions(predictions)
-                        comparison_data = []
-                        for method_key, result in all_results.items():
-                            comparison_data.append({
-                                'Method': ENSEMBLE_METHODS[method_key]['name'],
-                                'Icon': ENSEMBLE_METHODS[method_key]['icon'],
-                                'Prediction': result['label'],
-                                'Confidence': f"{result['confidence']:.2%}",
-                                'Spam Prob': f"{result['spam_probability']:.2%}"
-                            })
-                        df_comparison = pd.DataFrame(comparison_data)
-                        st.dataframe(df_comparison, use_container_width=True)
-                else:
-                    st.warning("No predictions could be generated from the ensemble models for this message.")
-        else:
-            st.error("No ensemble models were loaded successfully. Cannot perform ensemble analysis.")
-    if 'features' in locals(): # Only show features if analysis was successful
+                        # Use st.markdown with proper escaping and unsafe_allow_html=True
+                        ensemble_info_html = f"""
+                        <div class="prediction-card {card_class} ensemble-card">
+                            <h2 style="margin: 0 0 15px 0;">{icon} {ensemble_result["label"]}</h2>
+                            <h3 style="margin: 0;">Confidence: {ensemble_result["confidence"]:.2%}</h3>
+                            <h4 style="margin: 10px 0;">Spam Probability: {ensemble_result["spam_probability"]:.2%}</h4>
+                            <p style="margin: 15px 0 0 0; opacity: 0.8;">
+                                Method: {ENSEMBLE_METHODS[selected_ensemble_method]["name"]} | 
+                                Analysed: {datetime.now().strftime("%H:%M:%S")}
+                            </p>
+                        </div>
+                        """
+                        st.markdown(ensemble_info_html, unsafe_allow_html=True)
+
+                        # Display threat information separately if it exists
+                        if ensemble_result["label"] == "SPAM" and threat_type:
+                            st.markdown(threat_html, unsafe_allow_html=True)
+
+                        st.markdown("#### 🤖 Individual Model Predictions")
+                        cols = st.columns(len(predictions))
+                        for i, (model_name, pred) in enumerate(predictions.items()):
+                            # Save individual model prediction to a global tracking list
+                            if "model_vote_history" not in st.session_state:
+                                st.session_state.model_vote_history = []
+
+                            st.session_state.model_vote_history.append(
+                                {
+                                    "model": model_name,
+                                    "label": pred["label"],
+                                    "confidence": pred["score"],
+                                    "message": user_sms,
+                                    "timestamp": datetime.now(),
+                                }
+                            )
+
+                            with cols[i]:
+                                color = (
+                                    "#ff6b6b" if pred["label"] == "SPAM" else "#4ecdc4"
+                                )
+                                st.markdown(
+                                    f"""
+                                <div class="method-comparison">
+                                    <h5 style="color: {MODEL_OPTIONS[model_name]["color"]}; margin: 0;">
+                                        {MODEL_OPTIONS[model_name]["icon"]} {model_name}
+                                    </h5>
+                                    <p style="color: {color}; margin: 5px 0; font-weight: bold;">
+                                        {pred["label"]}
+                                    </p>
+                                    <p style="margin: 0; font-size: 0.9rem;">
+                                        {pred["score"]:.2%}
+                                    </p>
+                                </div>
+                                """,
+                                    unsafe_allow_html=True,
+                                )
+                        st.markdown("#### 📊 Ensemble Method Details")
+                        st.markdown(f"**Method:** {ensemble_result['method']}")
+                        st.markdown(f"**Details:** {ensemble_result['details']}")
+                        if "model_contributions" in ensemble_result:
+                            st.markdown("##### Model Contributions:")
+                            for contrib in ensemble_result["model_contributions"]:
+                                st.write(
+                                    f"- {contrib['model']}: Weight {contrib['weight']:.3f}, "
+                                    f"Contribution: {contrib['contribution']:.3f}"
+                                )
+                        if st.checkbox("🔍 Show All Ensemble Methods Comparison"):
+                            st.markdown("#### 🎯 All Methods Comparison")
+                            all_results = st.session_state.ensemble_classifier.get_all_predictions(
+                                predictions
+                            )
+                            comparison_data = []
+                            for method_key, result in all_results.items():
+                                comparison_data.append(
+                                    {
+                                        "Method": ENSEMBLE_METHODS[method_key]["name"],
+                                        "Icon": ENSEMBLE_METHODS[method_key]["icon"],
+                                        "Prediction": result["label"],
+                                        "Confidence": f"{result['confidence']:.2%}",
+                                        "Spam Prob": f"{result['spam_probability']:.2%}",
+                                    }
+                                )
+                            df_comparison = pd.DataFrame(comparison_data)
+                            st.dataframe(df_comparison, use_container_width=True)
+                    else:
+                        st.warning(
+                            "No predictions could be generated from the ensemble models for this message."
+                        )
+            else:
+                st.error(
+                    "No ensemble models were loaded successfully. Cannot perform ensemble analysis."
+                )
+    if "features" in locals():  # Only show features if analysis was successful
         col_detail1, col_detail2 = st.columns(2)
         with col_detail1:
-            st.markdown("#### 📋 <span style='color: #00d4aa;'>Message Features</span>", unsafe_allow_html=True)
-            st.markdown(f"""
+            st.markdown(
+                "#### 📋 <span style='color: #00d4aa;'>Message Features</span>",
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f"""
             <div class="feature-card">
-                <strong>Length:</strong> {features['length']} characters<br>
-                <strong>Words:</strong> {features['word_count']}<br>
-                <strong>Uppercase:</strong> {features['uppercase_ratio']:.1%}<br>
-                <strong>Numbers:</strong> {features['digit_ratio']:.1%}<br>
-                <strong>Special chars:</strong> {features['special_chars']}
+                <strong>Length:</strong> {features["length"]} characters<br>
+                <strong>Words:</strong> {features["word_count"]}<br>
+                <strong>Uppercase:</strong> {features["uppercase_ratio"]:.1%}<br>
+                <strong>Numbers:</strong> {features["digit_ratio"]:.1%}<br>
+                <strong>Special chars:</strong> {features["special_chars"]}
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
         with col_detail2:
-            st.markdown("#### ⚠️ <span style='color: #00d4aa;'>Risk Indicators</span>", unsafe_allow_html=True)
+            st.markdown(
+                "#### ⚠️ <span style='color: #00d4aa;'>Risk Indicators</span>",
+                unsafe_allow_html=True,
+            )
             if risk_indicators:
                 for indicator in risk_indicators:
                     st.markdown(f"- {indicator}")
             else:
-                st.markdown("<span style='color: #4ecdc4;'>✅ No significant risk indicators detected</span>", unsafe_allow_html=True)
+                st.markdown(
+                    "<span style='color: #4ecdc4;'>✅ No significant risk indicators detected</span>",
+                    unsafe_allow_html=True,
+                )
 with col2:
-    st.markdown("""
+    st.markdown(
+        """
     <div class="analysis-header">
         <h3 style="color: #00d4aa; margin: 0;">📈 Analytics</h3>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     # Analytics Section - Visuals
-    
+
     if analysis_mode == "Single Model":
-        st.markdown("""
+        st.markdown(
+            """
         <h4 style='color: #3b82f6; margin-bottom: 1rem; font-weight: 600;'>
             📊 Single Model Performance
         </h4>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         # Check if there's any data for any model
-        if any(st.session_state.model_stats[model]['total'] > 0 for model in MODEL_OPTIONS):
+        if any(
+            st.session_state.model_stats[model]["total"] > 0 for model in MODEL_OPTIONS
+        ):
             # Pie Chart for Spam/Ham Distribution of the SELECTED model
             current_model_stats = st.session_state.model_stats[selected_model_name]
-            if current_model_stats['total'] > 0:
-                data_selected_model = pd.DataFrame({
-                    'Label': ['SPAM', 'HAM'],
-                    'Count': [current_model_stats['spam'], current_model_stats['ham']]
-                })
+            if current_model_stats["total"] > 0:
+                data_selected_model = pd.DataFrame(
+                    {
+                        "Label": ["SPAM", "HAM"],
+                        "Count": [
+                            current_model_stats["spam"],
+                            current_model_stats["ham"],
+                        ],
+                    }
+                )
                 fig_pie_single = px.pie(
-                    data_selected_model, 
-                    values='Count', 
-                    names='Label', 
-                    title=f'Spam/Ham Distribution for {selected_model_name}',
-                    color_discrete_map={'SPAM': '#ff6b6b', 'HAM': '#4ecdc4'}
+                    data_selected_model,
+                    values="Count",
+                    names="Label",
+                    title=f"Spam/Ham Distribution for {selected_model_name}",
+                    color_discrete_map={"SPAM": "#ff6b6b", "HAM": "#4ecdc4"},
                 )
                 fig_pie_single.update_layout(
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#1a73e8'),  # Changed to blue for better visibility
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font=dict(color="#1a73e8"),  # Changed to blue for better visibility
                     height=300,
-                    margin=dict(t=50, b=0, l=0, r=0) # Adjust margins
+                    margin=dict(t=50, b=0, l=0, r=0),  # Adjust margins
                 )
                 st.plotly_chart(fig_pie_single, use_container_width=True)
             else:
@@ -8374,24 +9477,28 @@ with col2:
 
             # Confidence over time for the SELECTED model
             df_single_history = pd.DataFrame(st.session_state.classification_history)
-            df_selected_model_history = df_single_history[df_single_history['model'] == selected_model_name].copy()
+            df_selected_model_history = df_single_history[
+                df_single_history["model"] == selected_model_name
+            ].copy()
             if not df_selected_model_history.empty:
-                df_selected_model_history['time_index'] = range(len(df_selected_model_history)) # Use index for X-axis
+                df_selected_model_history["time_index"] = range(
+                    len(df_selected_model_history)
+                )  # Use index for X-axis
                 fig_conf_single = px.line(
-                    df_selected_model_history, 
-                    x='time_index', 
-                    y='confidence', 
-                    title=f'Confidence Over Time ({selected_model_name})',
-                    color_discrete_sequence=['#00d4aa']
+                    df_selected_model_history,
+                    x="time_index",
+                    y="confidence",
+                    title=f"Confidence Over Time ({selected_model_name})",
+                    color_discrete_sequence=["#00d4aa"],
                 )
                 fig_conf_single.update_layout(
                     xaxis_title="Prediction #",
                     yaxis_title="Confidence",
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#1a73e8'),  # Changed to blue for better visibility
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font=dict(color="#1a73e8"),  # Changed to blue for better visibility
                     height=250,
-                    margin=dict(t=50, b=0, l=0, r=0)
+                    margin=dict(t=50, b=0, l=0, r=0),
                 )
                 st.plotly_chart(fig_conf_single, use_container_width=True)
             else:
@@ -8400,30 +9507,38 @@ with col2:
             # Overall Model Usage (Bar chart)
             model_usage_data = []
             for model, stats in st.session_state.model_stats.items():
-                model_usage_data.append({'Model': model, 'Total Predictions': stats['total']})
+                model_usage_data.append(
+                    {"Model": model, "Total Predictions": stats["total"]}
+                )
             df_model_usage = pd.DataFrame(model_usage_data)
 
-            if not df_model_usage.empty and df_model_usage['Total Predictions'].sum() > 0:
+            if (
+                not df_model_usage.empty
+                and df_model_usage["Total Predictions"].sum() > 0
+            ):
                 fig_model_usage = px.bar(
                     df_model_usage,
-                    x='Model',
-                    y='Total Predictions',
-                    title='Total Predictions per Model (All Time)',
-                    color='Model',
-                    color_discrete_map={name: info['color'] for name, info in MODEL_OPTIONS.items()}
+                    x="Model",
+                    y="Total Predictions",
+                    title="Total Predictions per Model (All Time)",
+                    color="Model",
+                    color_discrete_map={
+                        name: info["color"] for name, info in MODEL_OPTIONS.items()
+                    },
                 )
                 fig_model_usage.update_layout(
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#1a73e8'),  # Changed to blue for better visibility
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font=dict(color="#1a73e8"),  # Changed to blue for better visibility
                     height=300,
-                    margin=dict(t=50, b=0, l=0, r=0)
+                    margin=dict(t=50, b=0, l=0, r=0),
                 )
                 st.plotly_chart(fig_model_usage, use_container_width=True)
             else:
                 st.info("No overall model usage data yet.")
         else:
-            st.markdown("""
+            st.markdown(
+                """
             <div style='background: var(--card-bg); 
                         border-left: 4px solid #00d4aa; 
                         color: var(--text-primary);
@@ -8432,7 +9547,9 @@ with col2:
                         margin: 1rem 0;'>
                 ℹ️ Run an analysis in 'Single Model' mode to see analytics.
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
 
     else:  # Ensemble Analysis
         st.markdown("#### 📊 Ensemble Performance")
@@ -8443,76 +9560,90 @@ with col2:
             st.markdown("#### 🧠 Ensemble Spam/Ham Distribution")
 
             # Display vote pie chart
-            if 'model_vote_history' in st.session_state and st.session_state.model_vote_history:
+            if (
+                "model_vote_history" in st.session_state
+                and st.session_state.model_vote_history
+            ):
                 df_votes = pd.DataFrame(st.session_state.model_vote_history)
 
-                vote_counts = df_votes['label'].value_counts().to_dict()
+                vote_counts = df_votes["label"].value_counts().to_dict()
                 vote_counts_fixed = {
-                    'SPAM': vote_counts.get('SPAM', 0),
-                    'HAM': vote_counts.get('HAM', 0)
+                    "SPAM": vote_counts.get("SPAM", 0),
+                    "HAM": vote_counts.get("HAM", 0),
                 }
 
-                df_vote_chart = pd.DataFrame(list(vote_counts_fixed.items()), columns=['Label', 'Count'])
+                df_vote_chart = pd.DataFrame(
+                    list(vote_counts_fixed.items()), columns=["Label", "Count"]
+                )
 
                 fig_model_votes = px.pie(
                     df_vote_chart,
-                    values='Count',
-                    names='Label',
-                    title='Individual Model Votes Distribution',
-                    color_discrete_map={'SPAM': '#ff6b6b', 'HAM': '#4ecdc4'}
+                    values="Count",
+                    names="Label",
+                    title="Individual Model Votes Distribution",
+                    color_discrete_map={"SPAM": "#ff6b6b", "HAM": "#4ecdc4"},
                 )
 
                 fig_model_votes.update_layout(
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#1a73e8'),  # Changed to blue for better visibility
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font=dict(color="#1a73e8"),  # Changed to blue for better visibility
                     height=300,
-                    margin=dict(t=50, b=0, l=0, r=0)
+                    margin=dict(t=50, b=0, l=0, r=0),
                 )
 
                 st.plotly_chart(fig_model_votes, use_container_width=True)
             else:
-                st.info("No individual model votes recorded yet. Run some ensemble predictions first.")
+                st.info(
+                    "No individual model votes recorded yet. Run some ensemble predictions first."
+                )
 
             # Confidence over time (Ensemble)
             fig_conf_ensemble = px.line(
-                df_ensemble_history, 
-                x=df_ensemble_history.index, # Use index for chronological order
-                y='confidence', 
-                title='Ensemble Confidence Over Time',
-                color_discrete_sequence=['#a855f7']
+                df_ensemble_history,
+                x=df_ensemble_history.index,  # Use index for chronological order
+                y="confidence",
+                title="Ensemble Confidence Over Time",
+                color_discrete_sequence=["#a855f7"],
             )
             fig_conf_ensemble.update_layout(
                 xaxis_title="Prediction #",
                 yaxis_title="Confidence",
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#1a73e8'),  # Changed to blue for better visibility
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#1a73e8"),  # Changed to blue for better visibility
                 height=250,
-                margin=dict(t=50, b=0, l=0, r=0)
+                margin=dict(t=50, b=0, l=0, r=0),
             )
             st.plotly_chart(fig_conf_ensemble, use_container_width=True)
 
             # Ensemble Method Usage (Bar chart)
-            method_usage_data = df_ensemble_history['method'].value_counts().reset_index()
-            method_usage_data.columns = ['Method Key', 'Count']
+            method_usage_data = (
+                df_ensemble_history["method"].value_counts().reset_index()
+            )
+            method_usage_data.columns = ["Method Key", "Count"]
             # Map method keys to display names
-            method_usage_data['Method'] = method_usage_data['Method Key'].apply(lambda x: ENSEMBLE_METHODS.get(x, {}).get('name', x))
-            
+            method_usage_data["Method"] = method_usage_data["Method Key"].apply(
+                lambda x: ENSEMBLE_METHODS.get(x, {}).get("name", x)
+            )
+
             fig_method_usage = px.bar(
                 method_usage_data,
-                x='Method',
-                y='Count',
-                title='Ensemble Method Usage',
-                color='Method',
-                color_discrete_map={info['name']: info['color'] for name, info in ENSEMBLE_METHODS.items()}
+                x="Method",
+                y="Count",
+                title="Ensemble Method Usage",
+                color="Method",
+                color_discrete_map={
+                    info["name"]: info["color"]
+                    for name, info in ENSEMBLE_METHODS.items()
+                },
             )
             fig_method_usage.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#1a73e8'),  # Changed to blue for better visibility
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#1a73e8"),  # Changed to blue for better visibility
                 height=300,
-                margin=dict(t=50, b=0, l=0, r=0)
+                margin=dict(t=50, b=0, l=0, r=0),
             )
             st.plotly_chart(fig_method_usage, use_container_width=True)
 
@@ -8521,8 +9652,14 @@ with col2:
 
 
 # --- Bulk SMS Analysis Section ---
-st.markdown("### � <span style='color: #00d4aa;'>Bulk SMS Analysis</span>", unsafe_allow_html=True)
-st.markdown("<div style='color: #00d4aa; margin-bottom: 5px;'>Upload a CSV file containing SMS messages for batch analysis. The file must have a 'message' column.</div>", unsafe_allow_html=True)
+st.markdown(
+    "### � <span style='color: #00d4aa;'>Bulk SMS Analysis</span>",
+    unsafe_allow_html=True,
+)
+st.markdown(
+    "<div style='color: #00d4aa; margin-bottom: 5px;'>Upload a CSV file containing SMS messages for batch analysis. The file must have a 'message' column.</div>",
+    unsafe_allow_html=True,
+)
 
 # File upload
 uploaded_csv = st.file_uploader("Upload CSV", type=["csv"], accept_multiple_files=False)
@@ -8531,34 +9668,34 @@ if uploaded_csv is not None:
     try:
         # Read the CSV file
         df = pd.read_csv(uploaded_csv)
-        
-        if 'message' not in df.columns:
+
+        if "message" not in df.columns:
             st.error("The CSV file must contain a column named 'message'")
         else:
             # Show sample of messages to be analyzed
-            st.write("📝 Sample of messages to be analyzed:", df[['message']].head())
-            
+            st.write("📝 Sample of messages to be analyzed:", df[["message"]].head())
+
             # Create columns for the analysis options
             col1, col2, col3 = st.columns([2, 2, 1])
-            
+
             with col1:
                 report_format = st.selectbox(
                     "📄 Report Format",
                     ["CSV", "Excel"],
-                    help="Choose the format for the downloadable report"
+                    help="Choose the format for the downloadable report",
                 )
-            
+
             with col2:
                 selected_models = st.multiselect(
                     "🤖 Models to Use",
                     ["DistilBERT", "BERT", "RoBERTa", "ALBERT"],
                     default=["DistilBERT", "BERT", "RoBERTa", "ALBERT"],
-                    help="Select which models to use for analysis"
+                    help="Select which models to use for analysis",
                 )
-            
+
             with col3:
                 analyze_batch = st.button("🔍 Analyze", type="primary")
-            
+
             if analyze_batch:
                 if not selected_models:
                     st.error("Please select at least one model for analysis")
@@ -8566,23 +9703,25 @@ if uploaded_csv is not None:
                     # Create a progress bar
                     progress_bar = st.progress(0)
                     status_text = st.empty()
-                    
+
                     try:
                         # Initialize the progress
                         status_text.text("🔄 Initializing batch analysis...")
-                        
+
                         # Process messages in batches
                         total_messages = len(df)
                         results = []
-                        
+
                         for idx, row in df.iterrows():
                             # Update progress
                             progress = (idx + 1) / total_messages
                             progress_bar.progress(progress)
-                            status_text.text(f"🔍 Analyzing message {idx + 1} of {total_messages}...")
-                            
-                            message = str(row['message'])
-                            
+                            status_text.text(
+                                f"🔍 Analyzing message {idx + 1} of {total_messages}..."
+                            )
+
+                            message = str(row["message"])
+
                             # Get predictions from selected models
                             predictions = {}
                             for model_name in selected_models:
@@ -8590,82 +9729,113 @@ if uploaded_csv is not None:
                                 if classifier is not None:
                                     pred = classifier(message)[0]
                                     predictions[model_name] = {
-                                        'label': pred['label'].upper(),
-                                        'confidence': pred['score'],
-                                        'spam_probability': pred['score'] if pred['label'].upper() == 'SPAM' else 1 - pred['score']
+                                        "label": pred["label"].upper(),
+                                        "confidence": pred["score"],
+                                        "spam_probability": pred["score"]
+                                        if pred["label"].upper() == "SPAM"
+                                        else 1 - pred["score"],
                                     }
-                            
+
                             # Get ensemble prediction
-                            ensemble_result = ensemble_classifier.get_ensemble_prediction(predictions, "weighted_average")
-                            
+                            ensemble_result = (
+                                ensemble_classifier.get_ensemble_prediction(
+                                    predictions, "weighted_average"
+                                )
+                            )
+
                             # Get risk indicators
                             risk_indicators = word_analyzer.analyze_message(message)
-                            
+
                             # Compile results
                             result = {
-                                'message': message,
-                                'ensemble_prediction': ensemble_result['label'],
-                                'ensemble_confidence': ensemble_result['confidence'],
-                                'spam_probability': ensemble_result['spam_probability']
+                                "message": message,
+                                "ensemble_prediction": ensemble_result["label"],
+                                "ensemble_confidence": ensemble_result["confidence"],
+                                "spam_probability": ensemble_result["spam_probability"],
                             }
-                            
+
                             # Add individual model predictions
                             for model_name in selected_models:
                                 if model_name in predictions:
-                                    result[f'{model_name}_prediction'] = predictions[model_name]['label']
-                                    result[f'{model_name}_confidence'] = predictions[model_name]['confidence']
-                                    result[f'{model_name}_spam_prob'] = predictions[model_name]['spam_probability']
+                                    result[f"{model_name}_prediction"] = predictions[
+                                        model_name
+                                    ]["label"]
+                                    result[f"{model_name}_confidence"] = predictions[
+                                        model_name
+                                    ]["confidence"]
+                                    result[f"{model_name}_spam_prob"] = predictions[
+                                        model_name
+                                    ]["spam_probability"]
                                 else:
-                                    result[f'{model_name}_prediction'] = 'N/A'
-                                    result[f'{model_name}_confidence'] = 0.0
-                                    result[f'{model_name}_spam_prob'] = 0.0
-                            
+                                    result[f"{model_name}_prediction"] = "N/A"
+                                    result[f"{model_name}_confidence"] = 0.0
+                                    result[f"{model_name}_spam_prob"] = 0.0
+
                             # Add risk indicators
-                            result.update({
-                                'contains_urls': risk_indicators.get('contains_urls', False),
-                                'contains_caps': risk_indicators.get('contains_caps', False),
-                                'suspicious_formatting': risk_indicators.get('suspicious_formatting', False),
-                                'spam_keywords': ', '.join(risk_indicators.get('spam_keywords', []))
-                            })
-                            
+                            result.update(
+                                {
+                                    "contains_urls": risk_indicators.get(
+                                        "contains_urls", False
+                                    ),
+                                    "contains_caps": risk_indicators.get(
+                                        "contains_caps", False
+                                    ),
+                                    "suspicious_formatting": risk_indicators.get(
+                                        "suspicious_formatting", False
+                                    ),
+                                    "spam_keywords": ", ".join(
+                                        risk_indicators.get("spam_keywords", [])
+                                    ),
+                                }
+                            )
+
                             results.append(result)
-                        
+
                         # Create the results DataFrame
                         results_df = pd.DataFrame(results)
-                        
+
                         # Update progress
                         status_text.text("📊 Generating report...")
-                        
+
                         # Prepare the file for download
                         if report_format == "Excel":
                             buffer = BytesIO()
-                            with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-                                results_df.to_excel(writer, index=False, sheet_name='SMS Analysis')
-                                worksheet = writer.sheets['SMS Analysis']
-                                
+                            with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+                                results_df.to_excel(
+                                    writer, index=False, sheet_name="SMS Analysis"
+                                )
+                                worksheet = writer.sheets["SMS Analysis"]
+
                                 # Add formatting
                                 workbook = writer.book
-                                header_format = workbook.add_format({
-                                    'bold': True,
-                                    'text_wrap': True,
-                                    'valign': 'top',
-                                    'bg_color': '#D9EAD3',
-                                    'border': 1
-                                })
-                                
+                                header_format = workbook.add_format(
+                                    {
+                                        "bold": True,
+                                        "text_wrap": True,
+                                        "valign": "top",
+                                        "bg_color": "#D9EAD3",
+                                        "border": 1,
+                                    }
+                                )
+
                                 # Write headers with formatting
-                                for col_num, value in enumerate(results_df.columns.values):
+                                for col_num, value in enumerate(
+                                    results_df.columns.values
+                                ):
                                     worksheet.write(0, col_num, value, header_format)
-                                    
+
                                 # Auto-adjust columns
                                 for idx, col in enumerate(results_df):
                                     series = results_df[col]
-                                    max_len = max(
-                                        series.astype(str).map(len).max(),
-                                        len(str(series.name))
-                                    ) + 1
+                                    max_len = (
+                                        max(
+                                            series.astype(str).map(len).max(),
+                                            len(str(series.name)),
+                                        )
+                                        + 1
+                                    )
                                     worksheet.set_column(idx, idx, max_len)
-                            
+
                             buffer.seek(0)
                             download_data = buffer
                             file_ext = "xlsx"
@@ -8677,54 +9847,65 @@ if uploaded_csv is not None:
                             file_ext = "csv"
                             mime_type = "text/csv"
                             download_data = download_data.getvalue()
-                        
+
                         # Show summary statistics
                         st.markdown("### 📊 Analysis Summary")
                         col1, col2, col3 = st.columns(3)
-                        
+
                         with col1:
-                            total_spam = len(results_df[results_df['ensemble_prediction'] == 'SPAM'])
+                            total_spam = len(
+                                results_df[results_df["ensemble_prediction"] == "SPAM"]
+                            )
                             st.metric("Total Spam Messages", total_spam)
-                        
+
                         with col2:
-                            total_ham = len(results_df[results_df['ensemble_prediction'] == 'HAM'])
+                            total_ham = len(
+                                results_df[results_df["ensemble_prediction"] == "HAM"]
+                            )
                             st.metric("Total Ham Messages", total_ham)
-                        
+
                         with col3:
                             spam_ratio = total_spam / len(results_df) * 100
                             st.metric("Spam Ratio", f"{spam_ratio:.1f}%")
-                        
+
                         # Create the download button
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         st.download_button(
                             label="📥 Download Complete Report",
                             data=download_data,
                             file_name=f"sms_analysis_report_{timestamp}.{file_ext}",
-                            mime=mime_type
+                            mime=mime_type,
                         )
-                        
+
                         # Show preview of results
                         st.markdown("### 🔍 Results Preview")
                         st.dataframe(results_df.head())
-                        
+
                         # Clear progress bar and status
                         progress_bar.empty()
                         status_text.text("✅ Analysis complete!")
-                        
+
                     except Exception as e:
                         st.error(f"Error during batch analysis: {str(e)}")
                         if progress_bar is not None:
                             progress_bar.empty()
                         if status_text is not None:
                             status_text.text("❌ Analysis failed!")
-        
+
     except Exception as e:
         st.error(f"Error reading CSV file: {str(e)}")
 
-def classify_csv(file, ensemble_mode, selected_models_for_bulk, selected_ensemble_method_for_bulk, batch_size=100):
+
+def classify_csv(
+    file,
+    ensemble_mode,
+    selected_models_for_bulk,
+    selected_ensemble_method_for_bulk,
+    batch_size=100,
+):
     try:
         df = pd.read_csv(file)
-        if 'message' not in df.columns:
+        if "message" not in df.columns:
             st.error("CSV file must contain a 'message' column.")
             return None
 
@@ -8735,10 +9916,14 @@ def classify_csv(file, ensemble_mode, selected_models_for_bulk, selected_ensembl
         if ensemble_mode:
             models_to_use = load_all_models()
         else:
-            models_to_use = {selected_models_for_bulk: load_model_if_needed(selected_models_for_bulk)}
+            models_to_use = {
+                selected_models_for_bulk: load_model_if_needed(selected_models_for_bulk)
+            }
 
         if not any(models_to_use.values()):
-            st.error("No models loaded for classification. Please check model loading status.")
+            st.error(
+                "No models loaded for classification. Please check model loading status."
+            )
             return None
 
         # ✅ Progress + ETA text
@@ -8750,7 +9935,7 @@ def classify_csv(file, ensemble_mode, selected_models_for_bulk, selected_ensembl
         # Process in batches
         for start in range(0, total_messages, batch_size):
             end = min(start + batch_size, total_messages)
-            batch_messages = df['message'][start:end].astype(str).tolist()
+            batch_messages = df["message"][start:end].astype(str).tolist()
 
             try:
                 if ensemble_mode:
@@ -8762,29 +9947,52 @@ def classify_csv(file, ensemble_mode, selected_models_for_bulk, selected_ensembl
                             ensemble_result = st.session_state.ensemble_classifier.get_ensemble_prediction(
                                 predictions, selected_ensemble_method_for_bulk
                             )
-                            batch_results.append({
-                                'message': msg,
-                                'prediction': ensemble_result['label'],
-                                'confidence': ensemble_result['confidence'],
-                                'spam_probability': ensemble_result['spam_probability']
-                            })
+                            batch_results.append(
+                                {
+                                    "message": msg,
+                                    "prediction": ensemble_result["label"],
+                                    "confidence": ensemble_result["confidence"],
+                                    "spam_probability": ensemble_result[
+                                        "spam_probability"
+                                    ],
+                                }
+                            )
                         else:
-                            batch_results.append({'message': msg, 'prediction': 'ERROR', 'confidence': 0.0, 'spam_probability': 0.0})
+                            batch_results.append(
+                                {
+                                    "message": msg,
+                                    "prediction": "ERROR",
+                                    "confidence": 0.0,
+                                    "spam_probability": 0.0,
+                                }
+                            )
                 else:
                     classifier = models_to_use.get(selected_models_for_bulk)
                     if classifier:
                         preds = classifier(batch_messages)  # 🚀 batch inference
                         batch_results = [
-                            {'message': msg, 'prediction': p['label'].upper(), 'confidence': p['score']}
+                            {
+                                "message": msg,
+                                "prediction": p["label"].upper(),
+                                "confidence": p["score"],
+                            }
                             for msg, p in zip(batch_messages, preds)
                         ]
                     else:
-                        batch_results = [{'message': msg, 'prediction': 'ERROR', 'confidence': 0.0} for msg in batch_messages]
+                        batch_results = [
+                            {"message": msg, "prediction": "ERROR", "confidence": 0.0}
+                            for msg in batch_messages
+                        ]
 
                 results.extend(batch_results)
 
-            except Exception as batch_err:
-                results.extend([{'message': msg, 'prediction': 'ERROR', 'confidence': 0.0} for msg in batch_messages])
+            except Exception:
+                results.extend(
+                    [
+                        {"message": msg, "prediction": "ERROR", "confidence": 0.0}
+                        for msg in batch_messages
+                    ]
+                )
 
             # ✅ Progress update with ETA
             processed = end
@@ -8795,7 +10003,7 @@ def classify_csv(file, ensemble_mode, selected_models_for_bulk, selected_ensembl
 
             progress_bar.progress(processed / total_messages)
             status_text.text(
-                f"Processing message {processed}/{total_messages} - ETA: {int(eta//60)}m {int(eta%60)}s"
+                f"Processing message {processed}/{total_messages} - ETA: {int(eta // 60)}m {int(eta % 60)}s"
             )
 
         progress_bar.empty()
@@ -8808,19 +10016,30 @@ def classify_csv(file, ensemble_mode, selected_models_for_bulk, selected_ensembl
         return None
 
 
-ensemble_mode_bulk = analysis_mode == "Ensemble Analysis" 
+ensemble_mode_bulk = analysis_mode == "Ensemble Analysis"
 if ensemble_mode_bulk:
     selected_models_for_bulk = list(MODEL_OPTIONS.keys())
     # Ensure selected_ensemble_method is defined if in ensemble mode, fallback to majority_voting
-    selected_ensemble_method_for_bulk = selected_ensemble_method if 'selected_ensemble_method' in locals() else 'majority_voting'
+    selected_ensemble_method_for_bulk = (
+        selected_ensemble_method
+        if "selected_ensemble_method" in locals()
+        else "majority_voting"
+    )
 else:
     selected_models_for_bulk = selected_model_name
-    selected_ensemble_method_for_bulk = None # Not applicable for single model
+    selected_ensemble_method_for_bulk = None  # Not applicable for single model
 
 if uploaded_csv is not None:
-    st.info("Initiating bulk classification. This might take a while for large files, depending on model loading status.")
+    st.info(
+        "Initiating bulk classification. This might take a while for large files, depending on model loading status."
+    )
     with st.spinner("Classifying messages..."):
-        df_results = classify_csv(uploaded_csv, ensemble_mode_bulk, selected_models_for_bulk, selected_ensemble_method_for_bulk)
+        df_results = classify_csv(
+            uploaded_csv,
+            ensemble_mode_bulk,
+            selected_models_for_bulk,
+            selected_ensemble_method_for_bulk,
+        )
         if df_results is not None:
             st.success("Bulk classification complete!")
             st.write("### Classification Results")
@@ -8831,157 +10050,207 @@ if uploaded_csv is not None:
                 label="📥 Download Predictions CSV",
                 data=csv_buffer.getvalue(),
                 file_name="spam_predictions.csv",
-                mime="text/csv"
+                mime="text/csv",
             )
 
 # --- Recent Classifications (Always visible if data exists) ---
-st.markdown("---") # Add a separator
+st.markdown("---")  # Add a separator
 
 if analysis_mode == "Single Model" and st.session_state.classification_history:
-    st.markdown("#### 🕒 <span style='color: #00d4aa;'>Recent Single Model Classifications</span>", unsafe_allow_html=True)
-    recent = st.session_state.classification_history[-5:] # Show last 5
-    
+    st.markdown(
+        "#### 🕒 <span style='color: #00d4aa;'>Recent Single Model Classifications</span>",
+        unsafe_allow_html=True,
+    )
+    recent = st.session_state.classification_history[-5:]  # Show last 5
+
     for item in reversed(recent):
-        status_color = "#ff6b6b" if item['prediction'] == "SPAM" else "#4ecdc4"
-        st.markdown(f"""
+        status_color = "#ff6b6b" if item["prediction"] == "SPAM" else "#4ecdc4"
+        st.markdown(
+            f"""
         <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 3px solid {status_color};">
-            <strong style="color: {status_color};">{item['prediction']}</strong> ({item['confidence']:.1%})<br>
-            <small style="color: #888;">{item['message']}</small><br>
-            <small style="color: #666;">{item['model']} • {item['timestamp'].strftime('%H:%M')}</small>
+            <strong style="color: {status_color};">{item["prediction"]}</strong> ({item["confidence"]:.1%})<br>
+            <small style="color: #888;">{item["message"]}</small><br>
+            <small style="color: #666;">{item["model"]} • {item["timestamp"].strftime("%H:%M")}</small>
         </div>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Feedback functionality
     st.markdown("---")
     st.markdown("### 💬 Your feedback helps us improve!")
     col_fb1, col_fb2 = st.columns(2)
     with col_fb1:
-        if st.button("💬 Share Your Feedback", type="primary", use_container_width=True):
+        if st.button(
+            "💬 Share Your Feedback", type="primary", use_container_width=True
+        ):
             st.session_state.feedback_context = "Single Model Analysis"
-            navigate_to('feedback')
+            navigate_to("feedback")
     with col_fb2:
         if st.button("🛡️ Report False Classification", use_container_width=True):
             st.session_state.feedback_context = "False Classification Report"
-            navigate_to('feedback')
-    
+            navigate_to("feedback")
+
     # Single Model export button
-    export_results_button(st.session_state.classification_history, filename_prefix="spamlyser_singlemodel")
+    export_results_button(
+        st.session_state.classification_history, filename_prefix="spamlyser_singlemodel"
+    )
 
 elif analysis_mode == "Ensemble Analysis" and st.session_state.ensemble_history:
     st.markdown("#### 🕒 Recent Ensemble Results")
-    recent = st.session_state.ensemble_history[-5:] # Show last 5
-    
+    recent = st.session_state.ensemble_history[-5:]  # Show last 5
+
     for item in reversed(recent):
-        status_color = "#ff6b6b" if item['prediction'] == "SPAM" else "#4ecdc4"
-        st.markdown(f"""
+        status_color = "#ff6b6b" if item["prediction"] == "SPAM" else "#4ecdc4"
+        st.markdown(
+            f"""
         <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 3px solid {status_color};">
-            <strong style="color: {status_color};">{item['prediction']}</strong> ({item['confidence']:.1%})<br>
-            <small style="color: #888;">{item['message']}</small><br>
-            <small style="color: #666;">{ENSEMBLE_METHODS[item['method']]['name']} • {item['timestamp'].strftime('%H:%M')}</small>
+            <strong style="color: {status_color};">{item["prediction"]}</strong> ({item["confidence"]:.1%})<br>
+            <small style="color: #888;">{item["message"]}</small><br>
+            <small style="color: #666;">{ENSEMBLE_METHODS[item["method"]]["name"]} • {item["timestamp"].strftime("%H:%M")}</small>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     # Feedback functionality for ensemble analysis
     st.markdown("---")
     st.markdown("### 💬 Your feedback helps us improve!")
     col_fb1, col_fb2 = st.columns(2)
     with col_fb1:
-        if st.button("💬 Share Your Feedback", key="ensemble_feedback", type="primary", use_container_width=True):
+        if st.button(
+            "💬 Share Your Feedback",
+            key="ensemble_feedback",
+            type="primary",
+            use_container_width=True,
+        ):
             st.session_state.feedback_context = "Ensemble Analysis"
-            navigate_to('feedback')
+            navigate_to("feedback")
     with col_fb2:
-        if st.button("🛡️ Report False Classification", key="ensemble_report", use_container_width=True):
+        if st.button(
+            "🛡️ Report False Classification",
+            key="ensemble_report",
+            use_container_width=True,
+        ):
             st.session_state.feedback_context = "Ensemble False Classification Report"
-            navigate_to('feedback')
-    
-    export_results_button(st.session_state.ensemble_history, filename_prefix="spamlyser_ensemble")
+            navigate_to("feedback")
+
+    export_results_button(
+        st.session_state.ensemble_history, filename_prefix="spamlyser_ensemble"
+    )
 
     # Ensemble performance chart (Only show if enough data for a meaningful chart)
     if len(st.session_state.ensemble_history) > 3:
         st.markdown("#### 📊 Ensemble Confidence Trend")
         df_ensemble = pd.DataFrame(st.session_state.ensemble_history)
-        
+
         fig = go.Figure()
-        
-        fig.add_trace(go.Scatter(
-            x=list(range(len(df_ensemble))),
-            y=df_ensemble['confidence'],
-            mode='lines+markers',
-            name='Confidence',
-            line=dict(color='#00d4aa', width=2),
-            marker=dict(size=6)
-        ))
-        
+
+        fig.add_trace(
+            go.Scatter(
+                x=list(range(len(df_ensemble))),
+                y=df_ensemble["confidence"],
+                mode="lines+markers",
+                name="Confidence",
+                line=dict(color="#00d4aa", width=2),
+                marker=dict(size=6),
+            )
+        )
+
         fig.update_layout(
-            title="Ensemble Confidence Over Time", # More specific title
+            title="Ensemble Confidence Over Time",  # More specific title
             xaxis_title="Analysis #",
             yaxis_title="Confidence",
             height=250,
             showlegend=False,
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#1a73e8'),  # Changed to blue for better visibility
-            margin=dict(t=50, b=0, l=0, r=0)
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#1a73e8"),  # Changed to blue for better visibility
+            margin=dict(t=50, b=0, l=0, r=0),
         )
         st.plotly_chart(fig, use_container_width=True)
 # --- Advanced Features Section ---
 if analysis_mode == "Ensemble Analysis":
-    st.markdown("""
+    st.markdown(
+        """
     <h2 style='color: #1a73e8; border-bottom: 2px solid #1a73e8; padding: 15px; background: rgba(255, 255, 255, 0.95); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;'>
         <span style='color: #202124; font-weight: 700;'>🔧 Advanced Ensemble Settings</span>
     </h2>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     col_advanced1, col_advanced2 = st.columns(2)
 
     with col_advanced1:
-        st.markdown("""
+        st.markdown(
+            """
         <div style='background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 8px; border-left: 4px solid #1a73e8; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px;'>
             <h3 style='color: #1a73e8; margin: 0 0 15px 0; font-weight: 600;'>📊 Model Performance Tracking</h3>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
         if st.button("📈 View Model Performance Stats"):
             tracker_stats = st.session_state.ensemble_tracker.get_all_stats()
             if any(stats for stats in tracker_stats.values()):
                 for model_name, stats in tracker_stats.items():
                     if stats:
-                        st.markdown(f"""
+                        st.markdown(
+                            f"""
             <div style='background: rgba(30, 30, 30, 0.9); padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #3b82f6;'>
-                <h4 style='color: #3b82f6; margin: 0 0 10px 0;'>{MODEL_OPTIONS[model_name]['icon']} {model_name}</h4>
-                <p style='color: #e0e0e0; margin: 5px 0;'><strong>Accuracy:</strong> {stats.get('accuracy', 'N/A'):.2%}</p>
-                <p style='color: #e0e0e0; margin: 5px 0;'><strong>Total Predictions:</strong> {stats.get('total_predictions', 0)}</p>
-                <p style='color: #e0e0e0; margin: 5px 0;'><strong>Trend:</strong> {stats.get('performance_trend', 'N/A')}</p>
-                <p style='color: #e0e0e0; margin: 5px 0;'><strong>Current Weight:</strong> {stats.get('current_weight', 0):.3f}</p>
-        """, unsafe_allow_html=True)
+                <h4 style='color: #3b82f6; margin: 0 0 10px 0;'>{MODEL_OPTIONS[model_name]["icon"]} {model_name}</h4>
+                <p style='color: #e0e0e0; margin: 5px 0;'><strong>Accuracy:</strong> {stats.get("accuracy", "N/A"):.2%}</p>
+                <p style='color: #e0e0e0; margin: 5px 0;'><strong>Total Predictions:</strong> {stats.get("total_predictions", 0)}</p>
+                <p style='color: #e0e0e0; margin: 5px 0;'><strong>Trend:</strong> {stats.get("performance_trend", "N/A")}</p>
+                <p style='color: #e0e0e0; margin: 5px 0;'><strong>Current Weight:</strong> {stats.get("current_weight", 0):.3f}</p>
+        """,
+                            unsafe_allow_html=True,
+                        )
 
         if st.button("💾 Export Performance Data"):
             try:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 filename = f"spamlyser_performance_{timestamp}.json"
                 st.session_state.ensemble_tracker.save_to_file(filename)
-                st.markdown(f"""
+                st.markdown(
+                    f"""
         <div style='background: rgba(30, 30, 30, 0.9); color: #4caf50; padding: 12px; border-radius: 8px; border-left: 4px solid #4caf50;'>
             ✅ Performance data exported to {filename}
         </div>
-        """, unsafe_allow_html=True)
+        """,
+                    unsafe_allow_html=True,
+                )
             except Exception as e:
-                st.markdown(f"""
+                st.markdown(
+                    f"""
             <div style='background: rgba(30, 30, 30, 0.9); color: #f44336; padding: 12px; border-radius: 8px; border-left: 4px solid #f44336;'>
                 ❌ Error exporting data: {str(e)}
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                    unsafe_allow_html=True,
+                )
 
     with col_advanced2:
-        st.markdown("""
+        st.markdown(
+            """
         <div style='background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 8px; border-left: 4px solid #1a73e8; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px;'>
             <h3 style='color: #1a73e8; margin: 0 0 15px 0; font-weight: 600;'>⚙️ Ensemble Configuration</h3>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
         # Display current weights
         current_weights = st.session_state.ensemble_classifier.get_model_weights()
-        st.markdown("<h4 style='color: #1a73e8; margin: 15px 0 10px 0; font-size: 1.1em;'>Current Model Weights:</h4>", unsafe_allow_html=True)
+        st.markdown(
+            "<h4 style='color: #1a73e8; margin: 15px 0 10px 0; font-size: 1.1em;'>Current Model Weights:</h4>",
+            unsafe_allow_html=True,
+        )
         for model, weight in current_weights.items():
-            st.markdown(f"<p style='color: #202124; margin: 8px 0; font-size: 0.95em;'>{MODEL_OPTIONS[model]['icon']} <strong style='color: #1a73e8;'>{model}:</strong> <span style='color: #1a73e8; font-weight: 500;'>{weight:.3f}</span></p>", unsafe_allow_html=True)
+            st.markdown(
+                f"<p style='color: #202124; margin: 8px 0; font-size: 0.95em;'>{MODEL_OPTIONS[model]['icon']} <strong style='color: #1a73e8;'>{model}:</strong> <span style='color: #1a73e8; font-weight: 500;'>{weight:.3f}</span></p>",
+                unsafe_allow_html=True,
+            )
         st.markdown("</div>", unsafe_allow_html=True)
 
         # Reset to default weights
@@ -8989,77 +10258,89 @@ if analysis_mode == "Ensemble Analysis":
             st.session_state.ensemble_classifier.update_model_weights(
                 st.session_state.ensemble_classifier.default_weights
             )
-            st.markdown(f"""
+            st.markdown(
+                f"""
             <div style='background: rgba(46, 125, 50, 0.15); color: {"#0d652d" if st.session_state.theme == "light" else "#fff"}; padding: 12px; border-radius: 6px; margin: 12px 0; border-left: 4px solid {"#0d652d" if st.session_state.theme == "light" else "#fff"}; font-weight: 500;'>
                 ✅ Weights reset to default values!
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
             st.rerun()
 
-if analysis_mode == "Ensemble Analysis" and st.session_state.ensemble_history and len(st.session_state.ensemble_history) > 0:
+if (
+    analysis_mode == "Ensemble Analysis"
+    and st.session_state.ensemble_history
+    and len(st.session_state.ensemble_history) > 0
+):
     st.markdown("---")
     st.markdown("## 📊 Ensemble Method Performance Comparison")
     method_performance = defaultdict(list)
     for entry in st.session_state.ensemble_history:
-        method_performance[entry['method']].append(entry['confidence'])
-    
+        method_performance[entry["method"]].append(entry["confidence"])
+
     if len(method_performance) > 1:
         comparison_data = []
         for method, confidences in method_performance.items():
-            comparison_data.append({
-                'Method': ENSEMBLE_METHODS[method]['name'],
-                'Avg Confidence': np.mean(confidences),
-                'Std Dev': np.std(confidences),
-                'Count': len(confidences)
-            })
+            comparison_data.append(
+                {
+                    "Method": ENSEMBLE_METHODS[method]["name"],
+                    "Avg Confidence": np.mean(confidences),
+                    "Std Dev": np.std(confidences),
+                    "Count": len(confidences),
+                }
+            )
 
         df_comparison = pd.DataFrame(comparison_data)
 
         # Create bar chart
         fig = px.bar(
-            df_comparison, 
-            x='Method', 
-            y='Avg Confidence',
-            title='Average Confidence by Ensemble Method',
-            color='Avg Confidence',
-            color_continuous_scale='viridis'
+            df_comparison,
+            x="Method",
+            y="Avg Confidence",
+            title="Average Confidence by Ensemble Method",
+            color="Avg Confidence",
+            color_continuous_scale="viridis",
         )
 
         fig.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#00d4aa', size=12),
-            title_font=dict(size=18, color='#00d4aa'),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#00d4aa", size=12),
+            title_font=dict(size=18, color="#00d4aa"),
             xaxis=dict(
-                title='Method',
-                title_font=dict(size=14, color='#00d4aa'),
-                tickfont=dict(size=12, color='#00d4aa'),
+                title="Method",
+                title_font=dict(size=14, color="#00d4aa"),
+                tickfont=dict(size=12, color="#00d4aa"),
                 showgrid=False,
-                linecolor='#00d4aa',
-                linewidth=1
+                linecolor="#00d4aa",
+                linewidth=1,
             ),
             yaxis=dict(
-                title='Average Confidence',
-                title_font=dict(size=14, color='#00d4aa'),
-                tickfont=dict(size=12, color='#00d4aa'),
-                gridcolor='rgba(0,212,170,0.1)'
+                title="Average Confidence",
+                title_font=dict(size=14, color="#00d4aa"),
+                tickfont=dict(size=12, color="#00d4aa"),
+                gridcolor="rgba(0,212,170,0.1)",
             ),
             coloraxis_colorbar=dict(
-                title='Confidence',
-                title_font=dict(color='#00d4aa'),
-                tickfont=dict(color='#00d4aa')
+                title="Confidence",
+                title_font=dict(color="#00d4aa"),
+                tickfont=dict(color="#00d4aa"),
             ),
             height=400,
-            margin=dict(t=50, b=0, l=0, r=0)
+            margin=dict(t=50, b=0, l=0, r=0),
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("Not enough data to compare ensemble methods. Try more predictions with different methods.")
+        st.info(
+            "Not enough data to compare ensemble methods. Try more predictions with different methods."
+        )
 
 # End of analyzer page content
 # --- Simple & Clean Footer ---
 # Beautiful gradient separator
-st.markdown("""
+st.markdown(
+    """
 <div style="
     height: 4px; 
     background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57); 
@@ -9067,14 +10348,23 @@ st.markdown("""
     margin: 40px 0 30px 0;
     box-shadow: 0 2px 10px rgba(78, 205, 196, 0.3);
 "></div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Simple navigation header
-st.markdown('<h3 style="text-align: center; color: #4ecdc4;">🔗 Quick Navigation</h3>', unsafe_allow_html=True)
-st.markdown('<p style="text-align: center; color: #888; font-size: 0.9rem;">Explore different sections of Spamlyser Pro</p>', unsafe_allow_html=True)
+st.markdown(
+    '<h3 style="text-align: center; color: #4ecdc4;">🔗 Quick Navigation</h3>',
+    unsafe_allow_html=True,
+)
+st.markdown(
+    '<p style="text-align: center; color: #888; font-size: 0.9rem;">Explore different sections of Spamlyser Pro</p>',
+    unsafe_allow_html=True,
+)
 
 # Simple link styling
-st.markdown("""
+st.markdown(
+    """
 <style>
 .nav-link {
     display: block;
@@ -9092,7 +10382,9 @@ st.markdown("""
     color: #ffffff;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 # Create beautiful navigation links in columns
@@ -9100,44 +10392,63 @@ col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     if st.button("Home", key="nav_home", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_home");</script>', unsafe_allow_html=True)
-        navigate_to('home')
+        st.markdown(
+            '<script>handleNavClick("nav_home");</script>', unsafe_allow_html=True
+        )
+        navigate_to("home")
     if st.button("About", key="nav_about", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_about");</script>', unsafe_allow_html=True)
-        navigate_to('about')
+        st.markdown(
+            '<script>handleNavClick("nav_about");</script>', unsafe_allow_html=True
+        )
+        navigate_to("about")
 
 with col2:
     if st.button("Features", key="nav_features", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_features");</script>', unsafe_allow_html=True)
-        navigate_to('features')
+        st.markdown(
+            '<script>handleNavClick("nav_features");</script>', unsafe_allow_html=True
+        )
+        navigate_to("features")
     if st.button("Analytics", key="nav_analytics", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_analytics");</script>', unsafe_allow_html=True)
-        navigate_to('analytics')
+        st.markdown(
+            '<script>handleNavClick("nav_analytics");</script>', unsafe_allow_html=True
+        )
+        navigate_to("analytics")
 
 with col3:
     if st.button("Models", key="nav_models", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_models");</script>', unsafe_allow_html=True)
-        navigate_to('models')
+        st.markdown(
+            '<script>handleNavClick("nav_models");</script>', unsafe_allow_html=True
+        )
+        navigate_to("models")
     if st.button("Feedback", key="nav_feedback", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_feedback");</script>', unsafe_allow_html=True)
-        navigate_to('feedback')
+        st.markdown(
+            '<script>handleNavClick("nav_feedback");</script>', unsafe_allow_html=True
+        )
+        navigate_to("feedback")
 
 with col4:
     if st.button("Contact", key="nav_contact", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_contact");</script>', unsafe_allow_html=True)
-        navigate_to('contact')
+        st.markdown(
+            '<script>handleNavClick("nav_contact");</script>', unsafe_allow_html=True
+        )
+        navigate_to("contact")
     if st.button("Docs", key="nav_docs", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_docs");</script>', unsafe_allow_html=True)
-        navigate_to('docs')
+        st.markdown(
+            '<script>handleNavClick("nav_docs");</script>', unsafe_allow_html=True
+        )
+        navigate_to("docs")
 
 with col5:
     if st.button("API", key="nav_api", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_api");</script>', unsafe_allow_html=True)
-        navigate_to('api')
+        st.markdown(
+            '<script>handleNavClick("nav_api");</script>', unsafe_allow_html=True
+        )
+        navigate_to("api")
     if st.button("Settings", key="nav_settings", use_container_width=True):
-        st.markdown('<script>handleNavClick("nav_settings");</script>', unsafe_allow_html=True)
-        navigate_to('settings')
-
+        st.markdown(
+            '<script>handleNavClick("nav_settings");</script>', unsafe_allow_html=True
+        )
+        navigate_to("settings")
 
 
 # Beautiful Footer Info Section
@@ -9145,28 +10456,43 @@ with col5:
 st.markdown("---")
 
 # Main footer title
-st.markdown('<h2 style="text-align: center; color: #4ecdc4;">🛡️ Spamlyser Pro</h2>', unsafe_allow_html=True)
-st.markdown('<p style="text-align: center; color: #45b7d1; font-size: 1.1rem;"><strong>Advanced AI-Powered SMS Threat Detection System</strong></p>', unsafe_allow_html=True)
+st.markdown(
+    '<h2 style="text-align: center; color: #4ecdc4;">🛡️ Spamlyser Pro</h2>',
+    unsafe_allow_html=True,
+)
+st.markdown(
+    '<p style="text-align: center; color: #45b7d1; font-size: 1.1rem;"><strong>Advanced AI-Powered SMS Threat Detection System</strong></p>',
+    unsafe_allow_html=True,
+)
 
 # Feature highlights in columns
 col_f1, col_f2, col_f3 = st.columns(3)
 with col_f1:
-    st.markdown('<div style="text-align: center; color: #96ceb4;"><h4>🌟 Multi-Model Analysis</h4></div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="text-align: center; color: #96ceb4;"><h4>🌟 Multi-Model Analysis</h4></div>',
+        unsafe_allow_html=True,
+    )
 with col_f2:
-    st.markdown('<div style="text-align: center; color: #feca57;"><h4>🤖 Ensemble Learning</h4></div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="text-align: center; color: #feca57;"><h4>🤖 Ensemble Learning</h4></div>',
+        unsafe_allow_html=True,
+    )
 with col_f3:
-    st.markdown('<div style="text-align: center; color: #ff6b6b;"><h4>⚡ Real-time Detection</h4></div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="text-align: center; color: #ff6b6b;"><h4>⚡ Real-time Detection</h4></div>',
+        unsafe_allow_html=True,
+    )
 
 st.markdown("---")
 
 # Copyright info
 st.markdown(
     '<div style="text-align: center; color: #888; padding: 20px;">'
-    '<p>© 2025 Spamlyser Pro | Built with ❤️ using Streamlit & Python</p>'
+    "<p>© 2025 Spamlyser Pro | Built with ❤️ using Streamlit & Python</p>"
     '<p><span style="color: #4ecdc4;">🔒 Protecting Your Digital Communications</span> | '
     '<span style="color: #feca57;">⭐ Advanced Threat Intelligence</span></p>'
-    '</div>', 
-    unsafe_allow_html=True
+    "</div>",
+    unsafe_allow_html=True,
 )
 
 # --- Main Execution ---

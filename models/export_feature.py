@@ -72,7 +72,7 @@ def export_results_button(history, filename_prefix="spamlyser_results"):
     export_format = st.selectbox(
         "Export results as:",
         options=["CSV", "PDF"],
-        key=f"export_format_{filename_prefix}"
+        key=f"export_format_{filename_prefix}",
     )
     if export_format == "CSV":
         csv_data = df.to_csv(index=False)
@@ -80,13 +80,13 @@ def export_results_button(history, filename_prefix="spamlyser_results"):
             label="📥 Download Results CSV",
             data=csv_data,
             file_name=f"{filename_prefix}_{ts}.csv",
-            mime="text/csv"
+            mime="text/csv",
         )
-    else :
+    else:
         pdf_data = dataframe_to_pdf(df)
         st.download_button(
             label="📥 Download Results PDF",
             data=pdf_data,
             file_name=f"{filename_prefix}_{ts}.pdf",
-            mime="application/pdf"
+            mime="application/pdf",
         )

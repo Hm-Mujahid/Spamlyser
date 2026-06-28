@@ -15,8 +15,6 @@ fake ensemble classifier.
 import sys
 import types
 
-import pytest
-
 
 def _ensure_stub(name: str) -> None:
     """Provide a minimal stub for `name` only if it cannot be imported.
@@ -32,8 +30,10 @@ def _ensure_stub(name: str) -> None:
     except Exception:
         module = types.ModuleType(name)
         if name == "fpdf":
+
             class FPDF:  # minimal placeholder; unused by these tests
                 pass
+
             module.FPDF = FPDF
         sys.modules[name] = module
 

@@ -1,0 +1,28 @@
+name: Dependabot Auto-Merge
+
+on: pull_request
+
+# Grant the necessary permissions for the bot to merge PRs
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    # Only run this job if the PR was created by Dependabot
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          
+      # This command enables GitHub's auto-merge feature. 
+      # It will wait for your 'lint' CI checks to pass before merging!
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}

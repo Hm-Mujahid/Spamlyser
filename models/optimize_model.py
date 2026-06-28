@@ -16,7 +16,10 @@ with torch.no_grad():
         ONNX_PATH,
         input_names=["input_ids"],
         output_names=["output"],
-        dynamic_axes={"input_ids": {0: "batch_size", 1: "sequence_length"}, "output": {0: "batch_size"}},
-        opset_version=14
+        dynamic_axes={
+            "input_ids": {0: "batch_size", 1: "sequence_length"},
+            "output": {0: "batch_size"},
+        },
+        opset_version=14,
     )
 print(f"Model exported to {ONNX_PATH}")
