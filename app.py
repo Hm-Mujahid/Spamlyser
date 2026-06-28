@@ -3376,12 +3376,8 @@ def show_contact_page():
             )
 
         with col2:
-            st.text_input(
-                "🏢 Company (Optional)", placeholder="Your organization"
-            )
-            st.text_input(
-                "📱 Phone (Optional)", placeholder="+1 (555) 123-4567"
-            )
+            st.text_input("🏢 Company (Optional)", placeholder="Your organization")
+            st.text_input("📱 Phone (Optional)", placeholder="+1 (555) 123-4567")
             st.selectbox(
                 "⚡ Priority Level",
                 [
