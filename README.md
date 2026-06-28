@@ -177,6 +177,8 @@ Experience Spamlyser live here:
 | RoBERTa    | [🔗 Link](https://huggingface.co/mreccentric/roberta-base-spamlyser)            | Robust & Accurate   |
 | ALBERT     | [🔗 Link](https://huggingface.co/mreccentric/albert-base-v2-spamlyser)          | Efficient & Compact |
 
+📄 **Detailed model documentation, training hyperparameters, evaluation metrics, and hardware requirements are available in the [`Model Card`](models/MODEL_CARD.md).**
+
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%">
 
 <h2 id="video-explanation">📺 Video Explanation</h2>
