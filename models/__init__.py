@@ -17,3 +17,4 @@ from .custom_rules_manager import (
     save_custom_rules,
     check_custom_rules,
 )
+from .storage_manager import StorageManager, default_json_validator

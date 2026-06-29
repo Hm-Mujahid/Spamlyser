@@ -1,3 +1,11 @@
 venv
 __pycache__
 *.ps1
+
+# Backup files (created by StorageManager)
+.backups/
+*.bak.*.json
+
+# OS artefacts
+.DS_Store
+Thumbs.db

@@ -6,6 +6,8 @@ from datetime import datetime
 from dataclasses import dataclass
 from collections import defaultdict
 
+from .storage_manager import StorageManager
+
 
 @dataclass
 class PredictionResult:
@@ -758,7 +760,6 @@ class ModelPerformanceTracker:
         }
 
     def save_to_file(self, filepath: str):
-        # Save performance data to JSON file
         data = {
             "performance_history": dict(self.performance_history),
             "model_metrics": dict(self.model_metrics),
@@ -769,15 +770,16 @@ class ModelPerformanceTracker:
             "timestamp": datetime.now().isoformat(),
         }
 
-        with open(filepath, "w") as f:
-            json.dump(data, f, indent=2)
+        mgr = StorageManager()
+        mgr.save_json(filepath, data, backup=True)
 
     def load_from_file(self, filepath: str):
-        # Load performance data from JSON file
-        try:
-            with open(filepath, "r") as f:
-                data = json.load(f)
+        mgr = StorageManager()
+        data = mgr.load_json(filepath)
+        if data is None:
+            return
 
+        try:
             self.performance_history = defaultdict(
                 list, data.get("performance_history", {})
             )
@@ -792,11 +794,9 @@ class ModelPerformanceTracker:
                 }
             )
 
-            # Update metrics
             for model, metrics in data.get("model_metrics", {}).items():
                 self.model_metrics[model].update(metrics)
 
-            # Update config if available
             config = data.get("config", {})
             self.history_size = config.get("history_size", self.history_size)
             self.min_samples = config.get("min_samples", self.min_samples)
