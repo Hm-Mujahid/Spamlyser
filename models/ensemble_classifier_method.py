@@ -259,6 +259,11 @@ class EnsembleSpamClassifier:
             if not self._validate_predictions(predictions):
                 return self._fallback_prediction(predictions)
 
+            # Update weights from performance tracker if available
+            if self.performance_tracker:
+                self.model_weights = self.performance_tracker.get_dynamic_weights()
+                self._normalize_weights()
+
             spam_weight = 0.0
             ham_weight = 0.0
             model_votes = []
@@ -267,21 +272,26 @@ class EnsembleSpamClassifier:
                 label = pred["label"].upper()
                 confidence = pred["score"]
 
-                # Weight the vote by confidence
+                # Incorporate per-model reliability score
+                reliability = self.model_weights.get(model_name, 1.0)
+                adjusted_weight = confidence * reliability
+
+                # Weight the vote by adjusted confidence
                 if label == "SPAM":
-                    spam_weight += confidence
-                    weight_contribution_spam = confidence
+                    spam_weight += adjusted_weight
+                    weight_contribution_spam = adjusted_weight
                     weight_contribution_ham = 0.0
                 else:
-                    ham_weight += confidence
+                    ham_weight += adjusted_weight
                     weight_contribution_spam = 0.0
-                    weight_contribution_ham = confidence
+                    weight_contribution_ham = adjusted_weight
 
                 model_votes.append(
                     {
                         "model": model_name,
                         "prediction": label,
                         "confidence": confidence,
+                        "reliability_score": reliability,
                         "weight_contribution_spam": weight_contribution_spam,
                         "weight_contribution_ham": weight_contribution_ham,
                     }
