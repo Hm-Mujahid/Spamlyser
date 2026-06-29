@@ -29,9 +29,19 @@ def expand_abbreviations(text: str) -> str:
 
 
 def correct_leetspeak(text: str) -> str:
-    for k, v in LEETSPEAK.items():
-        text = safe_regex_sub(rf"{k}", v, text, default=text)
-    return text
+    # Apply leet substitutions only to tokens that contain at least one
+    # ASCII letter.  Pure numeric tokens (integers, floats, phone numbers,
+    # prices like "$100") are passed through unchanged, preventing corruption
+    # of legitimate numeric content while still decoding obfuscated words
+    # such as "Fr33" → "Free" or "M0n3y" → "Money".
+    def _decode_token(token: str) -> str:
+        if not any(c.isalpha() for c in token):
+            return token  # nothing to decode in a purely numeric token
+        for k, v in LEETSPEAK.items():
+            token = safe_regex_sub(rf"{k}", v, token, default=token)
+        return token
+
+    return " ".join(_decode_token(tok) for tok in text.split(" "))
 
 
 def count_suspicious_elements(text: str) -> dict:
