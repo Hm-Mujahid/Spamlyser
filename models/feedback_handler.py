@@ -22,6 +22,14 @@ def _get_connection(db_path: str) -> sqlite3.Connection:
         _local.conn.row_factory = sqlite3.Row
         _local.conn.execute("PRAGMA journal_mode=WAL")
         _local.conn.execute("PRAGMA busy_timeout=5000")
+    else:
+        try:
+            _local.conn.execute("SELECT 1")
+        except sqlite3.Error:
+            _local.conn = sqlite3.connect(db_path, check_same_thread=False)
+            _local.conn.row_factory = sqlite3.Row
+            _local.conn.execute("PRAGMA journal_mode=WAL")
+            _local.conn.execute("PRAGMA busy_timeout=5000")
     return _local.conn
 
 
