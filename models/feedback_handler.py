@@ -28,10 +28,22 @@ def _get_connection(db_path: str) -> sqlite3.Connection:
 class FeedbackHandler:
     """Handles user feedback operations using SQLite for concurrent write safety."""
 
-    def __init__(self, feedback_file: str = "feedback_data.json"):
-        self.db_path = os.path.splitext(feedback_file)[0] + ".db"
+    def __init__(self, feedback_file: str = ""):
+        default = feedback_file or ""
+        if not default:
+            from config import FEEDBACK_DB_PATH
+
+            default = FEEDBACK_DB_PATH
+        self.db_path = os.path.splitext(default)[0] + ".db"
         self._init_db()
-        self._migrate_from_json(feedback_file)
+        if feedback_file:
+            self._migrate_from_json(feedback_file)
+        else:
+            from config import FEEDBACK_JSON_PATH
+
+            json_path = FEEDBACK_JSON_PATH
+            if os.path.exists(json_path):
+                self._migrate_from_json(json_path)
 
     def _init_db(self) -> None:
         conn = _get_connection(self.db_path)

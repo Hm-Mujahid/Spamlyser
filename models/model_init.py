@@ -14,6 +14,12 @@ Features:
 from pathlib import Path
 from typing import Dict, Tuple
 
+from config import (
+    MODEL_CACHE_DIR,
+    VERIFICATION_MODEL_NAME,
+    get_optional,
+)
+
 # Global flag to track model availability
 MODEL_STATUS = False
 MODEL_ERROR_MESSAGE = ""
@@ -35,12 +41,12 @@ def verify_model_availability() -> Tuple[bool, str, list]:
 
         if not torch.cuda.is_available():
             warnings.append(
-                "⚠️ CUDA not available. Using CPU with dynamic quantization (int8) for "
+                "CUDA not available. Using CPU with dynamic quantization (int8) for "
                 "balanced performance."
             )
     except ImportError as e:
         error_msg = (
-            "❌ PyTorch is not installed. Please install it with:\n"
+            "PyTorch is not installed. Please install it with:\n"
             "   pip install torch torchvision torchaudio\n"
             f"   Error details: {str(e)}"
         )
@@ -51,7 +57,7 @@ def verify_model_availability() -> Tuple[bool, str, list]:
         from transformers import AutoTokenizer, AutoModelForSequenceClassification
     except ImportError as e:
         error_msg = (
-            "❌ Transformers library is not installed. Please install it with:\n"
+            "Transformers library is not installed. Please install it with:\n"
             "   pip install transformers\n"
             f"   Error details: {str(e)}"
         )
@@ -61,27 +67,25 @@ def verify_model_availability() -> Tuple[bool, str, list]:
     models_dir = Path(__file__).parent
     if not models_dir.exists():
         error_msg = (
-            f"❌ Models directory not found at: {models_dir}\n"
+            f"Models directory not found at: {models_dir}\n"
             "   Please ensure the models directory exists."
         )
         return False, error_msg, warnings
 
     # Try to load a test model to verify transformers setup
     try:
-        print("🔄 Verifying model availability... This may take a moment on first run.")
+        print("Verifying model availability... This may take a moment on first run.")
 
-        # Use a smaller model for testing to reduce download time
-        test_model_name = "distilbert-base-uncased"
-
-        # Check if model is cached
-        cache_dir = Path.home() / ".cache" / "huggingface" / "transformers"
+        test_model_name = VERIFICATION_MODEL_NAME
+        cache_dir = MODEL_CACHE_DIR
         model_cached = cache_dir.exists() and any(
-            test_model_name in str(p.parent) and p.is_dir() for p in cache_dir.rglob(f"*{test_model_name}*")
+            test_model_name in str(p.parent) and p.is_dir()
+            for p in cache_dir.rglob(f"*{test_model_name}*")
         )
 
         if not model_cached:
             warnings.append(
-                f"📥 Downloading {test_model_name} model for the first time. "
+                f"Downloading {test_model_name} model for the first time. "
                 "This may take a few minutes depending on your internet connection."
             )
 
@@ -90,7 +94,7 @@ def verify_model_availability() -> Tuple[bool, str, list]:
             AutoTokenizer.from_pretrained(test_model_name)
         except Exception as e:
             error_msg = (
-                f"❌ Failed to load tokenizer for {test_model_name}.\n"
+                f"Failed to load tokenizer for {test_model_name}.\n"
                 "   This could be due to:\n"
                 "   - No internet connection (required for first-time download)\n"
                 "   - Corrupted cache files\n"
@@ -106,7 +110,7 @@ def verify_model_availability() -> Tuple[bool, str, list]:
             AutoModelForSequenceClassification.from_pretrained(test_model_name)
         except Exception as e:
             error_msg = (
-                f"❌ Failed to load model {test_model_name}.\n"
+                f"Failed to load model {test_model_name}.\n"
                 "   This could be due to:\n"
                 "   - No internet connection (required for first-time download)\n"
                 "   - Corrupted cache files\n"
@@ -118,12 +122,12 @@ def verify_model_availability() -> Tuple[bool, str, list]:
             )
             return False, error_msg, warnings
 
-        print("✅ Model verification successful!")
+        print("Model verification successful!")
         return True, "", warnings
 
     except Exception as e:
         error_msg = (
-            "❌ Unexpected error during model verification.\n"
+            "Unexpected error during model verification.\n"
             f"   Error details: {str(e)}\n"
             f"   Error type: {type(e).__name__}\n\n"
             "   Please check:\n"
