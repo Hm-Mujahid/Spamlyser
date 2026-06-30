@@ -203,7 +203,7 @@ class BatchProcessor:
     def process_batch_generator(
         self,
         messages: list[str],
-        cancel_check: callable | None = None,
+        cancel_check: Callable | None = None,
     ) -> Generator[dict[str, Any], None, None]:
         """
         Generator that processes messages sequentially and yields real-time
