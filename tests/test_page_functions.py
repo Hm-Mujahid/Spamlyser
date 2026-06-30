@@ -1,22 +1,8 @@
-"""
-Tests for page_functions.py — issue #41
-Ensures show_feedback_page() accepts navigate_to as a parameter and
-that no stale module-level None sentinel exists.
-"""
+"""Tests for page_functions.py (issue #41)."""
 
 import inspect
 import sys
 from unittest.mock import MagicMock, patch
-
-# ---------------------------------------------------------------------------
-# Provide a minimal streamlit stub so page_functions can be imported without
-# a running Streamlit server.
-# ---------------------------------------------------------------------------
-st_mock = MagicMock()
-# Make st.session_state behave like a dict (attribute access)
-st_mock.session_state = {}
-sys.modules.setdefault("streamlit", st_mock)
-
 
 import page_functions
 

@@ -12,35 +12,6 @@ are present on CI via requirements.txt) and drive `BatchProcessor` with a tiny
 fake ensemble classifier.
 """
 
-import sys
-import types
-
-
-def _ensure_stub(name: str) -> None:
-    """Provide a minimal stub for `name` only if it cannot be imported.
-
-    `models/__init__.py` imports `export_feature`, which imports `streamlit`
-    and `fpdf`. On CI those are installed, so the real modules are used and
-    these stubs are never created.
-    """
-    if name in sys.modules:
-        return
-    try:
-        __import__(name)
-    except Exception:
-        module = types.ModuleType(name)
-        if name == "fpdf":
-
-            class FPDF:  # minimal placeholder; unused by these tests
-                pass
-
-            module.FPDF = FPDF
-        sys.modules[name] = module
-
-
-_ensure_stub("streamlit")
-_ensure_stub("fpdf")
-
 from models.batch_processor import BatchProcessor
 
 

@@ -6,28 +6,8 @@ CI without loading any transformer models.
 """
 
 import itertools
-import os
-import sys
-import types
 from datetime import datetime, timedelta
 from unittest import mock
-
-# models/__init__.py imports export_feature, which does `import streamlit` and
-# `from fpdf import FPDF`. Both are in requirements.txt (present on CI). Provide
-# lightweight stubs only when a dependency is unavailable, so this test runs in
-# any environment while still using the real packages on CI.
-try:
-    import streamlit
-except Exception:
-    sys.modules["streamlit"] = types.ModuleType("streamlit")
-try:
-    import fpdf
-except Exception:
-    _fpdf = types.ModuleType("fpdf")
-    _fpdf.FPDF = object
-    sys.modules["fpdf"] = _fpdf
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from models.batch_processor import BatchProcessor
 
