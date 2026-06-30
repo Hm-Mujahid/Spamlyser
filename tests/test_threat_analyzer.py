@@ -37,7 +37,7 @@ def test_threat_classification():
 
     # Test non-spam message
     ham_message = "Hey mom, I'll be home for dinner at 6pm."
-    threat_type, confidence, metadata = classify_threat_type(ham_message, 0.1)
+    threat_type, confidence, _metadata = classify_threat_type(ham_message, 0.1)
     assert threat_type is None
 
 

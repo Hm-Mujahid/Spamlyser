@@ -27,6 +27,12 @@ ignore = [
     "E741",  # ambiguous variable name
     "F601",  # dictionary key literal repeated
     "E402",  # module level import not at top of file
+    "UP035", # typing.Dict is deprecated
+    "RUF034", # Useless if-else condition
+    "RUF001", # String contains ambiguous character
+    "RUF059", # Unpacked variable is never used
+    "W291",  # Trailing whitespace
+    "W293",  # Blank line contains whitespace
 ]
 
 [lint.per-file-ignores]

@@ -71,7 +71,7 @@ def show_feedback_page(navigate_to):
         with st.container():
             st.markdown("""
             ## 📝 Share Your Feedback
-            
+
             Your insights are valuable to us! Use this form to:
             - Report bugs or issues
             - Request new features
@@ -198,16 +198,16 @@ def show_feedback_page(navigate_to):
         with st.expander("Why We Value Your Feedback"):
             st.markdown("""
             ### 🚀 Improving Together
-            
+
             At Spamlyser, we believe in continuous improvement, and your feedback is essential to this process. Here's how your input helps:
-            
+
             - **Bug Reports**: Help us identify and fix issues quickly
             - **Feature Requests**: Guide our development roadmap based on user needs
             - **Suggestions**: Provide insights on how we can enhance user experience
             - **Questions**: Help us identify areas where documentation could be improved
-            
+
             ### 🔄 Feedback Loop
-            
+
             We review all feedback regularly and use it to prioritize improvements and new features. If you've provided your email, we may reach out for clarification or to let you know when your suggestion has been implemented.
             """)
 

@@ -239,7 +239,7 @@ st.markdown(
         --hover-shadow: rgba(0, 0, 0, 0.15);
         --hover-glow: rgba(0, 212, 170, 0.3);
     }
-    
+
     /* Dark theme overrides */
     @media (prefers-color-scheme: dark) {
         :root {
@@ -254,16 +254,16 @@ st.markdown(
             --hover-glow: rgba(0, 212, 170, 0.4);
         }
     }
-    
+
     .main {
         background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
         color: var(--text-primary);
     }
-    
+
     .stApp {
         background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
     }
-    
+
     /* Enhanced Button Hover Effects */
     .stButton > button {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -271,25 +271,25 @@ st.markdown(
         position: relative !important;
         overflow: hidden !important;
     }
-    
+
     .stButton > button:hover {
         transform: translateY(-2px) scale(var(--hover-scale)) !important;
         box-shadow: 0 8px 25px var(--hover-shadow) !important;
         filter: brightness(1.05) !important;
     }
-    
+
     .stButton > button:active {
         transform: translateY(0) scale(0.98) !important;
         transition: all 0.1s ease !important;
     }
-    
+
     /* Primary Button Hover Effects */
     .stButton > button[kind="primary"]:hover {
         background: linear-gradient(45deg, #00d4aa, #00b894) !important;
         box-shadow: 0 8px 25px var(--hover-glow) !important;
         border-color: #00a085 !important;
     }
-    
+
     /* Secondary Button Hover Effects */
     .stButton > button[kind="secondary"]:hover {
         background: linear-gradient(45deg, #f8f9fa, #e9ecef) !important;
@@ -297,7 +297,7 @@ st.markdown(
         color: #00d4aa !important;
         box-shadow: 0 8px 25px rgba(0, 212, 170, 0.2) !important;
     }
-    
+
     /* Dark theme button hover effects */
     @media (prefers-color-scheme: dark) {
         .stButton > button[kind="secondary"]:hover {
@@ -306,9 +306,9 @@ st.markdown(
             color: #00d4aa !important;
         }
     }
-    
+
     /* Card Styles with Enhanced Hover Effects */
-    .metric-container, .prediction-card, .ensemble-card, .feature-card, 
+    .metric-container, .prediction-card, .ensemble-card, .feature-card,
     .model-info, .ensemble-method, .method-comparison {
         padding: 20px;
         border-radius: 12px;
@@ -319,22 +319,22 @@ st.markdown(
         position: relative;
         overflow: hidden;
     }
-    
-    .metric-container:hover, .prediction-card:hover, .ensemble-card:hover, 
-    .feature-card:hover, .model-info:hover, .ensemble-method:hover, 
+
+    .metric-container:hover, .prediction-card:hover, .ensemble-card:hover,
+    .feature-card:hover, .model-info:hover, .ensemble-method:hover,
     .method-comparison:hover {
         transform: translateY(-4px) scale(var(--hover-scale));
         box-shadow: 0 12px 30px var(--hover-shadow);
         border-color: var(--accent-color);
     }
-    
+
     /* Light theme card styles */
     .metric-container {
         background: linear-gradient(145deg, #f0f2f6, #ffffff);
         border: 1px solid var(--card-border);
         box-shadow: 0 4px 12px var(--card-shadow);
     }
-    
+
     .prediction-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
@@ -342,24 +342,24 @@ st.markdown(
         text-align: center;
         padding: 25px;
     }
-    
+
     .ensemble-card {
         background: linear-gradient(145deg, #f0f0ff, #ffffff);
         border: 2px solid #6366f1;
     }
-    
+
     .spam-alert {
         background: linear-gradient(145deg, #fff0f0, #ffffff);
         border: 2px solid var(--spam-color);
         color: var(--spam-color);
     }
-    
+
     .ham-safe {
         background: linear-gradient(145deg, #f0fff0, #ffffff);
         border: 2px solid var(--ham-color);
         color: var(--ham-color);
     }
-    
+
     .analysis-header {
         background: linear-gradient(90deg, #f0f0f0, #e0e0e0);
         padding: 15px;
@@ -369,33 +369,33 @@ st.markdown(
         color: var(--text-primary);
         transition: all 0.3s ease;
     }
-    
+
     .analysis-header:hover {
         transform: translateX(5px);
         box-shadow: 0 8px 20px var(--hover-shadow);
     }
-    
+
     .feature-card {
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(10px);
         border: 1px solid var(--card-border);
     }
-    
+
     .model-info {
         background: linear-gradient(145deg, #f0f0f0, #ffffff);
         border-left: 4px solid var(--accent-color);
     }
-    
+
     .ensemble-method {
         background: linear-gradient(145deg, #f0f0ff, #ffffff);
         border-left: 4px solid #6366f1;
     }
-    
+
     .method-comparison {
         background: rgba(255, 255, 255, 0.8);
         border: 1px solid var(--card-border);
     }
-    
+
     /* Interactive Elements Hover Effects */
     .stSelectbox > div > div:hover,
     .stTextInput > div > div > input:hover,
@@ -405,17 +405,17 @@ st.markdown(
         box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2) !important;
         transition: all 0.3s ease !important;
     }
-    
+
     /* Form Elements Hover Effects */
     .stForm > div {
         transition: all 0.3s ease;
     }
-    
+
     .stForm:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 25px var(--hover-shadow);
     }
-    
+
     /* Navigation Button Hover Effects */
     .stButton > button[data-testid="baseButton-secondary"]:hover {
         background: linear-gradient(45deg, #f8f9fa, #e9ecef) !important;
@@ -423,7 +423,7 @@ st.markdown(
         color: var(--accent-color) !important;
         transform: translateY(-2px) scale(1.02) !important;
     }
-    
+
     /* Export and Action Button Hover Effects */
     .stButton > button:has-text("Export"):hover,
     .stButton > button:has-text("Analyze"):hover,
@@ -432,7 +432,7 @@ st.markdown(
         box-shadow: 0 8px 25px var(--hover-glow) !important;
         transform: translateY(-2px) scale(1.02) !important;
     }
-    
+
     /* Dark theme overrides */
     @media (prefers-color-scheme: dark) {
         .metric-container {
@@ -440,63 +440,63 @@ st.markdown(
             border: 1px solid #333;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
-        
+
         .prediction-card {
             background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
             border: 1px solid #404040;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
         }
-        
+
         .ensemble-card {
             background: linear-gradient(145deg, #1a1a2a, #2d2d3d);
             border: 2px solid #6366f1;
         }
-        
+
         .spam-alert {
             background: linear-gradient(145deg, #2a1a1a, #3d2626);
             border: 2px solid #ff4444;
             color: #ff6b6b;
         }
-        
+
         .ham-safe {
             background: linear-gradient(145deg, #1a2a1a, #263d26);
             border: 2px solid #44ff44;
             color: #6bff6b;
         }
-        
+
         .analysis-header {
             background: linear-gradient(90deg, #333, #555);
             border-left: 4px solid #00d4aa;
             color: #ffffff;
         }
-        
+
         .feature-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .model-info {
             background: linear-gradient(145deg, #252525, #3a3a3a);
             border-left: 4px solid #00d4aa;
         }
-        
+
         .ensemble-method {
             background: linear-gradient(145deg, #252545, #3a3a5a);
             border-left: 4px solid #6366f1;
         }
-        
+
         .method-comparison {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .stButton > button[kind="secondary"]:hover {
             background: linear-gradient(45deg, #2d2d2d, #404040) !important;
             border-color: #00d4aa !important;
             color: #00d4aa !important;
         }
     }
-    
+
     /* Special hover effects for specific button types */
     .stButton > button[aria-label*="Analyze"]:hover,
     .stButton > button[aria-label*="Start"]:hover {
@@ -504,31 +504,31 @@ st.markdown(
         box-shadow: 0 8px 25px var(--hover-glow) !important;
         transform: translateY(-3px) scale(1.03) !important;
     }
-    
+
     .stButton > button[aria-label*="Export"]:hover,
     .stButton > button[aria-label*="Download"]:hover {
         background: linear-gradient(45deg, #6366f1, #4f46e5) !important;
         box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3) !important;
         transform: translateY(-2px) scale(1.02) !important;
     }
-    
+
     .stButton > button[aria-label*="Clear"]:hover,
     .stButton > button[aria-label*="Reset"]:hover {
         background: linear-gradient(45deg, #ef4444, #dc2626) !important;
         box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3) !important;
         transform: translateY(-2px) scale(1.02) !important;
     }
-    
+
     /* Smooth transitions for all interactive elements */
     * {
         transition: all 0.2s ease !important;
     }
-    
+
     /* Remove transition from elements that shouldn't have it */
     .stMarkdown, .stText, .stMetric, .stDataFrame {
         transition: none !important;
     }
-    
+
     /* Additional Streamlit-specific button targeting */
     div[data-testid="stButton"] > button:hover,
     .stButton > button:hover,
@@ -538,89 +538,89 @@ st.markdown(
         box-shadow: 0 8px 25px var(--hover-shadow) !important;
         filter: brightness(1.05) !important;
     }
-    
+
     /* Ensure form submit buttons have hover effects */
     .stForm > div > div > button:hover {
         transform: translateY(-2px) scale(1.02) !important;
         box-shadow: 0 8px 25px var(--hover-glow) !important;
     }
-    
+
     /* Download button hover effects */
     .stDownloadButton > button:hover {
         background: linear-gradient(45deg, #6366f1, #4f46e5) !important;
         box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3) !important;
         transform: translateY(-2px) scale(1.02) !important;
     }
-    
+
     /* File uploader hover effects */
     .stFileUploader > div:hover {
         border-color: var(--accent-color) !important;
         box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2) !important;
     }
-    
+
     /* Radio button hover effects */
     .stRadio > div > label:hover {
         background-color: rgba(0, 212, 170, 0.1) !important;
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
     }
-    
+
     /* Checkbox hover effects */
     .stCheckbox > label:hover {
         background-color: rgba(0, 212, 170, 0.1) !important;
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
     }
-    
+
     /* Number input hover effects */
     .stNumberInput > div > div > input:hover {
         border-color: var(--accent-color) !important;
         box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2) !important;
     }
-    
+
     /* Date input hover effects */
     .stDateInput > div > div > input:hover {
         border-color: var(--accent-color) !important;
         box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2) !important;
     }
-    
+
     /* Time input hover effects */
     .stTimeInput > div > div > input:hover {
         border-color: var(--accent-color) !important;
         box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2) !important;
     }
-    
+
     /* Color picker hover effects */
     .stColorPicker > div > div:hover {
         border-color: var(--accent-color) !important;
         box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2) !important;
     }
-    
+
     /* Multiselect hover effects */
     .stMultiSelect > div > div:hover {
         border-color: var(--accent-color) !important;
         box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2) !important;
     }
-    
+
     /* Expander hover effects */
     .stExpander > div > div:hover {
         background-color: rgba(0, 212, 170, 0.05) !important;
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
     }
-    
+
     /* Tabs hover effects */
     .stTabs > div > div > div > button:hover {
         background-color: rgba(0, 212, 170, 0.1) !important;
         border-radius: 8px !important;
         transform: translateY(-1px) !important;
     }
-    
+
     /* Sidebar hover effects and scrolling fix */
     .stSidebar > div:hover {
         box-shadow: 0 4px 12px var(--hover-shadow) !important;
     }
-    
+
     /* Ensure sidebar can scroll properly */
     .stSidebar {
         overflow-y: auto !important;
@@ -628,24 +628,24 @@ st.markdown(
         position: relative !important;
         z-index: 999 !important;
     }
-    
+
     .stSidebar > div {
         overflow-y: auto !important;
         overflow-x: hidden !important;
         height: 100vh !important;
         max-height: 100vh !important;
     }
-    
+
     /* Progress bar hover effects */
     .stProgress > div:hover {
         box-shadow: 0 0 10px var(--hover-glow) !important;
     }
-    
+
     /* Balloons animation enhancement */
     .stBalloons {
         animation: bounce 0.6s ease-in-out !important;
     }
-    
+
     @keyframes bounce {
         0%, 20%, 50%, 80%, 100% {
             transform: translateY(0);
@@ -657,7 +657,7 @@ st.markdown(
             transform: translateY(-5px);
         }
     }
-    
+
     /* Success/Error message hover effects */
     .stSuccess:hover,
     .stError:hover,
@@ -666,26 +666,26 @@ st.markdown(
         transform: translateY(-2px) !important;
         box-shadow: 0 8px 25px var(--hover-shadow) !important;
     }
-    
+
     /* Container hover effects */
     .stContainer:hover {
         transform: translateY(-1px) !important;
         box-shadow: 0 4px 12px var(--hover-shadow) !important;
     }
-    
+
     /* Minimal fix for overlapping issues - only for dashboard elements */
     .stTooltip {
         z-index: 9999 !important;
         position: fixed !important;
     }
-    
+
     /* Fix only dashboard-specific elements */
     .metric-container {
         position: relative !important;
         z-index: 1 !important;
         margin: 10px 0 !important;
     }
-    
+
     /* Fix column layout for dashboard cards */
     .stColumns {
         display: flex !important;
@@ -694,56 +694,56 @@ st.markdown(
         margin: 0 !important;
         padding: 0 !important;
     }
-    
+
     .stColumns > div {
         flex: 1 !important;
         min-width: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
     }
-    
+
     /* Dashboard container fixes */
     .dashboard-content {
         position: relative !important;
         z-index: 1 !important;
         margin: 20px 0 !important;
     }
-    
+
     .dashboard-tabs-container {
         position: relative !important;
         z-index: 1 !important;
         margin: 20px 0 !important;
     }
-    
+
     .dashboard-tab-content {
         position: relative !important;
         z-index: 1 !important;
         margin: 20px 0 !important;
         padding: 10px 0 !important;
     }
-    
+
     /* Smooth scrolling for navigation */
     html {
         scroll-behavior: smooth !important;
     }
-    
+
     /* Content sections for navigation */
     .content-section {
         scroll-margin-top: 100px !important;
         padding: 20px 0 !important;
     }
-    
+
     /* Navigation button scroll effects */
     .nav-scroll-button {
         transition: all 0.3s ease !important;
         cursor: pointer !important;
     }
-    
+
     .nav-scroll-button:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
-    
+
     /* Active button styling */
     .stButton > button:active,
     .stButton > button:focus {
@@ -752,7 +752,7 @@ st.markdown(
         border: 2px solid #4ecdc4 !important;
         box-shadow: 0 0 10px rgba(78, 205, 196, 0.5) !important;
     }
-    
+
     /* Clicked button styling */
     .nav-button-clicked {
         background-color: #4ecdc4 !important;
@@ -774,7 +774,7 @@ function handleNavClick(buttonId) {
     document.querySelectorAll('.nav-button').forEach(btn => {
         btn.classList.remove('nav-button-clicked');
     });
-    
+
     // Add clicked class to the clicked button
     const button = document.querySelector(`[data-testid="${buttonId}"]`);
     if (button) {
@@ -794,33 +794,33 @@ def show_home_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             🛡️ Spamlyser Pro
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             Advanced AI-Powered SMS Threat Detection System
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 600px;
             margin: 0 auto;
@@ -883,7 +883,7 @@ def show_home_page():
         ">
             <h3 style="color: #fff; margin: 0 0 15px 0;">🤖 AI-Powered Detection</h3>
             <p style="color: #fff; margin: 0; opacity: 0.9; line-height: 1.6;">
-                Uses state-of-the-art transformer models including BERT, RoBERTa, DistilBERT, and ALBERT 
+                Uses state-of-the-art transformer models including BERT, RoBERTa, DistilBERT, and ALBERT
                 for maximum accuracy in threat detection.
             </p>
         </div>
@@ -902,7 +902,7 @@ def show_home_page():
         ">
             <h3 style="color: #333; margin: 0 0 15px 0;">⚡ Real-Time Analysis</h3>
             <p style="color: #333; margin: 0; opacity: 0.8; line-height: 1.6;">
-                Get instant results with lightning-fast processing. Analyze SMS messages 
+                Get instant results with lightning-fast processing. Analyze SMS messages
                 in milliseconds with our optimized AI pipeline.
             </p>
         </div>
@@ -922,7 +922,7 @@ def show_home_page():
         ">
             <h3 style="color: #333; margin: 0 0 15px 0;">🔒 Advanced Security</h3>
             <p style="color: #333; margin: 0; opacity: 0.8; line-height: 1.6;">
-                Comprehensive threat classification including phishing, fraud, malware, 
+                Comprehensive threat classification including phishing, fraud, malware,
                 and social engineering attack detection.
             </p>
         </div>
@@ -941,7 +941,7 @@ def show_home_page():
         ">
             <h3 style="color: #333; margin: 0 0 15px 0;">📊 Smart Analytics</h3>
             <p style="color: #333; margin: 0; opacity: 0.8; line-height: 1.6;">
-                Track performance metrics, view detailed reports, and export results 
+                Track performance metrics, view detailed reports, and export results
                 in multiple formats for comprehensive analysis.
             </p>
         </div>
@@ -980,13 +980,13 @@ def show_home_page():
             """
         <div style="text-align: center; padding: 20px;">
             <div style="
-                width: 80px; 
-                height: 80px; 
-                background: linear-gradient(135deg, #667eea, #764ba2); 
-                border-radius: 50%; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 margin: 0 auto 15px auto;
                 box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
             ">
@@ -1004,13 +1004,13 @@ def show_home_page():
             """
         <div style="text-align: center; padding: 20px;">
             <div style="
-                width: 80px; 
-                height: 80px; 
-                background: linear-gradient(135deg, #ff9a9e, #fecfef); 
-                border-radius: 50%; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #ff9a9e, #fecfef);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 margin: 0 auto 15px auto;
                 box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
             ">
@@ -1028,13 +1028,13 @@ def show_home_page():
             """
         <div style="text-align: center; padding: 20px;">
             <div style="
-                width: 80px; 
-                height: 80px; 
-                background: linear-gradient(135deg, #a8edea, #fed6e3); 
-                border-radius: 50%; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #a8edea, #fed6e3);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 margin: 0 auto 15px auto;
                 box-shadow: 0 5px 15px rgba(168, 237, 234, 0.4);
             ">
@@ -1052,13 +1052,13 @@ def show_home_page():
             """
         <div style="text-align: center; padding: 20px;">
             <div style="
-                width: 80px; 
-                height: 80px; 
-                background: linear-gradient(135deg, #ffecd2, #fcb69f); 
-                border-radius: 50%; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
+                width: 80px;
+                height: 80px;
+                background: linear-gradient(135deg, #ffecd2, #fcb69f);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 margin: 0 auto 15px auto;
                 box-shadow: 0 5px 15px rgba(255, 236, 210, 0.4);
             ">
@@ -1228,7 +1228,7 @@ def show_home_page():
         with feedback_col2:
             st.markdown(
                 """
-            <div style="background: linear-gradient(135deg, #667eea22 0%, #764ba222 100%); 
+            <div style="background: linear-gradient(135deg, #667eea22 0%, #764ba222 100%);
                         padding: 20px; border-radius: 10px; height: 100%;">
                 <h3>Why Share Feedback?</h3>
                 <ul>
@@ -1849,25 +1849,25 @@ def show_about_page():
 
     st.markdown("""
     ## 🛡️ About Spamlyser Pro
-    
+
     **Spamlyser Pro** is a cutting-edge SMS threat detection system built using advanced machine learning techniques and ensemble methods.
-    
+
     ### 🎯 Mission
     To provide accurate, real-time SMS threat detection and help users identify potentially harmful messages before they cause damage.
-    
+
     ### 🤖 Technology Stack
     - **Machine Learning Models**: DistilBERT, BERT, RoBERTa, ALBERT
     - **Framework**: Streamlit for web interface
     - **Backend**: Python with Transformers library
     - **Analytics**: Plotly for data visualization
-    
+
     ### 🏆 Features
     - Multi-model ensemble predictions
     - Real-time threat analysis
     - Detailed performance metrics
     - Export functionality
     - User-friendly interface
-    
+
     ### 👨‍💻 Developer
     Built with ❤️ by the Spamlyser Pro team using state-of-the-art AI technology.
     """)
@@ -1879,33 +1879,33 @@ def show_features_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 25%, #fecfef 75%, #ff9a9e 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(255, 154, 158, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             ⚡ Advanced Features
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             Cutting-Edge AI Technology for Maximum Protection
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 700px;
             margin: 0 auto;
@@ -2528,33 +2528,33 @@ def show_models_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             🤖 AI Models
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             State-of-the-Art Transformer Models for SMS Threat Detection
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 700px;
             margin: 0 auto;
@@ -3291,33 +3291,33 @@ def show_contact_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             📞 Contact Us
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             Get in Touch with the Spamlyser Team
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 700px;
             margin: 0 auto;
@@ -3643,14 +3643,14 @@ def show_contact_page():
 
     with st.expander("🤖 How accurate is Spamlyser's AI detection?", expanded=False):
         st.markdown("""
-        Our ensemble AI models achieve **97.2% accuracy** on SMS threat detection. We use multiple 
-        state-of-the-art transformer models (BERT, RoBERTa, DistilBERT, ALBERT) working together 
+        Our ensemble AI models achieve **97.2% accuracy** on SMS threat detection. We use multiple
+        state-of-the-art transformer models (BERT, RoBERTa, DistilBERT, ALBERT) working together
         to provide the most reliable spam and threat detection available.
         """)
 
     with st.expander("⚡ How fast is the real-time detection?", expanded=False):
         st.markdown("""
-        Spamlyser processes SMS messages in **under 50ms** on average using our optimized DistilBERT model. 
+        Spamlyser processes SMS messages in **under 50ms** on average using our optimized DistilBERT model.
         For batch processing, we can handle thousands of messages per minute while maintaining high accuracy.
         """)
 
@@ -3671,7 +3671,7 @@ def show_contact_page():
         - **On-premise deployment** options
         - **24/7 dedicated support**
         - **SLA agreements** and compliance certifications
-        
+
         Contact us at **enterprise@spamlyser.ai** for more information.
         """)
 
@@ -3682,7 +3682,7 @@ def show_contact_page():
         - **Python SDK**: Native Python library for easy integration
         - **Webhook support**: Real-time notifications for detected threats
         - **Batch processing API**: For large-scale message analysis
-        
+
         Check our **API documentation** and get your free developer key to get started.
         """)
 
@@ -3731,33 +3731,33 @@ def show_api_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             🔌 API Documentation
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             Integrate Spamlyser AI into Your Applications
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 700px;
             margin: 0 auto;
@@ -3880,7 +3880,7 @@ def show_api_page():
     ):
         st.markdown("""
         **Analyze a single SMS message for threats and spam detection.**
-        
+
         **Request:**
         ```bash
         curl -X POST "https://api.spamlyser.ai/v1/analyze" \\
@@ -3892,7 +3892,7 @@ def show_api_page():
           "include_confidence": true
         }'
         ```
-        
+
         **Response:**
         ```json
         {
@@ -3919,7 +3919,7 @@ def show_api_page():
     with st.expander("📦 **POST /api/v1/batch** - Batch Message Analysis"):
         st.markdown("""
         **Analyze multiple SMS messages in a single request.**
-        
+
         **Request:**
         ```bash
         curl -X POST "https://api.spamlyser.ai/v1/batch" \\
@@ -3935,7 +3935,7 @@ def show_api_page():
           "batch_size": 100
         }'
         ```
-        
+
         **Response:**
         ```json
         {
@@ -3951,14 +3951,14 @@ def show_api_page():
                 "spam_probability": 0.02
               },
               {
-                "message_id": "msg2", 
+                "message_id": "msg2",
                 "classification": "SPAM",
                 "confidence_score": 0.99,
                 "spam_probability": 0.99
               },
               {
                 "message_id": "msg3",
-                "classification": "HAM", 
+                "classification": "HAM",
                 "confidence_score": 0.96,
                 "spam_probability": 0.04
               }
@@ -3973,13 +3973,13 @@ def show_api_page():
     with st.expander("🤖 **GET /api/v1/models** - Available Models"):
         st.markdown("""
         **Get information about available AI models.**
-        
+
         **Request:**
         ```bash
         curl -X GET "https://api.spamlyser.ai/v1/models" \\
         -H "Authorization: Bearer YOUR_API_KEY"
         ```
-        
+
         **Response:**
         ```json
         {
@@ -3995,7 +3995,7 @@ def show_api_page():
                 "recommended_for": ["real_time", "mobile", "high_throughput"]
               },
               {
-                "name": "bert", 
+                "name": "bert",
                 "display_name": "BERT",
                 "description": "Balanced Performance",
                 "accuracy": 0.972,
@@ -4005,7 +4005,7 @@ def show_api_page():
               {
                 "name": "ensemble",
                 "display_name": "Ensemble Method",
-                "description": "Best Overall Performance", 
+                "description": "Best Overall Performance",
                 "accuracy": 0.985,
                 "avg_response_time_ms": 200,
                 "recommended_for": ["maximum_accuracy", "production"]
@@ -4030,7 +4030,7 @@ def show_api_page():
         - **Header:** `Authorization: Bearer YOUR_API_KEY`
         - **Get API Key:** Register at developer portal
         - **Security:** Keys are encrypted and rotatable
-        
+
         **Example:**
         ```bash
         curl -H "Authorization: Bearer sk_test_123..."
@@ -4042,10 +4042,10 @@ def show_api_page():
         st.markdown("""
         **Pricing Tiers:**
         - **Free Tier:** 1,000 requests/month
-        - **Pro Tier:** 50,000 requests/month  
+        - **Pro Tier:** 50,000 requests/month
         - **Enterprise:** Unlimited requests
         - **Rate Limit:** 100 requests/minute
-        
+
         **Response Headers:**
         ```
         X-RateLimit-Remaining: 95
@@ -4105,7 +4105,7 @@ const analyzeMessage = async (message) => {
       message: message,
       model: 'distilbert'
     });
-    
+
     console.log('Classification:', result.classification);
     console.log('Confidence:', result.confidence_score);
     return result;
@@ -4129,21 +4129,21 @@ import com.spamlyser.models.AnalysisResult;
 
 public class SpamDetection {
     private SpamlyserClient client;
-    
+
     public SpamDetection(String apiKey) {
         this.client = new SpamlyserClient(apiKey);
     }
-    
+
     public void analyzeMessage(String message) {
         try {
             AnalysisResult result = client.analyze()
                 .message(message)
                 .model("bert")
                 .execute();
-                
-            System.out.println("Classification: " + 
+
+            System.out.println("Classification: " +
                 result.getClassification());
-            System.out.println("Confidence: " + 
+            System.out.println("Confidence: " +
                 result.getConfidenceScore());
         } catch (Exception e) {
             e.printStackTrace();
@@ -4256,7 +4256,7 @@ public class SpamDetection {
         **Available Resources:**
         - **Documentation:** Complete API guides
         - **SDKs:** Python, JavaScript, Java, PHP
-        - **Support:** 24/7 developer assistance  
+        - **Support:** 24/7 developer assistance
         - **Community:** Discord & Stack Overflow
         """)
 
@@ -4292,33 +4292,33 @@ def show_about_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             ℹ️ About Spamlyser
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             Revolutionizing Digital Communication Security
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 700px;
             margin: 0 auto;
@@ -4439,19 +4439,19 @@ def show_about_page():
     with story_col1:
         st.markdown("""
         **The Problem We Solve**
-        
-        In today's digital world, SMS threats are growing exponentially. Millions of people receive spam, phishing, and malicious messages daily, 
-        leading to financial losses, privacy breaches, and security vulnerabilities. Traditional rule-based filters are no longer sufficient 
+
+        In today's digital world, SMS threats are growing exponentially. Millions of people receive spam, phishing, and malicious messages daily,
+        leading to financial losses, privacy breaches, and security vulnerabilities. Traditional rule-based filters are no longer sufficient
         to combat sophisticated AI-generated spam and evolving threat patterns.
-        
+
         **Our Solution**
-        
-        Spamlyser leverages state-of-the-art transformer models including BERT, RoBERTa, DistilBERT, and ALBERT to provide real-time, 
+
+        Spamlyser leverages state-of-the-art transformer models including BERT, RoBERTa, DistilBERT, and ALBERT to provide real-time,
         accurate threat detection. Our ensemble approach combines multiple AI models to achieve industry-leading accuracy rates of over 97%.
-        
+
         **Why We're Different**
-        
-        Unlike traditional spam filters, Spamlyser understands context, semantics, and subtle patterns that humans might miss. 
+
+        Unlike traditional spam filters, Spamlyser understands context, semantics, and subtle patterns that humans might miss.
         Our AI continuously learns and adapts to new threats, ensuring users are always protected against the latest attack vectors.
         """)
 
@@ -4583,7 +4583,7 @@ def show_about_page():
         - ✅ Open-sourced core detection algorithms
         - ✅ Built comprehensive API for developers
         - ✅ Created real-time detection system
-        
+
         **Recognition:**
         - 🏅 Best AI Innovation in Cybersecurity
         - 🌟 Top Open Source Security Project
@@ -4599,7 +4599,7 @@ def show_about_page():
         - 🔍 Real-time threat pattern analysis
         - 🛡️ Ensemble learning techniques
         - 🌐 Multi-language support development
-        
+
         **Future Innovations:**
         - 🤖 GPT-powered threat analysis
         - 📱 Mobile-first detection
@@ -4718,7 +4718,7 @@ def show_about_page():
     with info_col1:
         st.markdown("""
         **🏢 Organization Details**
-        - **Project Name:** Spamlyser  
+        - **Project Name:** Spamlyser
         - **Type:** Open Source AI Project
         - **Founded:** 2025
         - **Location:** Global (Remote-First)
@@ -4767,33 +4767,33 @@ def show_analytics_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             📊 Analytics Dashboard
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             Real-time Insights & Performance Metrics
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 700px;
             margin: 0 auto;
@@ -4929,30 +4929,30 @@ def show_analytics_page():
     with stats_col1:
         st.info("🟢 **System Status**")
         st.markdown("""
-        **Current Status:** All Systems Operational  
-        **Uptime:** 99.97% (Last 30 days)  
-        **Active Connections:** 2,847  
-        **Queue Length:** 0 (No delays)  
+        **Current Status:** All Systems Operational
+        **Uptime:** 99.97% (Last 30 days)
+        **Active Connections:** 2,847
+        **Queue Length:** 0 (No delays)
         **Last Updated:** 2 seconds ago
         """)
 
     with stats_col2:
         st.success("📊 **Processing Stats**")
         st.markdown("""
-        **Messages/Hour:** 15,670  
-        **Peak Hour:** 21,340 (2 PM - 3 PM)  
-        **Avg Daily:** 376,000 messages  
-        **Processing Load:** 67% capacity  
+        **Messages/Hour:** 15,670
+        **Peak Hour:** 21,340 (2 PM - 3 PM)
+        **Avg Daily:** 376,000 messages
+        **Processing Load:** 67% capacity
         **Error Rate:** 0.03%
         """)
 
     with stats_col3:
         st.warning("🔥 **Performance Metrics**")
         st.markdown("""
-        **CPU Usage:** 45%  
-        **Memory Usage:** 2.1GB / 8GB  
-        **Disk I/O:** 120 MB/s  
-        **Network:** 890 Mbps  
+        **CPU Usage:** 45%
+        **Memory Usage:** 2.1GB / 8GB
+        **Disk I/O:** 120 MB/s
+        **Network:** 890 Mbps
         **Cache Hit Rate:** 94.5%
         """)
 
@@ -5206,33 +5206,33 @@ def show_help_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             ❓ Help Center
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             Get Help, Find Answers, Learn More
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 700px;
             margin: 0 auto;
@@ -5352,24 +5352,24 @@ def show_help_page():
     with st.expander("🚀 **Getting Started**", expanded=True):
         st.markdown("""
         **Q: How do I analyze my first SMS message?**
-        
+
         A: It's simple! Just follow these steps:
         1. Go to the **SMS Analyzer** page
         2. Choose your preferred AI model (DistilBERT for speed, BERT for accuracy)
         3. Enter your SMS message in the text area
         4. Click "Analyze Message" to get instant results
-        
+
         **Q: Which AI model should I choose?**
-        
+
         A: It depends on your needs:
         - **DistilBERT**: Fast and lightweight, perfect for real-time analysis
         - **BERT**: Best balance of speed and accuracy
         - **RoBERTa**: Highest accuracy for critical analysis
         - **ALBERT**: Efficient for large-scale processing
         - **Ensemble**: Best overall performance (combines all models)
-        
+
         **Q: What information does the analysis provide?**
-        
+
         A: Our analysis includes:
         - **Classification**: SPAM or HAM (legitimate)
         - **Confidence Score**: How certain the AI is about the classification
@@ -5382,30 +5382,30 @@ def show_help_page():
     with st.expander("🔌 **API Integration**"):
         st.markdown("""
         **Q: How do I get an API key?**
-        
+
         A: Currently, Spamlyser is an open-source project. For production use:
         1. Visit our **API Documentation** page
         2. Check our GitHub repository for self-hosting instructions
         3. For enterprise solutions, contact us through the **Contact** page
-        
+
         **Q: What are the API rate limits?**
-        
+
         A: For the self-hosted version:
         - No built-in rate limits
         - Performance depends on your hardware
         - Recommended: 100-1000 requests/minute for standard setups
-        
+
         **Q: Which programming languages are supported?**
-        
+
         A: We provide examples and SDKs for:
         - **Python**: Full SDK with all features
         - **JavaScript/Node.js**: REST API integration
         - **Java**: Enterprise-ready SDK
         - **cURL**: Direct HTTP requests
         - **Any language**: REST API compatible
-        
+
         **Q: Can I process messages in batches?**
-        
+
         A: Yes! Use the batch endpoint:
         - Single messages: `POST /api/v1/analyze`
         - Batch processing: `POST /api/v1/batch`
@@ -5416,31 +5416,31 @@ def show_help_page():
     with st.expander("🤖 **AI Models & Performance**"):
         st.markdown("""
         **Q: What makes Spamlyser's AI different?**
-        
+
         A: Our approach is unique:
         - **Transformer Models**: Uses BERT, RoBERTa, and other state-of-the-art models
         - **Ensemble Learning**: Combines multiple AI models for better accuracy
         - **Context Understanding**: Analyzes meaning, not just keywords
         - **Continuous Learning**: Models adapt to new threat patterns
-        
+
         **Q: How accurate is the spam detection?**
-        
+
         A: Our performance metrics:
         - **Overall Accuracy**: 97.2%
         - **Spam Detection**: 98.5% precision
         - **False Positives**: Less than 2%
         - **Processing Speed**: Under 50ms average
-        
+
         **Q: Can I train custom models?**
-        
+
         A: Yes! Spamlyser is open-source:
         - Access the training code on GitHub
         - Use your own dataset for fine-tuning
         - Customize models for specific domains
         - Contribute improvements back to the community
-        
+
         **Q: How do I improve detection accuracy?**
-        
+
         A: Best practices:
         - Use **Ensemble Mode** for highest accuracy
         - Provide feedback on incorrect classifications
@@ -5452,31 +5452,31 @@ def show_help_page():
     with st.expander("🛠️ **Troubleshooting & Support**"):
         st.markdown("""
         **Q: The analysis is taking too long. What should I do?**
-        
+
         A: Try these solutions:
         1. **Switch to DistilBERT**: Fastest model with good accuracy
         2. **Check your internet**: Ensure stable connection
         3. **Reduce message length**: Very long texts take more time
         4. **Refresh the page**: Sometimes helps with loading issues
-        
+
         **Q: I'm getting incorrect results. How can I improve them?**
-        
+
         A: To improve accuracy:
         - Try **Ensemble Mode** for best results
         - Check if the message is in English (our models are English-optimized)
         - Consider the message context (some messages are ambiguous)
         - Report issues through our **Contact** page
-        
+
         **Q: Can Spamlyser detect threats in other languages?**
-        
+
         A: Currently:
         - **Primary Support**: English language
         - **Limited Support**: Common European languages
         - **Future Plans**: Multilingual model development
         - **Workaround**: Use translation services before analysis
-        
+
         **Q: How do I report bugs or request features?**
-        
+
         A: We welcome feedback:
         1. **GitHub Issues**: Best for technical bugs
         2. **Contact Page**: General feedback and suggestions
@@ -5493,21 +5493,21 @@ def show_help_page():
     with tutorial_col1:
         st.markdown("""
         **🎯 Your First SMS Analysis in 3 Steps:**
-        
+
         **Step 1: Navigate to SMS Analyzer**
         - Click on "🔍 SMS Analyzer" in the navigation
         - You'll see the analysis interface with model selection options
-        
+
         **Step 2: Choose Your Settings**
         - **Model Selection**: Choose DistilBERT for speed or BERT for accuracy
         - **Analysis Mode**: Select "Single Model" or "Ensemble Analysis"
         - **Additional Options**: Enable confidence scores and detailed analysis
-        
+
         **Step 3: Analyze Your Message**
         - Enter or paste your SMS message in the text area
         - Click "Analyze Message" button
         - Review the results: classification, confidence, and threat details
-        
+
         **Understanding Results:**
         - **🟢 HAM**: Legitimate, safe message
         - **🔴 SPAM**: Suspicious, potentially harmful message
@@ -5523,10 +5523,10 @@ def show_help_page():
         - Use **Ensemble Mode** for important decisions
         - Test with different message types
         - Check confidence scores
-        
+
         **Common Examples:**
         - Promotional messages
-        - Phishing attempts  
+        - Phishing attempts
         - Banking alerts
         - Social media notifications
         - Friend/family messages
@@ -5546,7 +5546,7 @@ def show_help_page():
         st.markdown("""
         **Available Resources:**
         - 🔌 **API Documentation**: Complete API guide
-        - 🤖 **Model Information**: AI model details  
+        - 🤖 **Model Information**: AI model details
         - 📊 **Analytics Guide**: Understanding metrics
         - 🛠️ **Developer Tools**: Integration examples
         """)
@@ -5572,7 +5572,7 @@ def show_help_page():
         st.markdown("""
         **Get Help:**
         - 📞 **Contact Support**: Direct assistance
-        - 💬 **Community Forum**: User discussions  
+        - 💬 **Community Forum**: User discussions
         - 🐛 **Report Issues**: Bug reports
         - 💡 **Feature Requests**: Suggest improvements
         """)
@@ -5589,38 +5589,38 @@ def show_help_page():
     with issues_col1:
         st.markdown("""
         **🐛 Common Problems:**
-        
+
         **Issue: "Model loading is slow"**
         - *Solution*: Switch to DistilBERT for faster loading
         - *Alternative*: Wait for initial model download (one-time)
-        
-        **Issue: "Getting low confidence scores"**  
+
+        **Issue: "Getting low confidence scores"**
         - *Solution*: Try Ensemble mode for better confidence
         - *Check*: Ensure message is in English
-        
+
         **Issue: "API integration not working"**
         - *Solution*: Verify API endpoint URLs
         - *Check*: Authentication headers and format
-        
+
         **Issue: "Inconsistent results"**
-        - *Solution*: Use same model for consistency  
+        - *Solution*: Use same model for consistency
         - *Note*: Different models may give different results
         """)
 
     with issues_col2:
         st.markdown("""
         **⚡ Performance Optimization:**
-        
+
         **For Faster Analysis:**
         - Use **DistilBERT** model (60% faster)
         - Avoid very long messages (>500 characters)
         - Close other resource-intensive applications
-        
+
         **For Better Accuracy:**
         - Use **Ensemble Mode** (combines all models)
         - Ensure messages are in English
         - Provide complete message context
-        
+
         **For API Integration:**
         - Implement proper error handling
         - Use batch processing for multiple messages
@@ -5676,33 +5676,33 @@ def show_docs_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             📚 Documentation
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             Complete Developer & User Guide
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 700px;
             margin: 0 auto;
@@ -5831,48 +5831,48 @@ def show_docs_page():
     with st.expander("🚀 **Installation & Setup**", expanded=True):
         st.markdown("""
         ### Quick Installation
-        
+
         **Prerequisites:**
         ```bash
         Python 3.8+
         pip (Python package installer)
         ```
-        
+
         **Installation Steps:**
-        
+
         1. **Clone the Repository:**
         ```bash
         git clone https://github.com/Kavlin-Kaur/Spamlyser.git
         cd Spamlyser
         ```
-        
+
         2. **Install Dependencies:**
         ```bash
         pip install -r requirements.txt
         ```
-        
+
         3. **Run the Application:**
         ```bash
         streamlit run app.py
         ```
-        
+
         4. **Access the Interface:**
         - Open your browser to `http://localhost:8501`
         - Start analyzing SMS messages immediately!
-        
+
         ### Docker Installation
-        
+
         **Using Docker (Recommended for Production):**
         ```bash
         # Build the image
         docker build -t spamlyser .
-        
+
         # Run the container
         docker run -p 8501:8501 spamlyser
         ```
-        
+
         ### Configuration
-        
+
         **Environment Variables:**
         - `STREAMLIT_SERVER_PORT`: Port number (default: 8501)
         - `STREAMLIT_SERVER_ADDRESS`: Server address (default: 0.0.0.0)
@@ -5883,13 +5883,13 @@ def show_docs_page():
     with st.expander("🔌 **API Documentation**"):
         st.markdown("""
         ### RESTful API Endpoints
-        
+
         **Base URL:** `http://localhost:8501/api/v1`
-        
+
         #### 1. Single Message Analysis
-        
+
         **Endpoint:** `POST /analyze`
-        
+
         **Request Body:**
         ```json
         {
@@ -5899,7 +5899,7 @@ def show_docs_page():
             "detailed_analysis": true   // Optional: include threat details
         }
         ```
-        
+
         **Response:**
         ```json
         {
@@ -5912,11 +5912,11 @@ def show_docs_page():
             "processing_time": 0.045
         }
         ```
-        
+
         #### 2. Batch Analysis
-        
+
         **Endpoint:** `POST /batch`
-        
+
         **Request Body:**
         ```json
         {
@@ -5928,11 +5928,11 @@ def show_docs_page():
             "batch_size": 10
         }
         ```
-        
+
         #### 3. Model Information
-        
+
         **Endpoint:** `GET /models`
-        
+
         **Response:**
         ```json
         {
@@ -5946,18 +5946,18 @@ def show_docs_page():
             ]
         }
         ```
-        
+
         ### Authentication (Future Release)
-        
+
         **API Key Header:**
         ```
         Authorization: Bearer YOUR_API_KEY
         ```
-        
+
         ### Rate Limits
-        
+
         - **Free Tier:** 100 requests/hour
-        - **Pro Tier:** 10,000 requests/hour  
+        - **Pro Tier:** 10,000 requests/hour
         - **Enterprise:** Unlimited
         """)
 
@@ -5965,44 +5965,44 @@ def show_docs_page():
     with st.expander("💻 **SDK & Code Examples**"):
         st.markdown("""
         ### Python SDK
-        
+
         **Installation:**
         ```bash
         pip install spamlyser-sdk
         ```
-        
+
         **Basic Usage:**
         ```python
         from spamlyser import SpamlyserClient
-        
+
         # Initialize client
         client = SpamlyserClient(api_key="your_key")
-        
+
         # Analyze single message
         result = client.analyze("Your message text")
         print(f"Classification: {result.classification}")
         print(f"Confidence: {result.confidence}")
-        
+
         # Batch analysis
         messages = ["Message 1", "Message 2", "Message 3"]
         results = client.batch_analyze(messages)
         ```
-        
+
         ### JavaScript/Node.js
-        
+
         **Installation:**
         ```bash
         npm install spamlyser-js
         ```
-        
+
         **Usage:**
         ```javascript
         const Spamlyser = require('spamlyser-js');
-        
+
         const client = new Spamlyser({
             apiKey: 'your_api_key'
         });
-        
+
         // Analyze message
         client.analyze('Your message')
             .then(result => {
@@ -6011,9 +6011,9 @@ def show_docs_page():
             })
             .catch(err => console.error(err));
         ```
-        
+
         ### cURL Examples
-        
+
         **Single Analysis:**
         ```bash
         curl -X POST http://localhost:8501/api/v1/analyze \\
@@ -6023,7 +6023,7 @@ def show_docs_page():
             "model": "ensemble"
           }'
         ```
-        
+
         **Batch Analysis:**
         ```bash
         curl -X POST http://localhost:8501/api/v1/batch \\
@@ -6033,17 +6033,17 @@ def show_docs_page():
             "model": "bert"
           }'
         ```
-        
+
         ### Integration Examples
-        
+
         **Flask Integration:**
         ```python
         from flask import Flask, request, jsonify
         from spamlyser import SpamlyserClient
-        
+
         app = Flask(__name__)
         spamlyser = SpamlyserClient()
-        
+
         @app.route('/check-sms', methods=['POST'])
         def check_sms():
             message = request.json['message']
@@ -6056,80 +6056,80 @@ def show_docs_page():
     with st.expander("🤖 **AI Models & Architecture**"):
         st.markdown("""
         ### Available Models
-        
+
         #### 1. DistilBERT
         - **Best For:** Real-time analysis, mobile apps
         - **Accuracy:** 94.2%
         - **Speed:** 50ms average
         - **Memory:** 250MB
         - **Description:** Lightweight version of BERT, 60% faster with minimal accuracy loss
-        
+
         #### 2. BERT (Base)
         - **Best For:** Balanced performance
         - **Accuracy:** 96.8%
-        - **Speed:** 120ms average  
+        - **Speed:** 120ms average
         - **Memory:** 420MB
         - **Description:** Google's original transformer model, excellent balance
-        
+
         #### 3. RoBERTa
         - **Best For:** Highest accuracy requirements
         - **Accuracy:** 97.5%
         - **Speed:** 150ms average
         - **Memory:** 480MB
         - **Description:** Optimized BERT variant with improved training
-        
+
         #### 4. ALBERT
         - **Best For:** Large-scale processing
         - **Accuracy:** 96.1%
         - **Speed:** 80ms average
         - **Memory:** 180MB
         - **Description:** Parameter-efficient model with shared layers
-        
+
         #### 5. Ensemble Model
         - **Best For:** Critical decisions
         - **Accuracy:** 98.2%
         - **Speed:** 200ms average
         - **Memory:** 1.2GB
         - **Description:** Combines all models for maximum accuracy
-        
+
         ### Model Architecture
-        
+
         **Transformer-Based Architecture:**
         ```
         Input Text → Tokenization → BERT Encoder → Classification Head → Output
         ```
-        
+
         **Training Details:**
         - **Dataset Size:** 100K+ labeled SMS messages
         - **Training Time:** 48 hours on V100 GPU
         - **Validation Split:** 80/10/10 (train/val/test)
         - **Optimization:** AdamW optimizer with learning rate scheduling
-        
+
         ### Fine-tuning Guide
-        
+
         **Custom Model Training:**
         ```python
         from spamlyser.training import ModelTrainer
-        
+
         # Prepare your dataset
         trainer = ModelTrainer(
             base_model='bert-base-uncased',
             num_epochs=3,
             learning_rate=2e-5
         )
-        
+
         # Train on custom data
         trainer.train(
             train_data='your_train.csv',
             val_data='your_val.csv'
         )
-        
+
         # Save fine-tuned model
         trainer.save_model('custom_spam_detector')
         ```
-        
+
         ### Performance Metrics
-        
+
         **Evaluation Results:**
         | Model | Accuracy | Precision | Recall | F1-Score |
         |-------|----------|-----------|--------|----------|
@@ -6144,7 +6144,7 @@ def show_docs_page():
     with st.expander("⚙️ **Advanced Configuration**"):
         st.markdown("""
         ### Configuration File
-        
+
         **Create `config.yaml`:**
         ```yaml
         # Model Configuration
@@ -6152,57 +6152,57 @@ def show_docs_page():
           default: "bert"
           cache_dir: "./models"
           max_memory: "2GB"
-        
-        # API Configuration  
+
+        # API Configuration
         api:
           host: "0.0.0.0"
           port: 8501
           rate_limit: 100
           timeout: 30
-        
+
         # Performance Settings
         performance:
           batch_size: 32
           num_workers: 4
           gpu_enabled: true
-        
+
         # Logging
         logging:
           level: "INFO"
           file: "spamlyser.log"
         ```
-        
+
         ### Environment Variables
-        
+
         ```bash
         # Model Settings
         export SPAMLYSER_MODEL=bert
         export SPAMLYSER_CACHE_DIR=/tmp/models
         export SPAMLYSER_GPU_ENABLED=true
-        
+
         # API Settings
         export SPAMLYSER_HOST=0.0.0.0
         export SPAMLYSER_PORT=8501
         export SPAMLYSER_API_KEY=your_secret_key
-        
+
         # Performance
         export SPAMLYSER_BATCH_SIZE=32
         export SPAMLYSER_WORKERS=4
         ```
-        
+
         ### Custom Preprocessing
-        
+
         **Text Preprocessing Pipeline:**
         ```python
         from spamlyser.preprocessing import TextProcessor
-        
+
         processor = TextProcessor(
             lowercase=True,
             remove_urls=True,
             remove_numbers=False,
             max_length=512
         )
-        
+
         # Custom preprocessing function
         def custom_preprocess(text):
             # Remove phone numbers
@@ -6210,22 +6210,22 @@ def show_docs_page():
             # Remove emails
             text = re.sub(r'\\S+@\\S+', '[EMAIL]', text)
             return processor.process(text)
-        
+
         # Use custom processor
         spamlyser = SpamlyserClient(preprocessor=custom_preprocess)
         ```
-        
+
         ### Database Integration
-        
+
         **SQLite Integration:**
         ```python
         import sqlite3
         from spamlyser import SpamlyserClient
-        
+
         # Setup database
         conn = sqlite3.connect('sms_analysis.db')
         cursor = conn.cursor()
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS analyses (
                 id INTEGER PRIMARY KEY,
@@ -6235,36 +6235,36 @@ def show_docs_page():
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-        
+
         # Analyze and store
         client = SpamlyserClient()
         result = client.analyze(message)
-        
+
         cursor.execute('''
             INSERT INTO analyses (message, classification, confidence)
             VALUES (?, ?, ?)
         ''', (message, result.classification, result.confidence))
         ```
-        
+
         ### Monitoring & Logging
-        
+
         **Performance Monitoring:**
         ```python
         import time
         from spamlyser import SpamlyserClient
-        
+
         client = SpamlyserClient()
-        
+
         def analyze_with_monitoring(message):
             start_time = time.time()
             result = client.analyze(message)
             end_time = time.time()
-            
+
             # Log performance metrics
             print(f"Processing time: {end_time - start_time:.3f}s")
             print(f"Classification: {result.classification}")
             print(f"Confidence: {result.confidence:.3f}")
-            
+
             return result
         ```
         """)
@@ -6273,23 +6273,23 @@ def show_docs_page():
     with st.expander("🚀 **Deployment Guide**"):
         st.markdown("""
         ### Production Deployment
-        
+
         #### Docker Production Setup
-        
+
         **Dockerfile:**
         ```dockerfile
         FROM python:3.9-slim
-        
+
         WORKDIR /app
         COPY requirements.txt .
         RUN pip install -r requirements.txt
-        
+
         COPY . .
-        
+
         EXPOSE 8501
         CMD ["streamlit", "run", "app.py", "--server.address", "0.0.0.0"]
         ```
-        
+
         **Docker Compose:**
         ```yaml
         version: '3.8'
@@ -6303,7 +6303,7 @@ def show_docs_page():
             volumes:
               - ./models:/app/models
             restart: unless-stopped
-        
+
           nginx:
             image: nginx
             ports:
@@ -6313,24 +6313,24 @@ def show_docs_page():
             depends_on:
               - spamlyser
         ```
-        
+
         #### AWS Deployment
-        
+
         **EC2 Setup:**
         ```bash
         # Launch EC2 instance (Ubuntu 20.04 LTS)
         # Install Docker
         sudo apt update
         sudo apt install docker.io docker-compose
-        
+
         # Clone repository
         git clone https://github.com/Kavlin-Kaur/Spamlyser.git
         cd Spamlyser
-        
+
         # Deploy with Docker
         docker-compose up -d
         ```
-        
+
         **ECS Setup:**
         ```json
         {
@@ -6352,9 +6352,9 @@ def show_docs_page():
           ]
         }
         ```
-        
+
         #### Kubernetes Deployment
-        
+
         **deployment.yaml:**
         ```yaml
         apiVersion: apps/v1
@@ -6384,9 +6384,9 @@ def show_docs_page():
                     memory: "2Gi"
                     cpu: "1000m"
         ```
-        
+
         #### Performance Optimization
-        
+
         **Production Settings:**
         ```python
         # config/production.py
@@ -6397,7 +6397,7 @@ def show_docs_page():
             'server.enableXsrfProtection': True,
             'browser.gatherUsageStats': False
         }
-        
+
         MODEL_CONFIG = {
             'cache_models': True,
             'preload_models': ['bert', 'distilbert'],
@@ -6405,16 +6405,16 @@ def show_docs_page():
             'max_batch_size': 100
         }
         ```
-        
+
         ### Security Best Practices
-        
+
         **API Security:**
         - Use HTTPS in production
         - Implement rate limiting
         - Add API key authentication
         - Validate all inputs
         - Enable CORS protection
-        
+
         **Infrastructure Security:**
         - Use security groups/firewalls
         - Keep dependencies updated
@@ -6486,7 +6486,7 @@ def show_docs_page():
     st.markdown(
         """
     <div style="text-align: center; color: #666; padding: 20px 0;">
-        <strong>Spamlyser v2.0</strong> • By Sagnik • 
+        <strong>Spamlyser v2.0</strong> • By Sagnik •
         <a href="https://github.com/Kavlin-Kaur/Spamlyser" style="color: #4f46e5;">Open Source</a>
     </div>
     """,
@@ -6507,33 +6507,33 @@ def show_settings_page():
     st.markdown(
         """
     <div style="
-        text-align: center; 
-        padding: 40px 20px; 
+        text-align: center;
+        padding: 40px 20px;
         background: linear-gradient(135deg, #1e40af 0%, #7c3aed 50%, #db2777 100%);
-        border-radius: 20px; 
-        margin-bottom: 40px; 
+        border-radius: 20px;
+        margin-bottom: 40px;
         box-shadow: 0 10px 30px rgba(30, 64, 175, 0.4);
         color: white;
     ">
         <h1 style="
-            font-size: 4rem; 
-            margin: 0 0 20px 0; 
+            font-size: 4rem;
+            margin: 0 0 20px 0;
             text-shadow: 0 0 30px rgba(255,255,255,0.3);
             font-weight: 700;
         ">
             ⚙️ Settings
         </h1>
         <h2 style="
-            font-size: 1.8rem; 
-            margin: 0 0 30px 0; 
+            font-size: 1.8rem;
+            margin: 0 0 30px 0;
             opacity: 0.9;
             font-weight: 400;
         ">
             Customize Your Spamlyser Experience
         </h2>
         <p style="
-            font-size: 1.2rem; 
-            margin: 0; 
+            font-size: 1.2rem;
+            margin: 0;
             opacity: 0.8;
             max-width: 700px;
             margin: 0 auto;
@@ -6733,7 +6733,7 @@ def show_settings_page():
         st.success(f"🎯 **Confidence Threshold**: {confidence_threshold:.1%}")
         st.markdown(f"""
         Messages with confidence **above {confidence_threshold:.1%}** will be classified normally.
-        
+
         Messages **below {confidence_threshold:.1%}** will be flagged for manual review.
         """)
 
@@ -7058,11 +7058,11 @@ def show_placeholder_page(page_name, icon):
 
     st.markdown(f"""
     ## {icon} {page_name.title()} Page
-    
+
     This {page_name} page is coming soon! 🚧
-    
+
     We're working hard to bring you more features. Stay tuned for updates!
-    
+
     ### 🔙 Navigation
     Use the footer links below to navigate to other sections of Spamlyser Pro.
     """)
@@ -7235,7 +7235,7 @@ def main():
             with st.container():
                 st.markdown("""
                 ## 📝 Share Your Feedback
-                
+
                 Your insights are valuable to us! Use this form to:
                 - Report bugs or issues
                 - Request new features
@@ -7362,16 +7362,16 @@ def main():
             with st.expander("Why We Value Your Feedback"):
                 st.markdown("""
                 ### 🚀 Improving Together
-                
+
                 At Spamlyser, we believe in continuous improvement, and your feedback is essential to this process. Here's how your input helps:
-                
+
                 - **Bug Reports**: Help us identify and fix issues quickly
                 - **Feature Requests**: Guide our development roadmap based on user needs
                 - **Suggestions**: Provide insights on how we can enhance user experience
                 - **Questions**: Help us identify areas where documentation could be improved
-                
+
                 ### 🔄 Feedback Loop
-                
+
                 We review all feedback regularly and use it to prioritize improvements and new features. If you've provided your email, we may reach out for clarification or to let you know when your suggestion has been implemented.
                 """)
 
@@ -7698,7 +7698,7 @@ def get_loaded_models():
         if message:
             status_text.info(message)
 
-    for i, (name, model_info) in enumerate(MODEL_OPTIONS.items()):
+    for i, (name, _model_info) in enumerate(MODEL_OPTIONS.items()):
         update_progress(
             (i / total_models) * 0.9,
             f"Loading {name} model ({i + 1}/{total_models})...",
@@ -8966,7 +8966,7 @@ with col1:
     )
 
     # Message input with sample selector
-    sample_messages = [""] + sample_df["message"].tolist()
+    sample_messages = ["", *sample_df["message"].tolist()]
     st.markdown(
         "<div style='color: #3b82f6; margin-bottom: 0.5rem; font-weight: 500;'>Choose a sample message (or type your own below):</div>",
         unsafe_allow_html=True,
@@ -9447,7 +9447,7 @@ if analyse_btn and user_sms.strip():
                             <h3 style="margin: 0;">Confidence: {ensemble_result["confidence"]:.2%}</h3>
                             <h4 style="margin: 10px 0;">Spam Probability: {ensemble_result["spam_probability"]:.2%}</h4>
                             <p style="margin: 15px 0 0 0; opacity: 0.8;">
-                                Method: {ENSEMBLE_METHODS[selected_ensemble_method]["name"]} | 
+                                Method: {ENSEMBLE_METHODS[selected_ensemble_method]["name"]} |
                                 Analysed: {datetime.now().strftime("%H:%M:%S")}
                             </p>
                         </div>
@@ -9683,8 +9683,8 @@ with col2:
         else:
             st.markdown(
                 """
-            <div style='background: var(--card-bg); 
-                        border-left: 4px solid #00d4aa; 
+            <div style='background: var(--card-bg);
+                        border-left: 4px solid #00d4aa;
                         color: var(--text-primary);
                         padding: 1rem;
                         border-radius: 4px;
@@ -10120,7 +10120,7 @@ def classify_csv(
                                 "prediction": p["label"].upper(),
                                 "confidence": p["score"],
                             }
-                            for msg, p in zip(batch_messages, preds)
+                            for msg, p in zip(batch_messages, preds, strict=False)
                         ]
                     else:
                         batch_results = [
@@ -10486,9 +10486,9 @@ if (
 st.markdown(
     """
 <div style="
-    height: 4px; 
-    background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57); 
-    border-radius: 10px; 
+    height: 4px;
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+    border-radius: 10px;
     margin: 40px 0 30px 0;
     box-shadow: 0 2px 10px rgba(78, 205, 196, 0.3);
 "></div>

@@ -15,7 +15,7 @@ import lime.lime_text
 class ModelExplainer:
     """Class for explaining model predictions using LIME"""
 
-    def __init__(self, predict_fn: Callable, class_names: list[str] = None):
+    def __init__(self, predict_fn: Callable, class_names: list[str] | None = None):
         """
         Initialize the explainer.
 

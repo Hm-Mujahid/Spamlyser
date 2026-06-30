@@ -599,9 +599,9 @@ class WordAnalyzer:
 
                     highlighted_word = f'''<span style="
                         background: linear-gradient(135deg, {bg_color}, {bg_color});
-                        color: {color}; 
-                        padding: 4px 8px; 
-                        border-radius: 6px; 
+                        color: {color};
+                        padding: 4px 8px;
+                        border-radius: 6px;
                         font-weight: {"bold" if is_influential else "600"};
                         border: 2px solid {border_color};
                         margin: 2px;
@@ -610,7 +610,7 @@ class WordAnalyzer:
                         transition: all 0.3s ease;
                         position: relative;
                         cursor: help;
-                    " 
+                    "
                     title="{tooltip_text}"
                     onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 {int(5 + glow_intensity * 8)}px {shadow_color}'"
                     onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 {int(3 + glow_intensity * 5)}px {shadow_color}'"
@@ -633,11 +633,11 @@ class WordAnalyzer:
 
         # Create enhanced container with better styling
         return f"""<div style="
-            line-height: 2.2; 
-            font-size: 19px; 
-            padding: 25px; 
+            line-height: 2.2;
+            font-size: 19px;
+            padding: 25px;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 12px; 
+            border-radius: 12px;
             border: 2px solid #dee2e6;
             margin: 20px 0;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

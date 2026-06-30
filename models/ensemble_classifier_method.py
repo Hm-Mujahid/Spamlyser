@@ -38,7 +38,7 @@ class EnsembleSpamClassifier:
     # Enhanced ensemble classifier that combines predictions from multiple spam detection models
 
     def __init__(
-        self, model_weights: dict[str, float] = None, performance_tracker=None
+        self, model_weights: dict[str, float] | None = None, performance_tracker=None
     ):
         self.default_weights = {
             "DistilBERT": 0.20,  # Fast but less accurate
@@ -634,8 +634,8 @@ class ModelPerformanceTracker:
         self,
         model_name: str,
         was_correct: bool,
-        predicted_label: str = None,
-        true_label: str = None,
+        predicted_label: str | None = None,
+        true_label: str | None = None,
     ):
         """
         Update performance history for a model
