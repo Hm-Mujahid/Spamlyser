@@ -9255,10 +9255,13 @@ if analyse_btn and user_sms.strip():
                     st.markdown(threat_html, unsafe_allow_html=True)
 
                 # Generate and display LIME explanation for single model predictions
-                with st.expander(
-                    "🔍 Show Model Explainability (LIME Analysis)", expanded=True
-                ):
-                    from models.model_explainer import ModelExplainer
+                with st.expander("🔍 Show Model Explainability", expanded=True):
+                    try:
+                        from models.model_explainer import ModelExplainer
+                    except ImportError:
+                        from models.simple_explainer import (
+                            SimpleExplainer as ModelExplainer,
+                        )
 
                     def predict_fn(texts):
                         results = classifier(list(texts))
@@ -9279,7 +9282,7 @@ if analyse_btn and user_sms.strip():
                     )
 
                     if "error" in explanation_data:
-                        st.error(f"LIME Analysis Error: {explanation_data['error']}")
+                        st.error(f"Explanation Error: {explanation_data['error']}")
                     else:
                         # Extract important words for prediction
                         spam_features = []
