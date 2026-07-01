@@ -185,9 +185,7 @@ class StorageManager:
                     self.save_json(str(path), data, backup=False)
                 return data
 
-            _logger.warning(
-                "Validation failed for %s; trying next backup.", candidate
-            )
+            _logger.warning("Validation failed for %s; trying next backup.", candidate)
 
         return default
 

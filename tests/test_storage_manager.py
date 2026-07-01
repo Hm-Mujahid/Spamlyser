@@ -168,7 +168,9 @@ def test_load_json_safe_returns_default_when_all_fail(tmp_path):
     target = str(tmp_path / "data.json")
     mgr = StorageManager()
     # No valid file exists at all
-    result = mgr.load_json_safe(target, default="SENTINEL", validate=default_json_validator)
+    result = mgr.load_json_safe(
+        target, default="SENTINEL", validate=default_json_validator
+    )
     assert result == "SENTINEL"
 
 
