@@ -135,7 +135,7 @@ def history_to_json(history: list[dict[str, Any]]) -> str:
     def _coerce(obj: Any) -> Any:
         # numpy int/float, pandas Timestamp, etc.
         try:
-            import numpy as np  # noqa: PLC0415
+            import numpy as np
 
             if isinstance(obj, (np.integer, np.floating)):
                 return obj.item()

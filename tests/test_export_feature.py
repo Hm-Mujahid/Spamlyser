@@ -54,7 +54,9 @@ class TestPdfSafe:
         assert _pdf_safe(None) == "None"
 
 
-@pytest.mark.skipif(not _FPDF_INSTALLED, reason="fpdf not installed — PDF tests skipped")
+@pytest.mark.skipif(
+    not _FPDF_INSTALLED, reason="fpdf not installed — PDF tests skipped"
+)
 class TestDataframeToPdf:
     def _valid_pdf(self, data: bytes) -> bool:
         return data[:5] == b"%PDF-"
