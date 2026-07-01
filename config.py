@@ -4,6 +4,9 @@ Central configuration for Spamlyser Pro.
 Loads settings from environment variables (via python-dotenv) with sensible
 defaults so the app works out-of-the-box.  In production, override any value
 through a ``.env`` file or system environment variables.
+
+All path constants resolve to absolute ``Path`` objects so they work
+regardless of the current working directory when the application starts.
 """
 
 import os
@@ -22,7 +25,7 @@ except ImportError:
 PROJECT_ROOT = Path(__file__).resolve().parent
 
 # Where per-run data (feedback, performance snapshots) is stored.
-DATA_DIR = Path(os.getenv("SPAMLYSER_DATA_DIR", PROJECT_ROOT / "data"))
+DATA_DIR = Path(os.getenv("SPAMLYSER_DATA_DIR", str(PROJECT_ROOT / "data")))
 
 # ── Model settings ─────────────────────────────────────────────────────────
 MODEL_CACHE_DIR = Path(
@@ -67,10 +70,22 @@ ENABLE_TELEMETRY: bool = os.getenv("SPAMLYSER_ENABLE_TELEMETRY", "false").lower(
 
 MAX_SMS_LENGTH: int = int(os.getenv("SPAMLYSER_MAX_SMS_LENGTH", "1000"))
 
+# Maximum number of entries allowed in each custom-rules list (allowlist or
+# blocklist).  Exceeding this limit is a soft warning — the app still works —
+# but it is enforced in the UI to keep the rules file manageable.
+MAX_CUSTOM_RULES_PER_LIST: int = int(
+    os.getenv("SPAMLYSER_MAX_CUSTOM_RULES_PER_LIST", "500")
+)
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 def ensure_data_dir() -> Path:
-    """Create the data directory if it does not exist and return its path."""
+    """Create the data directory (and any parents) if it does not exist.
+
+    Returns the resolved ``Path`` object so callers can use it directly::
+
+        path = ensure_data_dir() / "my_file.json"
+    """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     return DATA_DIR
 
