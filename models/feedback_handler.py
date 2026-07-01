@@ -1,9 +1,21 @@
 """
 Feedback handler for Spamlyser Pro.
 Handles storing and retrieving user feedback with SQLite for concurrent write safety.
+
+Design notes
+------------
+Thread-local connections are created lazily and validated before every write
+using a lightweight "SELECT 1" ping.  If the ping fails the stale connection
+is discarded and a fresh one is opened.  This prevents silent data loss that
+can occur when:
+
+* the database file is rotated or deleted externally,
+* a previous write left the connection in an error state, or
+* the underlying OS closes the file descriptor without Python knowing.
 """
 
 import json
+import logging
 import os
 import sqlite3
 import threading
@@ -13,15 +25,42 @@ from typing import Any, Dict, List
 import streamlit as st
 
 _local = threading.local()
+_logger = logging.getLogger(__name__)
+
+
+def _open_connection(db_path: str) -> sqlite3.Connection:
+    """Create a brand-new SQLite connection with WAL mode and busy timeout."""
+    conn = sqlite3.connect(db_path, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=5000")
+    return conn
 
 
 def _get_connection(db_path: str) -> sqlite3.Connection:
-    """Get a thread-local SQLite connection with WAL mode enabled."""
-    if not hasattr(_local, "conn") or _local.conn is None:
-        _local.conn = sqlite3.connect(db_path, check_same_thread=False)
-        _local.conn.row_factory = sqlite3.Row
-        _local.conn.execute("PRAGMA journal_mode=WAL")
-        _local.conn.execute("PRAGMA busy_timeout=5000")
+    """Return a healthy thread-local SQLite connection, reconnecting if needed.
+
+    A "SELECT 1" ping is executed before returning the connection.  Any
+    exception (``OperationalError``, ``ProgrammingError``, etc.) is treated as
+    a signal that the connection is stale; it is closed and replaced.
+    """
+    conn = getattr(_local, "conn", None)
+    if conn is not None:
+        try:
+            conn.execute("SELECT 1")
+        except Exception:
+            _logger.warning(
+                "Stale SQLite connection detected for %s — reconnecting.", db_path
+            )
+            try:
+                conn.close()
+            except Exception:
+                pass
+            conn = None
+
+    if conn is None:
+        _local.conn = _open_connection(db_path)
+
     return _local.conn
 
 
@@ -81,6 +120,11 @@ class FeedbackHandler:
             st.warning(f"Could not migrate feedback from {json_path}: {e}")
 
     def save_feedback(self, feedback_data: dict[str, Any]) -> bool:
+        """Persist *feedback_data* to SQLite.
+
+        Validates the connection before writing.  Returns ``True`` on success,
+        ``False`` on failure (error is surfaced via ``st.error``).
+        """
         try:
             if "timestamp" not in feedback_data:
                 feedback_data["timestamp"] = datetime.now().strftime(
