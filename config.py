@@ -95,4 +95,5 @@ def get_optional(key: str, default: str | None = None) -> str | None:
     val = os.getenv(key, default)
     return val if val else default
 
+
 BATCH_RATE_LIMIT = 50
