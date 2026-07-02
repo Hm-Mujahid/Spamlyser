@@ -150,6 +150,8 @@ class TestHistoryToJson:
         parsed = json.loads(result)
         assert parsed[0]["model_predictions"]["BERT"]["label"] == "SPAM"
 
+
 def test_export_encryptor():
     from models.export_encryptor import encrypt_export_data
+
     assert encrypt_export_data("test", "key") != "test"
