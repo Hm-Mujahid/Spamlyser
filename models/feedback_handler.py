@@ -85,6 +85,8 @@ class FeedbackHandler:
                 self._migrate_from_json(json_path)
 
     def _init_db(self) -> None:
+        if self.db_path:
+            os.makedirs(os.path.dirname(os.path.abspath(self.db_path)), exist_ok=True)
         conn = _get_connection(self.db_path)
         conn.execute(
             """

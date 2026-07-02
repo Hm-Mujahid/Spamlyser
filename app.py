@@ -9325,13 +9325,13 @@ if analyse_btn and user_sms.strip():
                                 ),
                                 xaxis=dict(
                                     title="Influence towards SPAM",
-                                    titlefont=dict(color="white"),
+                                    title_font=dict(color="white"),
                                     tickfont=dict(color="white"),
                                     gridcolor="rgba(255,255,255,0.1)",
                                 ),
                                 yaxis=dict(
                                     title="Tokens",
-                                    titlefont=dict(color="white"),
+                                    title_font=dict(color="white"),
                                     tickfont=dict(color="white"),
                                 ),
                                 height=max(320, len(words) * 35),

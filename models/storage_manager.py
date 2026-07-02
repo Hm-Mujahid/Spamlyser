@@ -186,7 +186,6 @@ class StorageManager:
                 return data
 
             _logger.warning("Validation failed for %s; trying next backup.", candidate)
-
         return default
 
     def list_backups(self, filepath: str) -> list[Path]:
