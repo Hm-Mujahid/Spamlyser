@@ -1,0 +1,1 @@
+# Deprecated normalizer stub

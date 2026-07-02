@@ -1,3 +1,4 @@
+from models.unicode_handler import clean_unicode_text
 """
 Label normalisation for SMS spam classification (issue #15).
 
