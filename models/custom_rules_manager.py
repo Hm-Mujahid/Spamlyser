@@ -1,4 +1,5 @@
 from models.rules_validator import validate_rule_structure
+
 """
 Custom rules manager for Spamlyser Pro.
 

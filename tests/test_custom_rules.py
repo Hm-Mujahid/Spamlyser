@@ -152,13 +152,15 @@ def test_invalid_regex_in_blocklist_skipped_gracefully():
     # And a clean message is still None
     assert check_custom_rules("A totally harmless message") is None
 
+
 def test_rules_validator_invalid_regex():
     from models.rules_validator import validate_rule_structure
+
     invalid_rule = {
         "name": "Invalid Regex Rule",
         "pattern": "[a-z",
         "score": 1.5,
-        "description": "Unclosed character class"
+        "description": "Unclosed character class",
     }
     ok, err = validate_rule_structure(invalid_rule)
     assert not ok
