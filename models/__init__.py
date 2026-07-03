@@ -11,6 +11,12 @@ from .custom_rules_manager import (
     save_custom_rules,
 )
 from .export_feature import export_results_button
+from .rule_engine import (
+    check_compound_rules,
+    evaluate_compound_rule,
+    evaluate_condition,
+    validate_compound_rules,
+)
 from .simple_explainer import SPAM_KEYWORDS, SimpleExplainer
 from .storage_manager import StorageManager, default_json_validator
 from .threat_analyzer import (
@@ -29,10 +35,14 @@ __all__ = [
     "StorageManager",
     "WordAnalyzer",
     "check_custom_rules",
+    "check_compound_rules",
     "classify_threat_type",
     "default_json_validator",
+    "evaluate_compound_rule",
+    "evaluate_condition",
     "export_results_button",
     "get_threat_specific_advice",
     "load_custom_rules",
     "save_custom_rules",
+    "validate_compound_rules",
 ]

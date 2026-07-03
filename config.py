@@ -77,6 +77,8 @@ MAX_CUSTOM_RULES_PER_LIST: int = int(
     os.getenv("SPAMLYSER_MAX_CUSTOM_RULES_PER_LIST", "500")
 )
 
+MAX_COMPOUND_RULES: int = int(os.getenv("SPAMLYSER_MAX_COMPOUND_RULES", "50"))
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 def ensure_data_dir() -> Path:
