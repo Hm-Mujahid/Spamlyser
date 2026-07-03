@@ -11,6 +11,7 @@ from .custom_rules_manager import (
     save_custom_rules,
 )
 from .export_feature import export_results_button
+from .sender_reputation import SenderReputation
 from .simple_explainer import SPAM_KEYWORDS, SimpleExplainer
 from .storage_manager import StorageManager, default_json_validator
 from .threat_analyzer import (
@@ -25,6 +26,7 @@ __all__ = [
     "THREAT_CATEGORIES",
     "BatchProcessor",
     "ConfidenceCalibrator",
+    "SenderReputation",
     "SimpleExplainer",
     "StorageManager",
     "WordAnalyzer",

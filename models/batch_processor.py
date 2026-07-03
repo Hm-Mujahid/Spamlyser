@@ -39,12 +39,13 @@ class BatchProcessor:
             "end_time": None,
         }
 
-    def process_message(self, message: str) -> dict[str, Any]:
+    def process_message(self, message: str, sender: str | None = None) -> dict[str, Any]:
         """
         Process a single message using all models.
 
         Args:
             message: The SMS message to analyze
+            sender: Optional sender identifier for reputation tracking
 
         Returns:
             Dict containing analysis results
@@ -76,13 +77,18 @@ class BatchProcessor:
         # Analyze text for risk indicators
         risk_indicators = self._analyze_risk_indicators(message)
 
-        return {
+        result = {
             "message": message,
             "model_predictions": predictions,
             "ensemble_predictions": ensemble_results,
             "risk_indicators": risk_indicators,
             "timestamp": datetime.now().isoformat(),
         }
+
+        if sender:
+            result["sender"] = sender
+
+        return result
 
     def _analyze_risk_indicators(self, message: str) -> dict[str, bool]:
         """

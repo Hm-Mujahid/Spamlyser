@@ -195,6 +195,15 @@ except ImportError:
 if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
 
+# Initialize sender reputation tracker
+if "sender_reputation" not in st.session_state:
+    try:
+        from models.sender_reputation import SenderReputation
+
+        st.session_state.sender_reputation = SenderReputation()
+    except ImportError:
+        st.session_state.sender_reputation = None
+
 
 # Navigation function
 def navigate_to(page_name):
@@ -9217,6 +9226,19 @@ if analyse_btn and user_sms.strip():
                         "threat_confidence": threat_confidence,
                     }
                 )
+
+                # Record sender reputation if tracker is available
+                if st.session_state.get("sender_reputation"):
+                    sender_match = re.search(r'[\+\d\s\-\(\)]{7,15}', user_sms)
+                    if sender_match:
+                        sender_id = sender_match.group().strip()
+                        st.session_state.sender_reputation.record_analysis(
+                            sender=sender_id,
+                            is_spam=(label == "SPAM"),
+                            confidence=confidence,
+                            threat_type=threat_type,
+                        )
+
                 features = analyse_message_features(cleaned_sms)
 
                 risk_indicators = get_risk_indicators(cleaned_sms, label, threat_type)
@@ -9415,6 +9437,18 @@ if analyse_btn and user_sms.strip():
                                 "threat_confidence": threat_confidence,
                             }
                         )
+
+                        if st.session_state.get("sender_reputation"):
+                            sender_match = re.search(r'[\+\d\s\-\(\)]{7,15}', user_sms)
+                            if sender_match:
+                                sender_id = sender_match.group().strip()
+                                st.session_state.sender_reputation.record_analysis(
+                                    sender=sender_id,
+                                    is_spam=(ensemble_result["label"] == "SPAM"),
+                                    confidence=ensemble_result["confidence"],
+                                    threat_type=threat_type,
+                                )
+
                         features = analyse_message_features(user_sms)
                         risk_indicators = get_risk_indicators(
                             user_sms, ensemble_result["label"], threat_type
