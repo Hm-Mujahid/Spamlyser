@@ -39,7 +39,9 @@ class BatchProcessor:
             "end_time": None,
         }
 
-    def process_message(self, message: str, sender: str | None = None) -> dict[str, Any]:
+    def process_message(
+        self, message: str, sender: str | None = None
+    ) -> dict[str, Any]:
         """
         Process a single message using all models.
 

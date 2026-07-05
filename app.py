@@ -9229,7 +9229,7 @@ if analyse_btn and user_sms.strip():
 
                 # Record sender reputation if tracker is available
                 if st.session_state.get("sender_reputation"):
-                    sender_match = re.search(r'[\+\d\s\-\(\)]{7,15}', user_sms)
+                    sender_match = re.search(r"[\+\d\s\-\(\)]{7,15}", user_sms)
                     if sender_match:
                         sender_id = sender_match.group().strip()
                         st.session_state.sender_reputation.record_analysis(
@@ -9439,7 +9439,7 @@ if analyse_btn and user_sms.strip():
                         )
 
                         if st.session_state.get("sender_reputation"):
-                            sender_match = re.search(r'[\+\d\s\-\(\)]{7,15}', user_sms)
+                            sender_match = re.search(r"[\+\d\s\-\(\)]{7,15}", user_sms)
                             if sender_match:
                                 sender_id = sender_match.group().strip()
                                 st.session_state.sender_reputation.record_analysis(

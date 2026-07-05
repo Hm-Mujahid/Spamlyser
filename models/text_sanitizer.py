@@ -38,7 +38,10 @@ def safe_regex(
     global _TIMER_TRIGGERED
     _TIMER_TRIGGERED = False
 
-    use_timeout = hasattr(signal, "SIGALRM") and threading.current_thread() is threading.main_thread()
+    use_timeout = (
+        hasattr(signal, "SIGALRM")
+        and threading.current_thread() is threading.main_thread()
+    )
 
     if use_timeout:
         old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
@@ -110,7 +113,10 @@ def safe_regex_sub(
     global _TIMER_TRIGGERED
     _TIMER_TRIGGERED = False
 
-    use_timeout = hasattr(signal, "SIGALRM") and threading.current_thread() is threading.main_thread()
+    use_timeout = (
+        hasattr(signal, "SIGALRM")
+        and threading.current_thread() is threading.main_thread()
+    )
 
     if use_timeout:
         old_handler = signal.signal(signal.SIGALRM, _timeout_handler)

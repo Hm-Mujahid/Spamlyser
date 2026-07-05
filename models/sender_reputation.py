@@ -19,7 +19,11 @@ class SenderReputation:
         if db_path is None:
             db_path = os.getenv(
                 "SPAMLYSER_SENDER_REPUTATION_DB",
-                str(Path(__file__).resolve().parent.parent / "data" / "sender_reputation.json"),
+                str(
+                    Path(__file__).resolve().parent.parent
+                    / "data"
+                    / "sender_reputation.json"
+                ),
             )
         self._db_path = Path(db_path)
         self._lock = Lock()
@@ -83,7 +87,11 @@ class SenderReputation:
 
             total = entry["total_messages"]
             spam_ratio = entry["spam_count"] / total if total > 0 else 0
-            avg_conf = sum(entry["confidence_scores"]) / len(entry["confidence_scores"]) if entry["confidence_scores"] else 0.5
+            avg_conf = (
+                sum(entry["confidence_scores"]) / len(entry["confidence_scores"])
+                if entry["confidence_scores"]
+                else 0.5
+            )
             entry["reputation_score"] = 1.0 - (spam_ratio * 0.7 + avg_conf * 0.3)
 
             self._dirty = True
@@ -108,14 +116,16 @@ class SenderReputation:
             entries = []
             for sender, data in self._cache.items():
                 if data["spam_count"] > 0:
-                    entries.append({
-                        "sender": sender,
-                        "reputation_score": data["reputation_score"],
-                        "spam_count": data["spam_count"],
-                        "ham_count": data["ham_count"],
-                        "total_messages": data["total_messages"],
-                        "last_seen": data["last_seen"],
-                    })
+                    entries.append(
+                        {
+                            "sender": sender,
+                            "reputation_score": data["reputation_score"],
+                            "spam_count": data["spam_count"],
+                            "ham_count": data["ham_count"],
+                            "total_messages": data["total_messages"],
+                            "last_seen": data["last_seen"],
+                        }
+                    )
             entries.sort(key=lambda x: x["reputation_score"])
             return entries[:limit]
 

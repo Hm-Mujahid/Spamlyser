@@ -1,7 +1,6 @@
 import base64
 
 
-
 def encrypt_export_data(data: str, secret_key: str) -> str:
     """Simple XOR encryptor wrapper for export data packaging."""
     key_len = len(secret_key)
