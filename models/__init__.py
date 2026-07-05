@@ -25,12 +25,12 @@ from .webhook_notifier import WebhookNotifier
 from .word_analyzer import WordAnalyzer
 
 __all__ = [
-    "ReportEncryptor",
     "SPAM_KEYWORDS",
     "THREAT_CATEGORIES",
     "BatchProcessor",
     "ConfidenceCalibrator",
     "MessageCategorizer",
+    "ReportEncryptor",
     "SenderReputation",
     "SimpleExplainer",
     "StorageManager",

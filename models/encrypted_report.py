@@ -8,7 +8,7 @@ import io
 import json
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -97,7 +97,7 @@ class ReportEncryptor:
         """
         import pandas as pd
 
-        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
         df = pd.DataFrame(history)
         if "timestamp" in df.columns:
             df["timestamp"] = df["timestamp"].astype(str)
@@ -106,7 +106,9 @@ class ReportEncryptor:
             plain = df.to_csv(index=False).encode("utf-8")
             fname = f"spamlyser_encrypted_{ts}.csv.enc"
         elif fmt == "JSON":
-            plain = json.dumps(history, indent=2, ensure_ascii=False, default=str).encode("utf-8")
+            plain = json.dumps(
+                history, indent=2, ensure_ascii=False, default=str
+            ).encode("utf-8")
             fname = f"spamlyser_encrypted_{ts}.json.enc"
         else:
             from .export_feature import dataframe_to_pdf
