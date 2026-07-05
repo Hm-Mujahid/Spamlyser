@@ -65,6 +65,12 @@ PERFORMANCE_DATA_PATH: str = os.getenv(
     "SPAMLYSER_PERFORMANCE_DATA", str(DATA_DIR / "performance_data.json")
 )
 
+WEBHOOK_CONFIG_PATH: str = os.getenv(
+    "SPAMLYSER_WEBHOOK_CONFIG", str(DATA_DIR / "webhooks.json")
+)
+
+WEBHOOK_RETRY_COUNT: int = int(os.getenv("SPAMLYSER_WEBHOOK_RETRY", "3"))
+
 # ── Application ────────────────────────────────────────────────────────────
 APP_TITLE: str = os.getenv("SPAMLYSER_APP_TITLE", "Spamlyser Pro - Ensemble Edition")
 APP_ICON: str = os.getenv("SPAMLYSER_APP_ICON", "🛡️")

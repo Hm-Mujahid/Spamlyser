@@ -6863,6 +6863,57 @@ def show_settings_page():
 
     st.markdown("---")
 
+    # Webhook Configuration
+    st.markdown("## 🔔 Webhook Notifications")
+    st.markdown("")
+
+    wh_col1, wh_col2 = st.columns([1, 1])
+    with wh_col1:
+        webhook_url = st.text_input(
+            "Webhook URL",
+            placeholder="https://hooks.slack.com/services/...",
+            help="HTTP endpoint to receive spam alert notifications",
+        )
+        webhook_label = st.text_input(
+            "Label (optional)",
+            placeholder="e.g. Slack #alerts",
+            help="Friendly name for this webhook",
+        )
+    with wh_col2:
+        webhook_secret = st.text_input(
+            "Secret (optional)",
+            type="password",
+            placeholder="Shared secret for webhook auth",
+            help="Sent as X-Webhook-Secret header for verification",
+        )
+
+    if st.button("➕ Add Webhook", use_container_width=True):
+        notifier = st.session_state.get("webhook_notifier")
+        if notifier and webhook_url:
+            if notifier.add_webhook(webhook_url, secret=webhook_secret or None, label=webhook_label):
+                st.success("Webhook added successfully!")
+                st.rerun()
+            else:
+                st.error("Invalid webhook URL. Must start with http:// or https://")
+        else:
+            st.warning("Enter a valid webhook URL")
+
+    existing = []
+    notifier = st.session_state.get("webhook_notifier")
+    if notifier:
+        existing = notifier.get_webhooks()
+    if existing:
+        st.markdown("### Active Webhooks")
+        for i, wh in enumerate(existing):
+            cols = st.columns([3, 1, 1])
+            cols[0].markdown(f"**{wh['label']}** — `{wh['url']}`")
+            cols[1].markdown(f"Events: {', '.join(wh.get('events', ['spam_detected']))}")
+            if cols[2].button("🗑️ Remove", key=f"del_wh_{i}"):
+                notifier.remove_webhook(wh["url"])
+                st.rerun()
+
+    st.markdown("---")
+
     # Export/Import Settings
     st.markdown("## 💾 Settings Management")
     st.markdown("")
@@ -7124,6 +7175,13 @@ if "loaded_models" not in st.session_state:
     st.session_state.loaded_models = {
         model_name: None for model_name in ["DistilBERT", "BERT", "RoBERTa", "ALBERT"]
     }
+if "webhook_notifier" not in st.session_state:
+    try:
+        from models.webhook_notifier import WebhookNotifier
+
+        st.session_state.webhook_notifier = WebhookNotifier()
+    except ImportError:
+        st.session_state.webhook_notifier = None
 
 
 # --- Model Configurations ---
@@ -9216,6 +9274,13 @@ if analyse_btn and user_sms.strip():
                         classify_threat_type(cleaned_sms, confidence)
                     )
 
+                if label == "SPAM" and st.session_state.get("webhook_notifier"):
+                    st.session_state.webhook_notifier.notify_spam_detected(
+                        message=user_sms,
+                        confidence=confidence,
+                        threat_type=threat_type,
+                    )
+
                 key = label.lower()
                 if key in st.session_state.model_stats[selected_model_name]:
                     st.session_state.model_stats[selected_model_name][key] += 1
@@ -9456,6 +9521,13 @@ if analyse_btn and user_sms.strip():
                             # Add threat info to ensemble result
                             ensemble_result["threat_type"] = threat_type
                             ensemble_result["threat_confidence"] = threat_confidence
+
+                        if ensemble_result["label"] == "SPAM" and st.session_state.get("webhook_notifier"):
+                            st.session_state.webhook_notifier.notify_spam_detected(
+                                message=user_sms,
+                                confidence=ensemble_result["confidence"],
+                                threat_type=threat_type,
+                            )
                             ensemble_result["metadata"]["threat"] = threat_metadata
 
                         st.session_state.ensemble_history.append(
