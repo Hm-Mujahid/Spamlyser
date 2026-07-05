@@ -221,6 +221,7 @@ PAGES = {
     "analytics": "📊 Analytics",
     "dashboard": "📈 Dashboard",
     "models": "🤖 Models",
+    "model_compare": "🔄 Compare",
     "feedback": "💬 Feedback",
     "help": "❓ Help",
     "contact": "📞 Contact",
@@ -7460,7 +7461,101 @@ def main():
             if st.button("❓ Get Help", use_container_width=True):
                 navigate_to("help")
 
-    # Page routing logic
+
+def show_model_compare_page():
+    st.markdown(
+        "<div style='margin-top: 20px;'></div>", unsafe_allow_html=True
+    )
+    st.markdown(
+        """
+    <div style="
+        text-align: center;
+        padding: 30px 20px;
+        background: linear-gradient(135deg, #2d3436 0%, #636e72 50%, #b2bec3 100%);
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    ">
+        <h1 style="color: white; font-size: 3rem; margin: 0;">
+            🔄 Model Comparison
+        </h1>
+        <p style="color: rgba(255,255,255,0.8); font-size: 1.2rem; margin: 10px 0 0 0;">
+            Compare predictions across all models side by side
+        </p>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    sample = st.text_area(
+        "Enter an SMS message to compare:",
+        placeholder="Type a message to see how each model classifies it...",
+        height=100,
+        key="compare_input",
+    )
+
+    if st.button("🔍 Compare Models", use_container_width=True, type="primary") and sample.strip():
+        from models.model_comparator import compare_predictions, agreement_score
+        from models.smart_preprocess import preprocess_message
+
+        preprocessed = preprocess_message(sample)
+        cleaned = preprocessed["cleaned"]
+
+        model_names = ["DistilBERT", "BERT", "RoBERTa", "ALBERT"]
+        loaded = {}
+        for name in model_names:
+            clf = load_model_if_needed(name)
+            if clf is not None:
+                loaded[name] = clf
+
+        if loaded:
+            results = compare_predictions(cleaned, loaded)
+            all_agree, ratio = agreement_score(results)
+            from page_functions import show_model_comparison_legend
+
+            show_model_comparison_legend()
+            st.markdown("### Comparison Results")
+            cols = st.columns(len(results))
+            for idx, r in enumerate(results):
+                with cols[idx]:
+                    card_cls = "spam-alert" if r["label"] == "SPAM" else "ham-safe"
+                    icon = "🚨" if r["label"] == "SPAM" else "✅"
+                    st.markdown(
+                        f"""
+                    <div class="prediction-card {card_cls}" style="padding:15px;text-align:center;">
+                        <h3 style="margin:0 0 10px 0;">{r['model']}</h3>
+                        <h2 style="margin:0;">{icon} {r['label']}</h2>
+                        <p style="margin:10px 0 0 0;opacity:0.8;">{r['confidence']:.2%}</p>
+                    </div>
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
+            st.markdown("### 📊 Verdicts at a Glance")
+            import pandas as pd
+
+            df = pd.DataFrame(results)
+            if all_agree:
+                st.success(f"✅ All models agree on the classification (agreement: {ratio:.0%}).")
+            else:
+                st.warning(f"⚠️ Models disagree (agreement: {ratio:.0%}). Consider using Ensemble mode.")
+
+            st.dataframe(
+                df.style.applymap(
+                    lambda v: "background-color: #ff444440" if v == "SPAM" else "background-color: #00d4aa40",
+                    subset=["label"],
+                ),
+                use_container_width=True,
+                hide_index=True,
+            )
+        else:
+            st.warning("No models could be loaded. Check your setup.")
+
+    if not sample.strip():
+        st.info("💡 Enter a message above and click **Compare Models** to see side-by-side predictions.")
+
+
+# Page routing logic
     if st.session_state.current_page == "home":
         show_home_page()
     elif st.session_state.current_page == "analyzer":
@@ -7481,6 +7576,8 @@ def main():
             show_analytics_page()
     elif st.session_state.current_page == "models":
         show_models_page()
+    elif st.session_state.current_page == "model_compare":
+        show_model_compare_page()
     elif st.session_state.current_page == "feedback":
         show_feedback_page()
     elif st.session_state.current_page == "help":
@@ -10707,7 +10804,7 @@ st.markdown(
 
 
 # Create beautiful navigation links in columns
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
     if st.button("Home", key="nav_home", use_container_width=True):
@@ -10739,30 +10836,37 @@ with col3:
             '<script>handleNavClick("nav_models");</script>', unsafe_allow_html=True
         )
         navigate_to("models")
+    if st.button("Compare", key="nav_compare", use_container_width=True):
+        st.markdown(
+            '<script>handleNavClick("nav_compare");</script>', unsafe_allow_html=True
+        )
+        navigate_to("model_compare")
+
+with col4:
     if st.button("Feedback", key="nav_feedback", use_container_width=True):
         st.markdown(
             '<script>handleNavClick("nav_feedback");</script>', unsafe_allow_html=True
         )
         navigate_to("feedback")
-
-with col4:
     if st.button("Contact", key="nav_contact", use_container_width=True):
         st.markdown(
             '<script>handleNavClick("nav_contact");</script>', unsafe_allow_html=True
         )
         navigate_to("contact")
+
+with col5:
     if st.button("Docs", key="nav_docs", use_container_width=True):
         st.markdown(
             '<script>handleNavClick("nav_docs");</script>', unsafe_allow_html=True
         )
         navigate_to("docs")
-
-with col5:
     if st.button("API", key="nav_api", use_container_width=True):
         st.markdown(
             '<script>handleNavClick("nav_api");</script>', unsafe_allow_html=True
         )
         navigate_to("api")
+
+with col6:
     if st.button("Settings", key="nav_settings", use_container_width=True):
         st.markdown(
             '<script>handleNavClick("nav_settings");</script>', unsafe_allow_html=True

@@ -5,6 +5,19 @@ import streamlit as st
 from pages.analytics_dashboard import render_dashboard
 
 
+def show_model_comparison_legend():
+    """Render a small legend explaining comparison result colors."""
+    st.markdown(
+        """
+    <div style="display:flex;gap:15px;margin:10px 0;font-size:0.9rem;">
+        <span style="background:#ff444440;padding:2px 10px;border-radius:4px;">🔴 SPAM</span>
+        <span style="background:#00d4aa40;padding:2px 10px;border-radius:4px;">🟢 HAM</span>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+
 # Load unified global styles once
 def load_global_styles():
     """Inject the global CSS stylesheet (assets/styles.css) once per session."""
