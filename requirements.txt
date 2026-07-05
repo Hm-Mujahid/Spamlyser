@@ -24,5 +24,8 @@ python-dotenv>=1.2.2,<2.0.0
 pytest>=9.1.1,<10.0.0
 pytest-cov>=7.1.0,<8.0.0
 
-#UI
-fpdf
+# UI
+fpdf2>=2.8.2,<3.0.0
+
+# Report Encryption
+cryptography>=44.0.0,<45.0.0

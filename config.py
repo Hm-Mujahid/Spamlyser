@@ -71,6 +71,9 @@ WEBHOOK_CONFIG_PATH: str = os.getenv(
 
 WEBHOOK_RETRY_COUNT: int = int(os.getenv("SPAMLYSER_WEBHOOK_RETRY", "3"))
 
+ENCRYPT_REPORT_BY_DEFAULT: bool = (
+    os.getenv("SPAMLYSER_ENCRYPT_REPORT", "false").lower() == "true"
+)
 # ── Application ────────────────────────────────────────────────────────────
 APP_TITLE: str = os.getenv("SPAMLYSER_APP_TITLE", "Spamlyser Pro - Ensemble Edition")
 APP_ICON: str = os.getenv("SPAMLYSER_APP_ICON", "🛡️")

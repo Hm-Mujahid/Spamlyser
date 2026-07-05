@@ -10,6 +10,7 @@ from .custom_rules_manager import (
     load_custom_rules,
     save_custom_rules,
 )
+from .encrypted_report import ReportEncryptor
 from .export_feature import export_results_button
 from .message_categorizer import MessageCategorizer
 from .sender_reputation import SenderReputation
@@ -24,6 +25,7 @@ from .webhook_notifier import WebhookNotifier
 from .word_analyzer import WordAnalyzer
 
 __all__ = [
+    "ReportEncryptor",
     "SPAM_KEYWORDS",
     "THREAT_CATEGORIES",
     "BatchProcessor",
