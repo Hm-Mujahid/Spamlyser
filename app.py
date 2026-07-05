@@ -7563,40 +7563,40 @@ def main():
                 navigate_to("help")
 
     # Page routing logic
-    if st.session_state.current_page == "home":
-        show_home_page()
-    elif st.session_state.current_page == "analyzer":
-        show_analyzer_page()
-    elif st.session_state.current_page == "about":
-        show_about_page()
-    elif st.session_state.current_page == "features":
-        show_features_page()
-    elif st.session_state.current_page == "analytics":
-        show_analytics_page()
-    elif st.session_state.current_page == "dashboard":
+    try:
+        from models.error_boundary import error_boundary
+
+        _safe = lambda fn: error_boundary(fn)
+    except ImportError:
+        _safe = lambda fn: fn
+
+    _page_map = {
+        "home": show_home_page,
+        "analyzer": show_analyzer_page,
+        "about": show_about_page,
+        "features": show_features_page,
+        "analytics": show_analytics_page,
+        "models": show_models_page,
+        "model_compare": show_model_compare_page,
+        "feedback": show_feedback_page,
+        "help": show_help_page,
+        "contact": show_contact_page,
+        "docs": show_docs_page,
+        "api": show_api_page,
+        "settings": show_settings_page,
+    }
+
+    page = st.session_state.current_page
+    if page == "dashboard":
         try:
             from page_functions import render_dashboard
 
-            render_dashboard()
+            _safe(render_dashboard)()
         except ImportError:
             st.warning("Dashboard module not found. Using default analytics page.")
-            show_analytics_page()
-    elif st.session_state.current_page == "models":
-        show_models_page()
-    elif st.session_state.current_page == "model_compare":
-        show_model_compare_page()
-    elif st.session_state.current_page == "feedback":
-        show_feedback_page()
-    elif st.session_state.current_page == "help":
-        show_help_page()
-    elif st.session_state.current_page == "contact":
-        show_contact_page()
-    elif st.session_state.current_page == "docs":
-        show_docs_page()
-    elif st.session_state.current_page == "api":
-        show_api_page()
-    elif st.session_state.current_page == "settings":
-        show_settings_page()
+            _safe(show_analytics_page)()
+    elif page in _page_map:
+        _safe(_page_map[page])()
     else:
         # Default to home if unknown page
         st.session_state.current_page = "home"

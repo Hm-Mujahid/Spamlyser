@@ -134,3 +134,7 @@ ANALYTICS_DB_PATH: str = os.getenv(
 ANALYTICS_RETENTION_DAYS: int = int(os.getenv("SPAMLYSER_ANALYTICS_RETENTION", "90"))
 
 BATCH_RATE_LIMIT = 50
+
+# ── Error boundary / resilience ────────────────────────────────────────────
+ERROR_BOUNDARY_ENABLED: bool = os.getenv("SPAMLYSER_ERROR_BOUNDARY", "true").lower() == "true"
+ERROR_BOUNDARY_SHOW_DETAIL: bool = os.getenv("SPAMLYSER_ERROR_DETAIL", "false").lower() == "true"
