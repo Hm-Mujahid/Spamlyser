@@ -7098,6 +7098,93 @@ def show_settings_page():
         else:
             st.info("No custom blocklist patterns configured.")
 
+    st.markdown("### 🔗 Compound Rules (AND / OR / NOT)")
+    st.caption(
+        "Combine multiple conditions with boolean logic for advanced filtering."
+    )
+
+    if "compounds" not in rules:
+        rules["compounds"] = []
+
+    with st.expander("➕ Add Compound Rule", expanded=False):
+        logic_op = st.selectbox(
+            "Logic operator",
+            options=["AND", "OR", "NOT"],
+            key="compound_logic",
+        )
+        action = st.selectbox(
+            "Action when matched",
+            options=["SPAM", "HAM"],
+            key="compound_action",
+        )
+        rule_count = st.number_input(
+            "Number of conditions", min_value=1, max_value=5, value=2, key="rule_count"
+        )
+        conditions = []
+        for i in range(int(rule_count)):
+            st.markdown(f"**Condition {i + 1}**")
+            c1, c2, c3 = st.columns([2, 3, 1])
+            with c1:
+                field = st.selectbox(
+                    "Type",
+                    options=["keyword", "regex", "domain"],
+                    key=f"cond_field_{i}",
+                    label_visibility="collapsed",
+                )
+            with c2:
+                value = st.text_input(
+                    "Value", key=f"cond_value_{i}", label_visibility="collapsed",
+                    placeholder="e.g. free"
+                )
+            with c3:
+                negate = st.checkbox("NOT", key=f"cond_negate_{i}")
+            if value:
+                conditions.append({
+                    "field": field,
+                    "value": value,
+                    "negate": negate,
+                })
+
+        if st.button("💾 Save Compound Rule", key="btn_save_compound") and conditions:
+            from models.rule_engine import validate_compound_rules
+
+            new_rule = {
+                "label": f"Rule {len(rules['compounds']) + 1}",
+                "logic": logic_op,
+                "action": action,
+                "rules": conditions,
+                "enabled": True,
+            }
+            if validate_compound_rules([new_rule]):
+                rules["compounds"].append(new_rule)
+                save_custom_rules(rules)
+                st.success("Compound rule added!")
+                st.rerun()
+            else:
+                st.error("Invalid rule configuration.")
+
+    if rules["compounds"]:
+        st.markdown("##### Active Compound Rules:")
+        for idx, cr in enumerate(rules["compounds"]):
+            conds_str = f" {cr['logic']} ".join(
+                f"{'NOT ' if c.get('negate') else ''}{c['field']}:{c['value']}"
+                for c in cr.get("rules", [])
+            )
+            cols = st.columns([4, 1, 1])
+            cols[0].markdown(
+                f"**{cr.get('label', f'Rule {idx+1}')}**: "
+                f"`{conds_str}` → **{cr.get('action', 'SPAM')}**"
+            )
+            cols[1].markdown(
+                "🟢 Enabled" if cr.get("enabled", True) else "🔴 Disabled"
+            )
+            if cols[2].button("🗑️", key=f"del_compound_{idx}"):
+                rules["compounds"].pop(idx)
+                save_custom_rules(rules)
+                st.rerun()
+    else:
+        st.info("No compound rules configured.")
+
     st.markdown("---")
 
     # Save confirmation

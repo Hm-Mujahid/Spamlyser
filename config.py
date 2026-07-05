@@ -95,6 +95,7 @@ MAX_CUSTOM_RULES_PER_LIST: int = int(
 )
 
 MODEL_COMPARISON_SAMPLE_SIZE: int = int(os.getenv("SPAMLYSER_COMPARE_SAMPLES", "5"))
+MAX_COMPOUND_RULES: int = int(os.getenv("SPAMLYSER_MAX_COMPOUND_RULES", "50"))
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
