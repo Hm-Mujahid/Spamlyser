@@ -9235,7 +9235,6 @@ if analyse_btn and user_sms.strip():
                         "threat_confidence": threat_confidence,
                     }
                 )
-
                 # Record sender reputation if tracker is available
                 if st.session_state.get("sender_reputation"):
                     sender_match = re.search(r"[\+\d\s\-\(\)]{7,15}", user_sms)
@@ -9247,6 +9246,18 @@ if analyse_btn and user_sms.strip():
                             confidence=confidence,
                             threat_type=threat_type,
                         )
+
+                # Categorize message
+                categories = []
+                if "categorizer" not in st.session_state:
+                    try:
+                        from models.message_categorizer import MessageCategorizer
+
+                        st.session_state.categorizer = MessageCategorizer()
+                    except ImportError:
+                        st.session_state.categorizer = None
+                if st.session_state.get("categorizer"):
+                    categories = st.session_state.categorizer.categorize(cleaned_sms)
 
                 features = analyse_message_features(cleaned_sms)
 
@@ -9284,6 +9295,21 @@ if analyse_btn and user_sms.strip():
                 # Display threat information separately if it exists
                 if label == "SPAM" and threat_type:
                     st.markdown(threat_html, unsafe_allow_html=True)
+
+                # Display category badges
+                if categories:
+                    badge_html = "".join(
+                        f'<span style="display:inline-block;padding:2px 10px;margin:2px;'
+                        f'border-radius:12px;background:{c["color"]}20;'
+                        f'color:{c["color"]};border:1px solid {c["color"]}40;'
+                        f'font-size:0.85rem;">{c["icon"]} {c["label"]}'
+                        f'</span>'
+                        for c in categories
+                    )
+                    st.markdown(
+                        f'<div style="margin:10px 0;"><strong>Categories:</strong> {badge_html}</div>',
+                        unsafe_allow_html=True,
+                    )
 
                 # Generate and display LIME explanation for single model predictions
                 with st.expander("🔍 Show Model Explainability", expanded=True):
@@ -9446,7 +9472,6 @@ if analyse_btn and user_sms.strip():
                                 "threat_confidence": threat_confidence,
                             }
                         )
-
                         if st.session_state.get("sender_reputation"):
                             sender_match = re.search(r"[\+\d\s\-\(\)]{7,15}", user_sms)
                             if sender_match:
@@ -9457,6 +9482,19 @@ if analyse_btn and user_sms.strip():
                                     confidence=ensemble_result["confidence"],
                                     threat_type=threat_type,
                                 )
+
+                        if "categorizer" not in st.session_state:
+                            try:
+                                from models.message_categorizer import MessageCategorizer
+
+                                st.session_state.categorizer = MessageCategorizer()
+                            except ImportError:
+                                st.session_state.categorizer = None
+                        ensemble_categories = []
+                        if st.session_state.get("categorizer"):
+                            ensemble_categories = (
+                                st.session_state.categorizer.categorize(user_sms)
+                            )
 
                         features = analyse_message_features(user_sms)
                         risk_indicators = get_risk_indicators(
@@ -9500,6 +9538,20 @@ if analyse_btn and user_sms.strip():
                         # Display threat information separately if it exists
                         if ensemble_result["label"] == "SPAM" and threat_type:
                             st.markdown(threat_html, unsafe_allow_html=True)
+
+                        if ensemble_categories:
+                            badge_html = "".join(
+                                f'<span style="display:inline-block;padding:2px 10px;margin:2px;'
+                                f'border-radius:12px;background:{c["color"]}20;'
+                                f'color:{c["color"]};border:1px solid {c["color"]}40;'
+                                f'font-size:0.85rem;">{c["icon"]} {c["label"]}'
+                                f'</span>'
+                                for c in ensemble_categories
+                            )
+                            st.markdown(
+                                f'<div style="margin:10px 0;"><strong>Categories:</strong> {badge_html}</div>',
+                                unsafe_allow_html=True,
+                            )
 
                         st.markdown("#### 🤖 Individual Model Predictions")
                         cols = st.columns(len(predictions))

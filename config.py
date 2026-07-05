@@ -57,6 +57,10 @@ SENDER_REPUTATION_DB_PATH: str = os.getenv(
     "SPAMLYSER_SENDER_REPUTATION_DB", str(DATA_DIR / "sender_reputation.json")
 )
 
+CATEGORIES_CONFIG_PATH: str = os.getenv(
+    "SPAMLYSER_CATEGORIES_CONFIG", str(DATA_DIR / "categories.json")
+)
+
 PERFORMANCE_DATA_PATH: str = os.getenv(
     "SPAMLYSER_PERFORMANCE_DATA", str(DATA_DIR / "performance_data.json")
 )
