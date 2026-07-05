@@ -9527,12 +9527,13 @@ if analyse_btn and user_sms.strip():
                     sender_match = re.search(r"[\+\d\s\-\(\)]{7,15}", user_sms)
                     if sender_match:
                         sender_id = sender_match.group().strip()
-                        st.session_state.sender_reputation.record_analysis(
+                        rep_data = st.session_state.sender_reputation.record_analysis(
                             sender=sender_id,
                             is_spam=(label == "SPAM"),
                             confidence=confidence,
                             threat_type=threat_type,
                         )
+                        st.info(f"👤 **Sender Reputation Score for {sender_id}:** {rep_data['reputation_score']:.2f} (from {rep_data['total_messages']} previous messages)")
 
                 # Categorize message
                 categories = []
@@ -9772,12 +9773,13 @@ if analyse_btn and user_sms.strip():
                             sender_match = re.search(r"[\+\d\s\-\(\)]{7,15}", user_sms)
                             if sender_match:
                                 sender_id = sender_match.group().strip()
-                                st.session_state.sender_reputation.record_analysis(
+                                rep_data = st.session_state.sender_reputation.record_analysis(
                                     sender=sender_id,
                                     is_spam=(ensemble_result["label"] == "SPAM"),
                                     confidence=ensemble_result["confidence"],
                                     threat_type=threat_type,
                                 )
+                                st.info(f"👤 **Sender Reputation Score for {sender_id}:** {rep_data['reputation_score']:.2f} (from {rep_data['total_messages']} previous messages)")
 
                         if "categorizer" not in st.session_state:
                             try:
