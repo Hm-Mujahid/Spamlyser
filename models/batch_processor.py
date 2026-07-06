@@ -39,9 +39,16 @@ class BatchProcessor:
             "end_time": None,
         }
 
-    def process_message(
-        self, message: str, sender: str | None = None
-    ) -> dict[str, Any]:
+    @staticmethod
+    def _normalise_batch_size(batch_size: int, max_workers: int = 10) -> int:
+        """Return a safe ThreadPoolExecutor worker count."""
+        try:
+            parsed = int(batch_size)
+        except (TypeError, ValueError):
+            parsed = 1
+        return min(max(parsed, 1), max_workers)
+
+    def process_message(self, message: str) -> dict[str, Any]:
         """
         Process a single message using all models.
 
@@ -168,7 +175,8 @@ class BatchProcessor:
             return results, self.batch_stats
 
         # Process messages in parallel batches
-        with ThreadPoolExecutor(max_workers=min(batch_size, 10)) as executor:
+        worker_count = self._normalise_batch_size(batch_size)
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
             future_to_message = {
                 executor.submit(self.process_message, msg): msg for msg in messages
             }
