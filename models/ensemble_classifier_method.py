@@ -275,11 +275,16 @@ class EnsembleSpamClassifier:
                 label = pred["label"].upper()
                 confidence = pred["score"]
 
-                # Incorporate per-model reliability score
+                # Incorporate per-model reliability score and recent accuracy
                 reliability = self.model_weights.get(model_name, 1.0)
-                adjusted_weight = confidence * reliability
+                accuracy = 1.0
+                if hasattr(self, 'performance_tracker') and self.performance_tracker:
+                    stats = self.performance_tracker.get_model_stats(model_name)
+                    accuracy = stats.get("recent_accuracy", 1.0)
 
-                # Weight the vote by adjusted confidence
+                # Weight the vote by adjusted confidence (reliability * accuracy)
+                adjusted_weight = confidence * reliability * accuracy
+
                 if label == "SPAM":
                     spam_weight += adjusted_weight
                     weight_contribution_spam = adjusted_weight
