@@ -102,6 +102,7 @@ class BatchProcessor:
         Returns:
             Dict of risk indicators and their presence (True/False)
         """
+        original_message = message
         message = message.lower()
 
         # Common risk patterns
@@ -121,7 +122,8 @@ class BatchProcessor:
                 for x in ["password", "account", "login", "ssn", "credit card"]
             ),
             "all_caps": any(
-                word.isupper() and len(word) > 2 for word in message.split()
+                word.isupper() and len(word) > 2
+                for word in original_message.split()
             ),
             "suspicious_chars": (
                 len([c for c in message if not c.isalnum() and not c.isspace()])
