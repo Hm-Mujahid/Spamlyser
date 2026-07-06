@@ -8,6 +8,8 @@ are available from the **Batch Processor** results panel via the
 
 The default format.  Every column visible in the results table is included.
 Timestamps are serialised as strings.
+Formula-like text cells are prefixed with a single quote during export so
+spreadsheet tools import them as text instead of executable formulas.
 
 **Use when:** you want to open results in Excel, Google Sheets, or process them
 with pandas.
@@ -68,6 +70,8 @@ another tool, or archive the complete analysis output.
 
 | Symbol | Module | Purpose |
 |---|---|---|
+| `_csv_safe_cell(value)` | `models/export_feature.py` | neutralises spreadsheet formula prefixes |
+| `dataframe_to_csv(df)` | `models/export_feature.py` | safe CSV serialiser used by the download widget |
 | `_pdf_safe(text)` | `models/export_feature.py` | latin-1 safe encoding with `?` replacement |
 | `_build_pdf(df, title)` | `models/export_feature.py` | internal PDF renderer |
 | `dataframe_to_pdf(df, title)` | `models/export_feature.py` | public helper used by tests |

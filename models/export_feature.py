@@ -30,6 +30,7 @@ from typing import Any
 
 import pandas as pd
 import streamlit as st
+from pandas.api.types import is_object_dtype, is_string_dtype
 
 try:
     from fpdf import FPDF
@@ -37,6 +38,27 @@ try:
     _FPDF_AVAILABLE = True
 except ImportError:
     _FPDF_AVAILABLE = False
+
+_CSV_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_safe_cell(value: Any) -> Any:
+    """Return *value* safe for spreadsheet CSV import."""
+    if not isinstance(value, str):
+        return value
+    stripped = value.lstrip()
+    if stripped.startswith(_CSV_FORMULA_PREFIXES):
+        return "'" + value
+    return value
+
+
+def dataframe_to_csv(df: pd.DataFrame) -> str:
+    """Serialise *df* to CSV after neutralising formula-like text cells."""
+    safe_df = df.copy()
+    for column in safe_df.columns:
+        if is_object_dtype(safe_df[column]) or is_string_dtype(safe_df[column]):
+            safe_df[column] = safe_df[column].map(_csv_safe_cell)
+    return safe_df.to_csv(index=False)
 
 
 def _pdf_safe(text: Any) -> str:
@@ -195,24 +217,13 @@ def export_results_button(
         )
 
     if export_format == "CSV":
-        csv_data = df.to_csv(index=False)
-        if enable_encrypt and enc_password:
-            from .encrypted_report import encrypt_bytes
-
-            encrypted = encrypt_bytes(csv_data.encode("utf-8"), enc_password)
-            st.download_button(
-                label="🔒 Download Encrypted CSV",
-                data=encrypted,
-                file_name=f"{filename_prefix}_{ts}.csv.enc",
-                mime="application/octet-stream",
-            )
-        else:
-            st.download_button(
-                label="📥 Download Results CSV",
-                data=csv_data,
-                file_name=f"{filename_prefix}_{ts}.csv",
-                mime="text/csv",
-            )
+        csv_data = dataframe_to_csv(df)
+        st.download_button(
+            label="📥 Download Results CSV",
+            data=csv_data,
+            file_name=f"{filename_prefix}_{ts}.csv",
+            mime="text/csv",
+        )
     elif export_format == "JSON":
         json_data = history_to_json(history)
         if enable_encrypt and enc_password:
