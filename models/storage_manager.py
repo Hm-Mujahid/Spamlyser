@@ -91,6 +91,7 @@ class StorageManager:
         if backup and path.exists():
             self._create_backup(path)
 
+        tmp_path = None
         try:
             with tempfile.NamedTemporaryFile(
                 mode="w",
@@ -102,11 +103,23 @@ class StorageManager:
                 json.dump(data, tmp, indent=2, ensure_ascii=False)
                 tmp_path = tmp.name
 
+            if validate is not None:
+                with open(tmp_path, encoding="utf-8") as tmp:
+                    decoded = json.load(tmp)
+                if not validate(decoded):
+                    return False
+
             shutil.move(tmp_path, str(path))
             self._prune_backups(path)
             return True
-        except (OSError, ValueError, TypeError):
+        except (json.JSONDecodeError, OSError, ValueError, TypeError):
             return False
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
 
     def load_json(
         self,

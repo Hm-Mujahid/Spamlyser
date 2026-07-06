@@ -121,6 +121,24 @@ def test_save_json_validator_aborts(tmp_path):
     assert not os.path.exists(target)
 
 
+def test_save_json_validates_serialized_payload(tmp_path):
+    target = str(tmp_path / "data.json")
+    mgr = StorageManager()
+
+    def validate_payload(data):
+        return isinstance(data.get("values"), tuple)
+
+    result = mgr.save_json(
+        target,
+        {"values": (1, 2, 3)},
+        validate=validate_payload,
+    )
+
+    assert result is False
+    assert not os.path.exists(target)
+    assert list(tmp_path.glob("*.tmp")) == []
+
+
 def test_backup_dir_default_is_dot_prefixed(tmp_path):
     from pathlib import Path
 
