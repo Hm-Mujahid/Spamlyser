@@ -52,6 +52,7 @@ def _retry_on_db_error(max_retries: int = 3, backoff_base: float = 0.1):
     Uses exponential backoff between retries to reduce contention when
     multiple threads hit the database simultaneously.
     """
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -63,20 +64,27 @@ def _retry_on_db_error(max_retries: int = 3, backoff_base: float = 0.1):
                     error_msg = str(exc).lower()
                     if any(err in error_msg for err in _RETRYABLE_ERRORS):
                         last_exc = exc
-                        wait = backoff_base * (2 ** attempt)
+                        wait = backoff_base * (2**attempt)
                         _logger.warning(
                             "Retrying %s after SQLite error (attempt %d/%d): %s",
-                            func.__name__, attempt + 1, max_retries, exc,
+                            func.__name__,
+                            attempt + 1,
+                            max_retries,
+                            exc,
                         )
                         time.sleep(wait)
                     else:
                         raise
             _logger.error(
                 "All %d retries exhausted for %s: %s",
-                max_retries, func.__name__, last_exc,
+                max_retries,
+                func.__name__,
+                last_exc,
             )
             raise last_exc
+
         return wrapper
+
     return decorator
 
 

@@ -40,18 +40,17 @@ def test_concurrent_feedback_writes(tmp_path):
 
     def write_feedback(thread_id):
         try:
-            handler.save_feedback({
-                "feedback_type": "test",
-                "rating": str(thread_id % 5 + 1),
-                "comment": f"Feedback from thread {thread_id}",
-            })
+            handler.save_feedback(
+                {
+                    "feedback_type": "test",
+                    "rating": str(thread_id % 5 + 1),
+                    "comment": f"Feedback from thread {thread_id}",
+                }
+            )
         except Exception as exc:
             errors.append(exc)
 
-    threads = [
-        threading.Thread(target=write_feedback, args=(i,))
-        for i in range(8)
-    ]
+    threads = [threading.Thread(target=write_feedback, args=(i,)) for i in range(8)]
     for t in threads:
         t.start()
     for t in threads:

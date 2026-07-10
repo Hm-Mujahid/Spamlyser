@@ -31,7 +31,7 @@ def top_navigation_bar(navigate_to):
             if is_active:
                 st.markdown(
                     f'<div style="text-align:center;padding:6px 0;'
-                    f'background:#00d4aa20;border-radius:8px;'
+                    f"background:#00d4aa20;border-radius:8px;"
                     f'border:1px solid #00d4aa;">'
                     f'<span style="color:#00d4aa;font-weight:600;font-size:0.85rem;">'
                     f"{page_label}</span></div>",

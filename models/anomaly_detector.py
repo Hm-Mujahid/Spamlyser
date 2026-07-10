@@ -25,7 +25,9 @@ class AnomalyDetector:
 
         # 1. Content anomaly (TF-IDF + Isolation Forest)
         texts = [a.get("message", "") for a in analyses]
-        self._vectorizer = TfidfVectorizer(max_features=100, stop_words="english", sublinear_tf=True)
+        self._vectorizer = TfidfVectorizer(
+            max_features=100, stop_words="english", sublinear_tf=True
+        )
         X = self._vectorizer.fit_transform(texts).toarray()
         self._iforest = IsolationForest(
             contamination=self.contamination,
@@ -37,8 +39,12 @@ class AnomalyDetector:
         scores["content_score"] = -self._iforest.score_samples(X)
 
         # 2. Confidence anomaly (z-score of confidence values)
-        confs = [a.get("ensemble_predictions", {}).get("majority_voting", {}).get("confidence", 0.5)
-                 for a in analyses]
+        confs = [
+            a.get("ensemble_predictions", {})
+            .get("majority_voting", {})
+            .get("confidence", 0.5)
+            for a in analyses
+        ]
         if len(set(confs)) > 1:
             z_conf = np.abs(zscore(confs))
             scores["confidence_anomaly"] = (z_conf > 2.0).astype(float)
@@ -80,11 +86,17 @@ class AnomalyDetector:
         """Generate human-readable explanations for why a row is anomalous."""
         explanations = []
         if row.get("content_anomaly", 0):
-            explanations.append(f"Unusual content pattern (score: {row.get('content_score', 0):.2f})")
+            explanations.append(
+                f"Unusual content pattern (score: {row.get('content_score', 0):.2f})"
+            )
         if row.get("confidence_anomaly", 0):
-            explanations.append(f"Confidence outlier (z={row.get('confidence_zscore', 0):.1f})")
+            explanations.append(
+                f"Confidence outlier (z={row.get('confidence_zscore', 0):.1f})"
+            )
         if row.get("disagreement_anomaly", 0):
-            explanations.append(f"Strong model disagreement ({row.get('disagreement_score', 0):.0%})")
+            explanations.append(
+                f"Strong model disagreement ({row.get('disagreement_score', 0):.0%})"
+            )
         return explanations or ["Within normal range"]
 
     def top_anomalies(self, df: pd.DataFrame, n: int = 10) -> pd.DataFrame:

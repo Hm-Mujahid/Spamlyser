@@ -129,8 +129,7 @@ class BatchProcessor:
                 for x in ["password", "account", "login", "ssn", "credit card"]
             ),
             "all_caps": any(
-                word.isupper() and len(word) > 2
-                for word in original_message.split()
+                word.isupper() and len(word) > 2 for word in original_message.split()
             ),
             "suspicious_chars": (
                 len([c for c in message if not c.isalnum() and not c.isspace()])

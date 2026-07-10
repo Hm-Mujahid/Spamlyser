@@ -163,5 +163,9 @@ BENCHMARK_HISTORY_PATH: str = os.getenv(
 )
 
 # ── Error boundary / resilience ────────────────────────────────────────────
-ERROR_BOUNDARY_ENABLED: bool = os.getenv("SPAMLYSER_ERROR_BOUNDARY", "true").lower() == "true"
-ERROR_BOUNDARY_SHOW_DETAIL: bool = os.getenv("SPAMLYSER_ERROR_DETAIL", "false").lower() == "true"
+ERROR_BOUNDARY_ENABLED: bool = (
+    os.getenv("SPAMLYSER_ERROR_BOUNDARY", "true").lower() == "true"
+)
+ERROR_BOUNDARY_SHOW_DETAIL: bool = (
+    os.getenv("SPAMLYSER_ERROR_DETAIL", "false").lower() == "true"
+)

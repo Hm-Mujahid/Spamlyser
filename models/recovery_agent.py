@@ -30,4 +30,3 @@ def attempt_self_healing(primary_path: Path, backup_path: Path) -> bool:
         except OSError:
             pass
     return False
-

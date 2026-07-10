@@ -43,8 +43,11 @@ class SessionAnalytics:
                 current = self._finalize_session(current)
                 sessions.append(current)
                 current = {
-                    "id": len(sessions), "start": dt, "end": dt,
-                    "analyses": [a], "messages": [a.get("message", "")],
+                    "id": len(sessions),
+                    "start": dt,
+                    "end": dt,
+                    "analyses": [a],
+                    "messages": [a.get("message", "")],
                 }
             else:
                 current["end"] = dt
@@ -62,7 +65,9 @@ class SessionAnalytics:
         total = len(analyses)
         spams = sum(1 for a in analyses if self._get_label(a) == "SPAM")
         hams = total - spams
-        confs = [self._get_confidence(a) for a in analyses if self._get_confidence(a) > 0]
+        confs = [
+            self._get_confidence(a) for a in analyses if self._get_confidence(a) > 0
+        ]
         avg_conf = np.mean(confs) if confs else 0.0
 
         models_used = defaultdict(int)
@@ -94,16 +99,20 @@ class SessionAnalytics:
         """Build a comparison DataFrame from session KPI dicts."""
         rows = []
         for s in sessions:
-            rows.append({
-                "session_id": s["id"],
-                "start": s["start"].isoformat() if hasattr(s["start"], "isoformat") else str(s["start"]),
-                "duration_min": s["duration_seconds"] / 60,
-                "total": s["total"],
-                "spam_rate": s["spam_rate"],
-                "avg_confidence": s["avg_confidence"],
-                "throughput": s["throughput_per_hour"],
-                "model_count": s["model_count"],
-            })
+            rows.append(
+                {
+                    "session_id": s["id"],
+                    "start": s["start"].isoformat()
+                    if hasattr(s["start"], "isoformat")
+                    else str(s["start"]),
+                    "duration_min": s["duration_seconds"] / 60,
+                    "total": s["total"],
+                    "spam_rate": s["spam_rate"],
+                    "avg_confidence": s["avg_confidence"],
+                    "throughput": s["throughput_per_hour"],
+                    "model_count": s["model_count"],
+                }
+            )
         return pd.DataFrame(rows)
 
     def compute_drift(self, sessions: list[dict]) -> dict[str, Any]:
@@ -113,7 +122,11 @@ class SessionAnalytics:
             prev, curr = sessions[i - 1], sessions[i]
             spam_drift = curr["spam_rate"] - prev["spam_rate"]
             conf_drift = curr["avg_confidence"] - prev["avg_confidence"]
-            direction = "up" if spam_drift > 0.05 else ("down" if spam_drift < -0.05 else "stable")
+            direction = (
+                "up"
+                if spam_drift > 0.05
+                else ("down" if spam_drift < -0.05 else "stable")
+            )
             drift = {
                 "from_session": prev["id"],
                 "to_session": curr["id"],
@@ -129,19 +142,30 @@ class SessionAnalytics:
                 p_spam = prev_labels.count("SPAM") / len(prev_labels)
                 c_spam = curr_labels.count("SPAM") / len(curr_labels)
                 eps = 1e-10
-                kl = p_spam * np.log((p_spam + eps) / (c_spam + eps)) + \
-                     (1 - p_spam) * np.log((1 - p_spam + eps) / (1 - c_spam + eps))
+                kl = p_spam * np.log((p_spam + eps) / (c_spam + eps)) + (
+                    1 - p_spam
+                ) * np.log((1 - p_spam + eps) / (1 - c_spam + eps))
                 drift["kl_divergence"] = float(kl)
-                drift["drift_severity"] = "high" if kl > 0.5 else ("medium" if kl > 0.1 else "low")
+                drift["drift_severity"] = (
+                    "high" if kl > 0.5 else ("medium" if kl > 0.1 else "low")
+                )
 
             drifts.append(drift)
         return {"deltas": drifts, "total_drift_sessions": len(drifts)}
 
     def _get_label(self, a: dict) -> str:
-        return a.get("ensemble_predictions", {}).get("majority_voting", {}).get("label", "?")
+        return (
+            a.get("ensemble_predictions", {})
+            .get("majority_voting", {})
+            .get("label", "?")
+        )
 
     def _get_confidence(self, a: dict) -> float:
-        return a.get("ensemble_predictions", {}).get("majority_voting", {}).get("confidence", 0.0)
+        return (
+            a.get("ensemble_predictions", {})
+            .get("majority_voting", {})
+            .get("confidence", 0.0)
+        )
 
     def _get_threat(self, a: dict) -> str | None:
         return a.get("risk_indicators", {})
