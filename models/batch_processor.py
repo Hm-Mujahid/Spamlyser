@@ -48,7 +48,7 @@ class BatchProcessor:
             parsed = 1
         return min(max(parsed, 1), max_workers)
 
-    def process_message(self, message: str) -> dict[str, Any]:
+    def process_message(self, message: str, sender: str | None = None) -> dict[str, Any]:
         """
         Process a single message using all models.
 

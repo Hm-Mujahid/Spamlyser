@@ -223,7 +223,7 @@ class FeedbackHandler:
 
     def save_feedback(self, feedback_data: dict[str, Any]) -> bool:
         # Pre-save encryption hook placeholder
-        pass
+        return self.save_feedback_actual(feedback_data)
 
     def save_feedback_actual(self, feedback_data: dict[str, Any]) -> bool:
         """Persist *feedback_data* to SQLite.
